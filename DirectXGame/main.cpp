@@ -13,6 +13,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
     KamataEngine::Initialize(L""); {
         // 描画開始/終了を行うDirectX共通クラス
         KamataEngine::DirectXCommon* dxCommon = KamataEngine::DirectXCommon::GetInstance();
+
+        // シーン管理
         SceneManager sceneManager(std::make_unique<TitleScene>());
 
         // メインループ
