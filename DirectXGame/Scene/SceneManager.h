@@ -5,8 +5,22 @@
 
 #include <memory>
 
+/// <summary>
+/// ゲーム全体のシーン遷移を管理するクラス
+///
+/// ・現在のシーンの保持
+/// ・シーンの更新・描画
+/// ・シーン終了時の次シーンへの切り替え
+/// ・シーンの初期化
+///
+/// SceneManagerが各シーン(IScene)を一元管理することで
+/// 各シーンは自身のゲーム処理に専念できる構成としている
+/// </summary>
 class SceneManager {
 public:
+    /// <summary>
+    /// デフォルトコンストラクタ
+    /// </summary>
     SceneManager() = default;
 
     /// <summary>
