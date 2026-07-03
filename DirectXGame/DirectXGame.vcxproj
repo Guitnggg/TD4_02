@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClCompile Include="Collision\CollisionManager.cpp" />
     <ClCompile Include="Effect\EffectManager.cpp" />
+    <ClCompile Include="Math\WorldTransformEx.cpp" />
     <ClCompile Include="Object\Goal\Goal.cpp" />
     <ClCompile Include="Math\MathUtility.cpp" />
     <ClCompile Include="UI\Pause\PauseUI.cpp" />

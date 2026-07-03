@@ -1,6 +1,15 @@
 #pragma once
 
+#include "../../Game/Stage.h"
+#include "../../Player/Player.h"
 #include "../IScene.h"
+
+#include <3d/Camera.h>
+#include <3d/Model.h>
+#include <3d/Object3d.h>
+
+#include <memory>
+#include <vector>
 
 /// <summary>
 /// ゲームプレイ画面を管理するクラス
@@ -45,5 +54,20 @@ public:
 	SceneName GetSceneName() const override;
 
 private:
+	void BuildStageObjects();
+	std::unique_ptr<KamataEngine::Object3d> CreateCube(const KamataEngine::Vector3& translation, const KamataEngine::Vector3& scale);
+	void UpdatePlayerObject();
+	void DrawStageGuide();
+
 	bool isEnd_ = false;
+	Stage stage_;
+	Player player_;
+	KamataEngine::Camera camera_;
+	std::unique_ptr<KamataEngine::Model> cubeModel_;
+	std::vector<std::unique_ptr<KamataEngine::Object3d>> floorObjects_;
+	std::vector<std::unique_ptr<KamataEngine::Object3d>> wallObjects_;
+	std::vector<std::unique_ptr<KamataEngine::Object3d>> placeableObjects_;
+	std::vector<std::unique_ptr<KamataEngine::Object3d>> gimmickObjects_;
+	std::unique_ptr<KamataEngine::Object3d> goalObject_;
+	std::unique_ptr<KamataEngine::Object3d> playerObject_;
 };
