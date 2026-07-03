@@ -1,7 +1,8 @@
 #include "Player.h"
 
+#include "../Math/MathUtility.h"
+
 #include <algorithm>
-#include <cmath>
 
 namespace {
 constexpr float kDeltaTime = 1.0f / 60.0f;
@@ -20,25 +21,27 @@ void Player::Update(const Stage& stage) {
 
 	const Stage::GridPosition previousGrid = stage.WorldToGrid(position_);
 
-	position_.x += velocity_.x * kDeltaTime;
-	position_.z += velocity_.z * kDeltaTime;
-	velocity_.x *= kFriction;
-	velocity_.z *= kFriction;
+	MyMath::IntegrateXZ(position_, velocity_, kDeltaTime);
+	MyMath::ApplyFrictionXZ(velocity_, kFriction);
 
 	const Stage::GridPosition currentGrid = stage.WorldToGrid(position_);
 	ReflectByWallOrBounds(stage, previousGrid, currentGrid);
 
 	const Stage::GimmickType gimmick = stage.GetGimmick(currentGrid);
 	if (gimmick != Stage::GimmickType::None && (lastGimmickGrid_.x != currentGrid.x || lastGimmickGrid_.z != currentGrid.z)) {
-		ReflectByGimmick(gimmick);
+		if (gimmick == Stage::GimmickType::ReflectSlash) {
+			velocity_ = MyMath::ReflectSlashXZ(velocity_);
+		} else if (gimmick == Stage::GimmickType::ReflectBackSlash) {
+			velocity_ = MyMath::ReflectBackSlashXZ(velocity_);
+		}
 		lastGimmickGrid_ = currentGrid;
 	} else if (gimmick == Stage::GimmickType::None) {
 		lastGimmickGrid_ = {-1, -1};
 	}
 
 	const KamataEngine::Vector3 goalPosition = stage.GridToWorld(stage.GetGoalGrid());
-	const KamataEngine::Vector3 toGoal = {position_.x - goalPosition.x, 0.0f, position_.z - goalPosition.z};
-	if (Length(toGoal) < kGoalRadius) {
+	const KamataEngine::Vector3 toGoal = MyMath::Subtract(position_, goalPosition);
+	if (MyMath::Length(toGoal) < kGoalRadius) {
 		position_ = goalPosition;
 		velocity_ = {};
 		isClear_ = true;
@@ -46,7 +49,7 @@ void Player::Update(const Stage& stage) {
 		return;
 	}
 
-	if (Length(velocity_) < kStopSpeed) {
+	if (MyMath::Length(velocity_) < kStopSpeed) {
 		velocity_ = {};
 		state_ = State::Stopped;
 		isFailed_ = !stage.IsGoal(stage.WorldToGrid(position_));
@@ -90,19 +93,6 @@ void Player::Fire() {
 	state_ = State::Moving;
 }
 
-float Player::Length(const KamataEngine::Vector3& value) {
-	return std::sqrt(value.x * value.x + value.y * value.y + value.z * value.z);
-}
-
-void Player::ReflectByGimmick(Stage::GimmickType gimmick) {
-	const KamataEngine::Vector3 oldVelocity = velocity_;
-	if (gimmick == Stage::GimmickType::ReflectSlash) {
-		velocity_ = {-oldVelocity.z, 0.0f, -oldVelocity.x};
-	} else if (gimmick == Stage::GimmickType::ReflectBackSlash) {
-		velocity_ = {oldVelocity.z, 0.0f, oldVelocity.x};
-	}
-}
-
 void Player::ReflectByWallOrBounds(const Stage& stage, const Stage::GridPosition& previousGrid, const Stage::GridPosition& currentGrid) {
 	if (stage.IsInsideGrid(currentGrid) && !stage.IsWall(currentGrid)) {
 		return;
@@ -111,10 +101,5 @@ void Player::ReflectByWallOrBounds(const Stage& stage, const Stage::GridPosition
 	position_ = stage.GridToWorld(previousGrid);
 	position_.y = 0.65f;
 
-	if (currentGrid.x != previousGrid.x) {
-		velocity_.x *= -1.0f;
-	}
-	if (currentGrid.z != previousGrid.z) {
-		velocity_.z *= -1.0f;
-	}
+	MyMath::ReflectGridBounceXZ(velocity_, currentGrid.x != previousGrid.x, currentGrid.z != previousGrid.z);
 }

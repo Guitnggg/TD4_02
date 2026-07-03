@@ -286,3 +286,26 @@ Vector3 MyMath::TransformNormal(const Vector3& vector, const Matrix4x4& matrix) 
 	result.z = matrix.m[0][2] * vector.x + matrix.m[1][2] * vector.y + matrix.m[2][2] * vector.z;
 	return result;
 }
+
+void MyMath::IntegrateXZ(Vector3& position, const Vector3& velocity, float deltaTime) {
+	position.x += velocity.x * deltaTime;
+	position.z += velocity.z * deltaTime;
+}
+
+void MyMath::ApplyFrictionXZ(Vector3& velocity, float friction) {
+	velocity.x *= friction;
+	velocity.z *= friction;
+}
+
+Vector3 MyMath::ReflectSlashXZ(const Vector3& velocity) { return {-velocity.z, 0.0f, -velocity.x}; }
+
+Vector3 MyMath::ReflectBackSlashXZ(const Vector3& velocity) { return {velocity.z, 0.0f, velocity.x}; }
+
+void MyMath::ReflectGridBounceXZ(Vector3& velocity, bool hitX, bool hitZ) {
+	if (hitX) {
+		velocity.x *= -1.0f;
+	}
+	if (hitZ) {
+		velocity.z *= -1.0f;
+	}
+}

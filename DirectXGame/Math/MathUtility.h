@@ -87,4 +87,17 @@ public:
 	static KamataEngine::Vector3 Transform(const KamataEngine::Vector3& vector, const KamataEngine::Matrix4x4& matrix);
 
 	static KamataEngine::Vector3 TransformNormal(const KamataEngine::Vector3& vector, const KamataEngine::Matrix4x4& matrix);
+
+	// =========================
+	// Physics helper
+	// =========================
+	static void IntegrateXZ(KamataEngine::Vector3& position, const KamataEngine::Vector3& velocity, float deltaTime);
+
+	static void ApplyFrictionXZ(KamataEngine::Vector3& velocity, float friction);
+
+	static KamataEngine::Vector3 ReflectSlashXZ(const KamataEngine::Vector3& velocity);
+
+	static KamataEngine::Vector3 ReflectBackSlashXZ(const KamataEngine::Vector3& velocity);
+
+	static void ReflectGridBounceXZ(KamataEngine::Vector3& velocity, bool hitX, bool hitZ);
 };

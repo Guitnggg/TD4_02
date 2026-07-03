@@ -26,8 +26,6 @@ public:
 	bool IsFailed() const { return isFailed_; }
 
 private:
-	static float Length(const KamataEngine::Vector3& value);
-	void ReflectByGimmick(Stage::GimmickType gimmick);
 	void ReflectByWallOrBounds(const Stage& stage, const Stage::GridPosition& previousGrid, const Stage::GridPosition& currentGrid);
 
 	KamataEngine::Vector3 position_{};
