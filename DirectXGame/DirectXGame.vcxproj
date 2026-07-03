@@ -155,6 +155,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Collision\CollisionManager.cpp" />
+    <ClCompile Include="Effect\EffectManager.cpp" />
     <ClCompile Include="Object\Goal\Goal.cpp" />
     <ClCompile Include="Math\MathUtility.cpp" />
     <ClCompile Include="UI\Pause\PauseUI.cpp" />
@@ -275,6 +276,7 @@
   <ItemGroup>
     <ClInclude Include="Collision\CollisionManager.h" />
     <ClInclude Include="Collision\Collider.h" />
+    <ClInclude Include="Effect\EffectManager.h" />
     <ClInclude Include="Object\Goal\Goal.h" />
     <ClInclude Include="Math\MathUtility.h" />
     <ClInclude Include="UI\Pause\PauseUI.h" />
