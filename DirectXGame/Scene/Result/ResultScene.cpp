@@ -1,6 +1,6 @@
 #include "ResultScene.h"
 
-#include "TitleScene.h"
+#include "../Title/TitleScene.h"
 
 #include <KamataEngine.h>
 #include <dinput.h>
