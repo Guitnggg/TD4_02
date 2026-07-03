@@ -21,7 +21,7 @@ public:
     ~SceneManager() = default;
 
     /// <summary>
-    /// コピーは禁止（シーンを一意に管理するため）
+    /// コピーは禁止
     /// </summary>
     SceneManager(const SceneManager&) = delete;
 
