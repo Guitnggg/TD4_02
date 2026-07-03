@@ -6,21 +6,24 @@
 #include <base/WinApp.h>
 #include <base/TextureManager.h>
 
-#include <algorithm>
 #include <cmath>
 
 using KamataEngine::Vector3;
-using KamataEngine::Vector4;
 
 namespace {
+// ドラッグ入力の調整値
 constexpr float kPlayerPickRadius = 0.85f;
 constexpr float kMaxDragDistance = 4.0f;
 constexpr float kMinLaunchDistance = 0.12f;
 constexpr float kMinLaunchSpeed = 2.5f;
 constexpr float kMaxLaunchSpeed = 10.0f;
+
+// ドラッグ中の表示調整値
 constexpr float kGuideY = 0.08f;
 constexpr float kArrowBaseSize = 70.0f;
 constexpr float kArrowPowerSize = 70.0f;
+
+// 軌道予測の調整値
 constexpr float kTrajectoryStepTime = 1.0f / 12.0f;
 constexpr int kTrajectorySegmentCount = 18;
 constexpr float kPreviewFrictionPerFrame = 0.992f;
@@ -61,8 +64,10 @@ void DragInput::Reset() {
 void DragInput::Update(KamataEngine::Input* input, const KamataEngine::Camera& camera, const Vector3& playerPosition, bool canStart) {
 	hasLaunchVelocity_ = false;
 
+	// マウス位置をプレイヤーと同じ高さのワールド座標に変換する。
 	const Vector3 mouseWorld = MouseToWorldOnPlane(camera, playerPosition.y);
 
+	// 発射前、かつプレイヤー付近を左クリックした時だけドラッグを開始する。
 	if (IsTriggerLeft(input) && canStart) {
 		const Vector3 toMouse = MyMath::Subtract(mouseWorld, playerPosition);
 		if (LengthXZ(toMouse) <= kPlayerPickRadius) {
@@ -75,6 +80,8 @@ void DragInput::Update(KamataEngine::Input* input, const KamataEngine::Camera& c
 
 	if (isDragging_) {
 		UpdateDragVector(playerPosition, mouseWorld);
+
+		// 左クリックを離した瞬間に、現在のドラッグ量を発射速度として確定する。
 		if (IsReleaseLeft(input)) {
 			isDragging_ = false;
 			const float dragDistance = LengthXZ(MyMath::Subtract(dragStartWorld_, dragCurrentWorld_));
@@ -104,8 +111,10 @@ void DragInput::Draw(const KamataEngine::Camera& camera) {
 	const float previewSpeed = MyMath::Length(launchVelocity_);
 	const Vector3 arrowEnd = WithGuideY(MyMath::Add(dragStartWorld_, MyMath::Multiply(launchDirection, 1.2f + powerRate_ * 1.6f)));
 
+	// ドラッグした方向を示すライン。
 	primitiveDrawer->DrawLine3d(start, current, {0.95f, 0.30f, 0.20f, 1.0f});
 
+	// 現在の発射速度から簡易的な軌道予測を描画する。
 	Vector3 previewPosition = dragStartWorld_;
 	Vector3 previewVelocity = MyMath::Multiply(launchDirection, previewSpeed);
 	for (int i = 0; i < kTrajectorySegmentCount; ++i) {
@@ -116,6 +125,7 @@ void DragInput::Draw(const KamataEngine::Camera& camera) {
 		MyMath::ApplyFrictionXZ(previewVelocity, std::pow(kPreviewFrictionPerFrame, 60.0f * kTrajectoryStepTime));
 	}
 
+	// ドラッグ距離に応じた発射速度ゲージ。
 	const Vector3 gaugeStart = WithGuideY(MyMath::Add(dragStartWorld_, {-2.0f, 0.0f, -1.4f}));
 	const Vector3 gaugeEnd = MyMath::Add(gaugeStart, {4.0f, 0.0f, 0.0f});
 	const Vector3 gaugeValueEnd = MyMath::Add(gaugeStart, {4.0f * powerRate_, 0.0f, 0.0f});
@@ -138,9 +148,12 @@ bool DragInput::ConsumeLaunchVelocity(Vector3& velocity) {
 Vector3 DragInput::MouseToWorldOnPlane(const KamataEngine::Camera& camera, float planeY) const {
 	KamataEngine::Input* input = KamataEngine::Input::GetInstance();
 	const KamataEngine::Vector2& mousePosition = input->GetMousePosition();
+
+	// 画面座標を NDC に変換する。画面座標は下向きが +Y なので反転する。
 	const float ndcX = (mousePosition.x / static_cast<float>(KamataEngine::WinApp::kWindowWidth)) * 2.0f - 1.0f;
 	const float ndcY = -((mousePosition.y / static_cast<float>(KamataEngine::WinApp::kWindowHeight)) * 2.0f - 1.0f);
 
+	// near/far の2点をワールド座標に戻し、そのレイと指定高さの平面との交点を求める。
 	const KamataEngine::Matrix4x4 viewProjection = MyMath::Multiply(camera.matView, camera.matProjection);
 	const KamataEngine::Matrix4x4 inverseViewProjection = MyMath::Inverse(viewProjection);
 	const Vector3 nearPoint = MyMath::Transform({ndcX, ndcY, 0.0f}, inverseViewProjection);
@@ -170,6 +183,7 @@ bool DragInput::IsReleaseLeft(KamataEngine::Input* input) const {
 void DragInput::UpdateDragVector(const Vector3& playerPosition, const Vector3& currentWorld) {
 	dragStartWorld_ = playerPosition;
 
+	// ドラッグ距離を最大値で制限し、発射速度が大きくなりすぎないようにする。
 	Vector3 drag = MyMath::Subtract(currentWorld, dragStartWorld_);
 	drag.y = 0.0f;
 	const float dragDistance = LengthXZ(drag);
@@ -181,6 +195,7 @@ void DragInput::UpdateDragVector(const Vector3& playerPosition, const Vector3& c
 	const float clampedDistance = LengthXZ(drag);
 	powerRate_ = MyMath::Clamp(clampedDistance / kMaxDragDistance, 0.0f, 1.0f);
 
+	// 仕様通り、ドラッグした方向とは逆向きへ発射する。
 	const Vector3 direction = NormalizeXZ(MyMath::Subtract(dragStartWorld_, dragCurrentWorld_));
 	const float speed = MyMath::CalcLaunchSpeed(clampedDistance, kMaxDragDistance, kMinLaunchSpeed, kMaxLaunchSpeed);
 	launchVelocity_ = MyMath::Multiply(direction, speed);
@@ -200,6 +215,7 @@ void DragInput::DrawArrowSprite(const Vector3& from, const Vector3& to, const Ka
 		return;
 	}
 
+	// Arrow.png は 2D スプライトなので、ワールド上の発射方向を画面座標へ変換して描画する。
 	const KamataEngine::Vector2 fromScreen = WorldToScreen(from, camera);
 	const KamataEngine::Vector2 toScreen = WorldToScreen(to, camera);
 	const KamataEngine::Vector2 direction = {toScreen.x - fromScreen.x, toScreen.y - fromScreen.y};
@@ -213,6 +229,8 @@ void DragInput::DrawArrowSprite(const Vector3& from, const Vector3& to, const Ka
 		fromScreen.x + direction.x * 0.65f,
 		fromScreen.y + direction.y * 0.65f,
 	};
+
+	// Arrow.png は上向き画像なので、画面上の方向へ合うように 90 度補正する。
 	const float rotation = std::atan2(direction.y, direction.x) + 1.57079632679f;
 
 	KamataEngine::Sprite::PreDraw();
