@@ -25,6 +25,7 @@ void GameScene::Initialize() {
 
 	stage_.InitializeTutorial();
 	player_.Initialize(stage_);
+	dragInput_.Initialize();
 	dragInput_.Reset();
 
 	camera_.Initialize();

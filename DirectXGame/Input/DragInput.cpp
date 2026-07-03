@@ -4,6 +4,7 @@
 
 #include <3d/PrimitiveDrawer.h>
 #include <base/WinApp.h>
+#include <base/TextureManager.h>
 
 #include <algorithm>
 #include <cmath>
@@ -18,6 +19,8 @@ constexpr float kMinLaunchDistance = 0.12f;
 constexpr float kMinLaunchSpeed = 2.5f;
 constexpr float kMaxLaunchSpeed = 10.0f;
 constexpr float kGuideY = 0.08f;
+constexpr float kArrowBaseSize = 70.0f;
+constexpr float kArrowPowerSize = 70.0f;
 constexpr float kTrajectoryStepTime = 1.0f / 12.0f;
 constexpr int kTrajectorySegmentCount = 18;
 constexpr float kPreviewFrictionPerFrame = 0.992f;
@@ -39,6 +42,11 @@ Vector3 WithGuideY(Vector3 v) {
 	return v;
 }
 } // namespace
+
+void DragInput::Initialize() {
+	arrowTextureHandle_ = KamataEngine::TextureManager::Load("Arrow.png");
+	arrowSprite_.reset(KamataEngine::Sprite::Create(arrowTextureHandle_, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 0.9f}, {0.5f, 0.5f}));
+}
 
 void DragInput::Reset() {
 	isDragging_ = false;
@@ -82,7 +90,7 @@ void DragInput::Update(KamataEngine::Input* input, const KamataEngine::Camera& c
 	wasPressingLeft_ = IsPressingLeft(input);
 }
 
-void DragInput::Draw(const KamataEngine::Camera& camera) const {
+void DragInput::Draw(const KamataEngine::Camera& camera) {
 	if (!isDragging_) {
 		return;
 	}
@@ -97,7 +105,6 @@ void DragInput::Draw(const KamataEngine::Camera& camera) const {
 	const Vector3 arrowEnd = WithGuideY(MyMath::Add(dragStartWorld_, MyMath::Multiply(launchDirection, 1.2f + powerRate_ * 1.6f)));
 
 	primitiveDrawer->DrawLine3d(start, current, {0.95f, 0.30f, 0.20f, 1.0f});
-	DrawArrow(start, arrowEnd, {0.20f, 0.85f, 1.0f, 1.0f});
 
 	Vector3 previewPosition = dragStartWorld_;
 	Vector3 previewVelocity = MyMath::Multiply(launchDirection, previewSpeed);
@@ -114,6 +121,8 @@ void DragInput::Draw(const KamataEngine::Camera& camera) const {
 	const Vector3 gaugeValueEnd = MyMath::Add(gaugeStart, {4.0f * powerRate_, 0.0f, 0.0f});
 	primitiveDrawer->DrawLine3d(gaugeStart, gaugeEnd, {0.20f, 0.20f, 0.20f, 1.0f});
 	primitiveDrawer->DrawLine3d(gaugeStart, gaugeValueEnd, {1.0f, 0.85f, 0.15f, 1.0f});
+
+	DrawArrowSprite(start, arrowEnd, camera);
 }
 
 bool DragInput::ConsumeLaunchVelocity(Vector3& velocity) {
@@ -177,19 +186,40 @@ void DragInput::UpdateDragVector(const Vector3& playerPosition, const Vector3& c
 	launchVelocity_ = MyMath::Multiply(direction, speed);
 }
 
-void DragInput::DrawArrow(const Vector3& from, const Vector3& to, const Vector4& color) const {
-	KamataEngine::PrimitiveDrawer* primitiveDrawer = KamataEngine::PrimitiveDrawer::GetInstance();
-	primitiveDrawer->DrawLine3d(from, to, color);
+KamataEngine::Vector2 DragInput::WorldToScreen(const Vector3& worldPosition, const KamataEngine::Camera& camera) const {
+	const KamataEngine::Matrix4x4 viewProjection = MyMath::Multiply(camera.matView, camera.matProjection);
+	const Vector3 ndc = MyMath::Transform(worldPosition, viewProjection);
+	return {
+		(ndc.x + 1.0f) * 0.5f * static_cast<float>(KamataEngine::WinApp::kWindowWidth),
+		(1.0f - ndc.y) * 0.5f * static_cast<float>(KamataEngine::WinApp::kWindowHeight),
+	};
+}
 
-	const Vector3 direction = NormalizeXZ(MyMath::Subtract(to, from));
-	if (LengthXZ(direction) <= 0.0f) {
+void DragInput::DrawArrowSprite(const Vector3& from, const Vector3& to, const KamataEngine::Camera& camera) {
+	if (!arrowSprite_) {
 		return;
 	}
 
-	const Vector3 side = {-direction.z, 0.0f, direction.x};
-	const Vector3 back = MyMath::Multiply(direction, -0.35f);
-	const Vector3 leftHead = MyMath::Add(to, MyMath::Add(back, MyMath::Multiply(side, 0.18f)));
-	const Vector3 rightHead = MyMath::Add(to, MyMath::Add(back, MyMath::Multiply(side, -0.18f)));
-	primitiveDrawer->DrawLine3d(to, leftHead, color);
-	primitiveDrawer->DrawLine3d(to, rightHead, color);
+	const KamataEngine::Vector2 fromScreen = WorldToScreen(from, camera);
+	const KamataEngine::Vector2 toScreen = WorldToScreen(to, camera);
+	const KamataEngine::Vector2 direction = {toScreen.x - fromScreen.x, toScreen.y - fromScreen.y};
+	const float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+	if (length <= 0.001f) {
+		return;
+	}
+
+	const float size = kArrowBaseSize + kArrowPowerSize * powerRate_;
+	const KamataEngine::Vector2 center = {
+		fromScreen.x + direction.x * 0.65f,
+		fromScreen.y + direction.y * 0.65f,
+	};
+	const float rotation = std::atan2(direction.y, direction.x) + 1.57079632679f;
+
+	KamataEngine::Sprite::PreDraw();
+	arrowSprite_->SetPosition(center);
+	arrowSprite_->SetSize({size, size});
+	arrowSprite_->SetRotation(rotation);
+	arrowSprite_->SetColor({1.0f, 1.0f, 1.0f, 0.9f});
+	arrowSprite_->Draw();
+	KamataEngine::Sprite::PostDraw();
 }

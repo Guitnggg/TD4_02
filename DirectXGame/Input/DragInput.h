@@ -1,9 +1,13 @@
 #pragma once
 
 #include <3d/Camera.h>
+#include <2d/Sprite.h>
 #include <input/Input.h>
+#include <math/Vector2.h>
 #include <math/Vector3.h>
 #include <math/Vector4.h>
+
+#include <memory>
 
 /// <summary>
 /// ドラッグ操作を管理するクラス
@@ -17,6 +21,8 @@
 /// </summary>
 class DragInput {
 public:
+    void Initialize();
+
     /// <summary>
     /// ドラッグ入力の状態を初期化する
     /// </summary>
@@ -30,7 +36,7 @@ public:
     /// <summary>
     /// ドラッグ中のガイドを描画する
     /// </summary>
-    void Draw(const KamataEngine::Camera& camera) const;
+    void Draw(const KamataEngine::Camera& camera);
 
     /// <summary>
     /// 発射速度を取得する
@@ -75,11 +81,12 @@ private:
     /// <summary>
     /// 発射方向を示す矢印を描画する
     /// </summary>
-    void DrawArrow(const KamataEngine::Vector3& from, const KamataEngine::Vector3& to, const KamataEngine::Vector4& color) const;
+    KamataEngine::Vector2 WorldToScreen(const KamataEngine::Vector3& worldPosition, const KamataEngine::Camera& camera) const;
+    void DrawArrowSprite(const KamataEngine::Vector3& from, const KamataEngine::Vector3& to, const KamataEngine::Camera& camera);
 
 private:
     bool isDragging_ = false;         // ドラッグ中か    
-    bool wasPressingLeft_ = false;    //　前フレームで左クリックされていたか    
+    bool wasPressingLeft_ = false;    // 前フレームで左クリックされていたか    
     bool hasLaunchVelocity_ = false;  // 発射可能な速度を保持しているか
        
     KamataEngine::Vector3 dragStartWorld_{};    // ドラッグ開始位置    
@@ -87,5 +94,7 @@ private:
     KamataEngine::Vector3 launchVelocity_{};    // 発射時の初速度
 
     float powerRate_ = 0.0f;  // ドラッグ量を０～１で表した値
+    uint32_t arrowTextureHandle_ = 0;
+    std::unique_ptr<KamataEngine::Sprite> arrowSprite_;
 };
 
