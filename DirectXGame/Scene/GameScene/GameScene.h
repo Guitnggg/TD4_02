@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../Game/Stage.h"
+#include "../../Input/DragInput.h"
 #include "../../Player/Player.h"
 #include "../IScene.h"
 
@@ -62,6 +63,7 @@ private:
 	bool isEnd_ = false;
 	Stage stage_;
 	Player player_;
+	DragInput dragInput_;
 	KamataEngine::Camera camera_;
 	std::unique_ptr<KamataEngine::Model> cubeModel_;
 	std::vector<std::unique_ptr<KamataEngine::Object3d>> floorObjects_;

@@ -58,6 +58,7 @@ public:
 	/// プレイヤーを発射して移動状態へ切り替える
 	/// </summary>
 	void Fire();
+	void Fire(const KamataEngine::Vector3& initialVelocity);
 
 	/// <summary>
 	/// 現在のワールド座標を取得する

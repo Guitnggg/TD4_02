@@ -102,13 +102,17 @@ void Player::MoveAimRight(const Stage& stage) {
 }
 
 void Player::Fire() {
+	Fire({0.0f, 0.0f, kMoveSpeed});
+}
+
+void Player::Fire(const KamataEngine::Vector3& initialVelocity) {
 	// 発射済みの場合は再発射しない
 	if (state_ != State::Aiming) {
 		return;
 	}
 
-	// 現状は前方固定速度で発射する
-	velocity_ = {0.0f, 0.0f, kMoveSpeed};
+	velocity_ = initialVelocity;
+	velocity_.y = 0.0f;
 	state_ = State::Moving;
 }
 

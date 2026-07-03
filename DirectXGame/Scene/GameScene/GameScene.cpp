@@ -25,6 +25,7 @@ void GameScene::Initialize() {
 
 	stage_.InitializeTutorial();
 	player_.Initialize(stage_);
+	dragInput_.Reset();
 
 	camera_.Initialize();
 	camera_.translation_ = {0.0f, 12.5f, -13.0f};
@@ -50,6 +51,13 @@ void GameScene::Update() {
 	}
 	if (input->TriggerKey(DIK_R)) {
 		player_.Reset(stage_);
+		dragInput_.Reset();
+	}
+
+	dragInput_.Update(input, camera_, player_.GetPosition(), player_.GetState() == Player::State::Aiming);
+	KamataEngine::Vector3 dragLaunchVelocity{};
+	if (dragInput_.ConsumeLaunchVelocity(dragLaunchVelocity)) {
+		player_.Fire(dragLaunchVelocity);
 	}
 
 	player_.Update(stage_);
@@ -81,6 +89,7 @@ void GameScene::Draw() {
 	KamataEngine::Object3d::PostDraw();
 
 	DrawStageGuide();
+	dragInput_.Draw(camera_);
 
 #ifdef USE_IMGUI
 	ImGui::SetNextWindowPos(ImVec2(520.0f, 280.0f), ImGuiCond_FirstUseEver);
@@ -89,8 +98,10 @@ void GameScene::Draw() {
 	ImGui::Text("3D One-Step Puzzle");
 	ImGui::Separator();
 	ImGui::Text("A/D: adjust launch position");
-	ImGui::Text("SPACE: launch");
+	ImGui::Text("Drag player: launch");
+	ImGui::Text("SPACE: launch forward");
 	ImGui::Text("R: reset");
+	ImGui::Text("Drag power: %.0f%%", dragInput_.GetPowerRate() * 100.0f);
 	ImGui::Text("State: %s", player_.GetState() == Player::State::Aiming ? "Aiming" : player_.GetState() == Player::State::Moving ? "Moving" : "Stopped");
 	if (player_.IsFailed()) {
 		ImGui::Text("FAILED: press R");
