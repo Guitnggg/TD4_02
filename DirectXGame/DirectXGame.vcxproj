@@ -166,10 +166,10 @@
     <ClCompile Include="Gimmick\GimmickBase.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Player\Player.cpp" />
-    <ClCompile Include="Scene\GameScene.cpp" />
-    <ClCompile Include="Scene\ResultScene.cpp" />
+    <ClCompile Include="Scene\GameScene\GameScene.cpp" />
+    <ClCompile Include="Scene\Result\ResultScene.cpp" />
     <ClCompile Include="Scene\SceneManager.cpp" />
-    <ClCompile Include="Scene\TitleScene.cpp" />
+    <ClCompile Include="Scene\Title\TitleScene.cpp" />
     <ClCompile Include="Game\Stage.cpp" />
     <ClCompile Include="Game\StageLoader.cpp" />
     <ClCompile Include="Game\StageManager.cpp" />
@@ -286,15 +286,15 @@
     <ClInclude Include="Gimmick\GimmickManager.h" />
     <ClInclude Include="Gimmick\GimmickBase.h" />
     <ClInclude Include="Player\Player.h" />
-    <ClInclude Include="Scene\GameScene.h" />
+    <ClInclude Include="Scene\GameScene\GameScene.h" />
     <ClInclude Include="Scene\SceneManager.h" />
     <ClInclude Include="Scene\IScene.h" />
-    <ClInclude Include="Scene\ResultScene.h" />
+    <ClInclude Include="Scene\Result\ResultScene.h" />
     <ClInclude Include="Game\Stage.h" />
     <ClInclude Include="Game\StageLoader.h" />
     <ClInclude Include="Game\StageManager.h" />
     <ClInclude Include="Object\Wall\Wall.h" />
-    <ClInclude Include="Scene\TitleScene.h" />
+    <ClInclude Include="Scene\Title\TitleScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

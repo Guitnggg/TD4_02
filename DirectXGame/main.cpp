@@ -2,7 +2,7 @@
 #include <KamataEngine.h>
 
 #include "Scene/SceneManager.h"
-#include "Scene/TitleScene.h"
+#include "Scene/Title/TitleScene.h"
 
 #include <memory>
 
