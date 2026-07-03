@@ -37,7 +37,13 @@ Vector3 MyMath::Divide(const Vector3& v, float scalar) {
 // =========================
 float MyMath::Dot(const Vector3& v1, const Vector3& v2) { return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z; }
 
-float MyMath::Length(const Vector3& v) { return std::sqrt(Dot(v, v)); }
+Vector3 MyMath::Cross(const Vector3& v1, const Vector3& v2) {
+	return {v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x};
+}
+
+float MyMath::Length(const Vector3& v) { return std::sqrt(LengthSq(v)); }
+
+float MyMath::LengthSq(const Vector3& v) { return Dot(v, v); }
 
 Vector3 MyMath::Normalize(const Vector3& v) {
 
@@ -46,6 +52,33 @@ Vector3 MyMath::Normalize(const Vector3& v) {
 		return { 0.0f, 0.0f, 0.0f };
 	}
 	return Divide(v, len);
+}
+
+float MyMath::Distance(const Vector3& v1, const Vector3& v2) { return Length(Subtract(v1, v2)); }
+
+Vector3 MyMath::Reflect(const Vector3& vector, const Vector3& normal) {
+	const Vector3 normalizedNormal = Normalize(normal);
+	if (LengthSq(normalizedNormal) == 0.0f) {
+		return vector;
+	}
+
+	return Subtract(vector, Multiply(normalizedNormal, 2.0f * Dot(vector, normalizedNormal)));
+}
+
+float MyMath::Lerp(float start, float end, float t) { return start + (end - start) * t; }
+
+Vector3 MyMath::Lerp(const Vector3& start, const Vector3& end, float t) {
+	return {Lerp(start.x, end.x, t), Lerp(start.y, end.y, t), Lerp(start.z, end.z, t)};
+}
+
+float MyMath::ToRadian(float degree) {
+	constexpr float kPi = 3.14159265358979323846f;
+	return degree * kPi / 180.0f;
+}
+
+float MyMath::ToDegree(float radian) {
+	constexpr float kPi = 3.14159265358979323846f;
+	return radian * 180.0f / kPi;
 }
 
 // =========================
@@ -287,14 +320,63 @@ Vector3 MyMath::TransformNormal(const Vector3& vector, const Matrix4x4& matrix) 
 	return result;
 }
 
+Vector3 MyMath::CalcLaunchDirection(const Vector3& dragStart, const Vector3& dragEnd) {
+	Vector3 direction = Subtract(dragStart, dragEnd);
+	direction.y = 0.0f;
+	return Normalize(direction);
+}
+
+float MyMath::CalcLaunchSpeed(float dragDistance, float maxDragDistance, float minSpeed, float maxSpeed) {
+	if (maxDragDistance <= 0.0f) {
+		return minSpeed;
+	}
+
+	const float rate = Clamp(dragDistance / maxDragDistance, 0.0f, 1.0f);
+	return Lerp(minSpeed, maxSpeed, rate);
+}
+
 void MyMath::IntegrateXZ(Vector3& position, const Vector3& velocity, float deltaTime) {
 	position.x += velocity.x * deltaTime;
 	position.z += velocity.z * deltaTime;
 }
 
+void MyMath::ApplyFriction(Vector3& velocity, float friction) { velocity = Multiply(velocity, friction); }
+
 void MyMath::ApplyFrictionXZ(Vector3& velocity, float friction) {
 	velocity.x *= friction;
 	velocity.z *= friction;
+}
+
+void MyMath::ClampVelocity(Vector3& velocity, float maxSpeed) {
+	if (maxSpeed < 0.0f) {
+		maxSpeed = 0.0f;
+	}
+
+	const float speedSq = LengthSq(velocity);
+	const float maxSpeedSq = maxSpeed * maxSpeed;
+	if (speedSq > maxSpeedSq) {
+		velocity = Multiply(Normalize(velocity), maxSpeed);
+	}
+}
+
+bool MyMath::IsStopped(const Vector3& velocity, float stopSpeed) { return LengthSq(velocity) <= stopSpeed * stopSpeed; }
+
+void MyMath::Accelerate(Vector3& velocity, const Vector3& direction, float acceleration, float deltaTime) {
+	velocity = Add(velocity, Multiply(Normalize(direction), acceleration * deltaTime));
+}
+
+void MyMath::Decelerate(Vector3& velocity, float deceleration, float deltaTime) {
+	const float speed = Length(velocity);
+	if (speed == 0.0f) {
+		return;
+	}
+
+	const float nextSpeed = Clamp(speed - deceleration * deltaTime, 0.0f, speed);
+	velocity = Multiply(Normalize(velocity), nextSpeed);
+}
+
+Vector3 MyMath::CalcGravityForce(float mass, float gravityAcceleration) {
+	return {0.0f, -mass * gravityAcceleration, 0.0f};
 }
 
 Vector3 MyMath::ReflectSlashXZ(const Vector3& velocity) { return {-velocity.z, 0.0f, -velocity.x}; }

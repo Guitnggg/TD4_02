@@ -15,18 +15,23 @@ constexpr float kGoalRadius = 0.55f;
 void Player::Initialize(const Stage& stage) { Reset(stage); }
 
 void Player::Update(const Stage& stage) {
+	// 移動中以外は物理更新を行わない
 	if (state_ != State::Moving) {
 		return;
 	}
 
+	// 反射判定用に移動前のグリッド座標を保持
 	const Stage::GridPosition previousGrid = stage.WorldToGrid(position_);
 
+	// 速度で移動し、摩擦で徐々に減速する
 	MyMath::IntegrateXZ(position_, velocity_, kDeltaTime);
 	MyMath::ApplyFrictionXZ(velocity_, kFriction);
 
+	// 移動後のグリッドで壁またはステージ外との反射を確認
 	const Stage::GridPosition currentGrid = stage.WorldToGrid(position_);
 	ReflectByWallOrBounds(stage, previousGrid, currentGrid);
 
+	// ギミックに接触した場合、同じマスで連続反射しないように一度だけ反射する
 	const Stage::GimmickType gimmick = stage.GetGimmick(currentGrid);
 	if (gimmick != Stage::GimmickType::None && (lastGimmickGrid_.x != currentGrid.x || lastGimmickGrid_.z != currentGrid.z)) {
 		if (gimmick == Stage::GimmickType::ReflectSlash) {
@@ -39,6 +44,7 @@ void Player::Update(const Stage& stage) {
 		lastGimmickGrid_ = {-1, -1};
 	}
 
+	// ゴール半径内に入ったらクリアとして停止する
 	const KamataEngine::Vector3 goalPosition = stage.GridToWorld(stage.GetGoalGrid());
 	const KamataEngine::Vector3 toGoal = MyMath::Subtract(position_, goalPosition);
 	if (MyMath::Length(toGoal) < kGoalRadius) {
@@ -49,6 +55,7 @@ void Player::Update(const Stage& stage) {
 		return;
 	}
 
+	// 十分に遅くなったら停止し、ゴール未到達なら失敗にする
 	if (MyMath::Length(velocity_) < kStopSpeed) {
 		velocity_ = {};
 		state_ = State::Stopped;
@@ -57,9 +64,12 @@ void Player::Update(const Stage& stage) {
 }
 
 void Player::Reset(const Stage& stage) {
+	// ステージ設定の開始グリッドへ戻す
 	aimGrid_ = stage.GetPlayerStartGrid();
 	position_ = stage.GridToWorld(aimGrid_);
 	position_.y = 0.65f;
+
+	// 発射前の初期状態へ戻す
 	velocity_ = {};
 	lastGimmickGrid_ = {-1, -1};
 	state_ = State::Aiming;
@@ -68,38 +78,50 @@ void Player::Reset(const Stage& stage) {
 }
 
 void Player::MoveAimLeft(const Stage& stage) {
+	// 発射前のみ位置調整できる
 	if (state_ != State::Aiming) {
 		return;
 	}
+
+	// ステージごとの移動範囲内で左へ移動する
 	aimGrid_.x = std::max(stage.GetPlayerMinX(), aimGrid_.x - 1);
 	position_ = stage.GridToWorld(aimGrid_);
 	position_.y = 0.65f;
 }
 
 void Player::MoveAimRight(const Stage& stage) {
+	// 発射前のみ位置調整できる
 	if (state_ != State::Aiming) {
 		return;
 	}
+
+	// ステージごとの移動範囲内で右へ移動する
 	aimGrid_.x = std::min(stage.GetPlayerMaxX(), aimGrid_.x + 1);
 	position_ = stage.GridToWorld(aimGrid_);
 	position_.y = 0.65f;
 }
 
 void Player::Fire() {
+	// 発射済みの場合は再発射しない
 	if (state_ != State::Aiming) {
 		return;
 	}
+
+	// 現状は前方固定速度で発射する
 	velocity_ = {0.0f, 0.0f, kMoveSpeed};
 	state_ = State::Moving;
 }
 
 void Player::ReflectByWallOrBounds(const Stage& stage, const Stage::GridPosition& previousGrid, const Stage::GridPosition& currentGrid) {
+	// グリッド内かつ壁でなければ反射不要
 	if (stage.IsInsideGrid(currentGrid) && !stage.IsWall(currentGrid)) {
 		return;
 	}
 
+	// めり込みを避けるため、反射前の安全な座標へ戻す
 	position_ = stage.GridToWorld(previousGrid);
 	position_.y = 0.65f;
 
+	// X/Z のどちらへ進んで衝突したかに応じて速度を反転する
 	MyMath::ReflectGridBounceXZ(velocity_, currentGrid.x != previousGrid.x, currentGrid.z != previousGrid.z);
 }
