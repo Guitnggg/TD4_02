@@ -19,17 +19,13 @@ void SceneManager::SetScene(std::unique_ptr<IScene> nextScene) {
 
 void SceneManager::Update() {
     // シーンが存在しない場合は何もしない
-    if (!scene_) {
-        return;
-    }
+    if (!scene_) { return; }
 
     // 現在のシーンを更新
     scene_->Update();
 
     // シーンが終了していなければそのまま続行
-    if (!scene_->IsEnd()) {
-        return;
-    }
+    if (!scene_->IsEnd()) { return; }
 
     // 次のシーンへ遷移
     SetScene(scene_->NextScene());
