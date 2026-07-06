@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cmath>
 
+using namespace KamataEngine;
+
 void Stage::InitializeTutorial() {
 	width_ = 5;
 	height_ = 5;
@@ -33,13 +35,13 @@ void Stage::InitializeTutorial() {
 	};
 }
 
-KamataEngine::Vector3 Stage::GridToWorld(const GridPosition& grid) const {
+Vector3 Stage::GridToWorld(const GridPosition& grid) const {
 	const float originX = -static_cast<float>(width_ - 1) * cellSize_ * 0.5f;
 	const float originZ = -static_cast<float>(height_ - 1) * cellSize_ * 0.5f;
 	return {originX + static_cast<float>(grid.x) * cellSize_, 0.0f, originZ + static_cast<float>(grid.z) * cellSize_};
 }
 
-Stage::GridPosition Stage::WorldToGrid(const KamataEngine::Vector3& position) const {
+Stage::GridPosition Stage::WorldToGrid(const Vector3& position) const {
 	const float originX = -static_cast<float>(width_ - 1) * cellSize_ * 0.5f;
 	const float originZ = -static_cast<float>(height_ - 1) * cellSize_ * 0.5f;
 	return {

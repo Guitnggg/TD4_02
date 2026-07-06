@@ -10,6 +10,8 @@
 #include <numbers>
 #include <memory>
 
+using namespace KamataEngine;
+
 namespace {
 constexpr float kFloorHeight = -0.12f;
 constexpr float kTileHalfHeight = 0.06f;
@@ -33,13 +35,13 @@ void GameScene::Initialize() {
 	camera_.rotation_ = {0.72f, 0.0f, 0.0f};
 	camera_.UpdateMatrix();
 
-	cubeModel_.reset(KamataEngine::Model::CreateFromOBJ("cube"));
+	cubeModel_.reset(Model::CreateFromOBJ("cube"));
 	BuildStageObjects();
 	UpdatePlayerObject();
 }
 
 void GameScene::Update() {
-	KamataEngine::Input* input = KamataEngine::Input::GetInstance();
+	Input* input = Input::GetInstance();
 
 	if (input->TriggerKey(DIK_A)) {
 		player_.MoveAimLeft(stage_);
@@ -56,7 +58,7 @@ void GameScene::Update() {
 	}
 
 	dragInput_.Update(input, camera_, player_.GetPosition(), player_.GetState() == Player::State::Aiming);
-	KamataEngine::Vector3 dragLaunchVelocity{};
+	Vector3 dragLaunchVelocity{};
 	if (dragInput_.ConsumeLaunchVelocity(dragLaunchVelocity)) {
 		player_.Fire(dragLaunchVelocity);
 	}
@@ -70,24 +72,24 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
-	KamataEngine::Object3d::PreDraw(&camera_);
+	Object3d::PreDraw(&camera_);
 
-	for (const std::unique_ptr<KamataEngine::Object3d>& object : floorObjects_) {
+	for (const std::unique_ptr<Object3d>& object : floorObjects_) {
 		object->Draw(camera_);
 	}
-	for (const std::unique_ptr<KamataEngine::Object3d>& object : placeableObjects_) {
+	for (const std::unique_ptr<Object3d>& object : placeableObjects_) {
 		object->Draw(camera_);
 	}
-	for (const std::unique_ptr<KamataEngine::Object3d>& object : wallObjects_) {
+	for (const std::unique_ptr<Object3d>& object : wallObjects_) {
 		object->Draw(camera_);
 	}
-	for (const std::unique_ptr<KamataEngine::Object3d>& object : gimmickObjects_) {
+	for (const std::unique_ptr<Object3d>& object : gimmickObjects_) {
 		object->Draw(camera_);
 	}
 	goalObject_->Draw(camera_);
 	playerObject_->Draw(camera_);
 
-	KamataEngine::Object3d::PostDraw();
+	Object3d::PostDraw();
 
 	DrawStageGuide();
 	dragInput_.Draw(camera_);
@@ -127,55 +129,55 @@ void GameScene::BuildStageObjects() {
 	gimmickObjects_.clear();
 
 	const float cellSize = stage_.GetCellSize();
-	const KamataEngine::Vector3 floorScale = {cellSize * 0.47f, kTileHalfHeight, cellSize * 0.47f};
+	const Vector3 floorScale = {cellSize * 0.47f, kTileHalfHeight, cellSize * 0.47f};
 
 	for (int z = 0; z < stage_.GetHeight(); ++z) {
 		for (int x = 0; x < stage_.GetWidth(); ++x) {
-			KamataEngine::Vector3 position = stage_.GridToWorld({x, z});
+			Vector3 position = stage_.GridToWorld({x, z});
 			position.y = kFloorHeight;
 			floorObjects_.push_back(CreateCube(position, floorScale));
 		}
 	}
 
 	for (const Stage::GridPosition& grid : stage_.GetPlaceableTiles()) {
-		KamataEngine::Vector3 position = stage_.GridToWorld(grid);
+		Vector3 position = stage_.GridToWorld(grid);
 		position.y = 0.02f;
 		placeableObjects_.push_back(CreateCube(position, {cellSize * 0.36f, 0.08f, cellSize * 0.36f}));
 	}
 
 	for (const Stage::GridPosition& grid : stage_.GetWalls()) {
-		KamataEngine::Vector3 position = stage_.GridToWorld(grid);
+		Vector3 position = stage_.GridToWorld(grid);
 		position.y = kObjectHeight;
 		wallObjects_.push_back(CreateCube(position, {kWallScale, kObjectHeight, kWallScale}));
 	}
 
 	for (const Stage::GridPosition& grid : stage_.GetReflectSlashTiles()) {
-		KamataEngine::Vector3 position = stage_.GridToWorld(grid);
+		Vector3 position = stage_.GridToWorld(grid);
 		position.y = 0.35f;
-		std::unique_ptr<KamataEngine::Object3d> object = CreateCube(position, {kGimmickScale, 0.14f, cellSize * 0.58f});
+		std::unique_ptr<Object3d> object = CreateCube(position, {kGimmickScale, 0.14f, cellSize * 0.58f});
 		object->SetRotation({0.0f, -std::numbers::pi_v<float> * 0.25f, 0.0f});
 		object->Update();
 		gimmickObjects_.push_back(std::move(object));
 	}
 
 	for (const Stage::GridPosition& grid : stage_.GetReflectBackSlashTiles()) {
-		KamataEngine::Vector3 position = stage_.GridToWorld(grid);
+		Vector3 position = stage_.GridToWorld(grid);
 		position.y = 0.35f;
-		std::unique_ptr<KamataEngine::Object3d> object = CreateCube(position, {kGimmickScale, 0.14f, cellSize * 0.58f});
+		std::unique_ptr<Object3d> object = CreateCube(position, {kGimmickScale, 0.14f, cellSize * 0.58f});
 		object->SetRotation({0.0f, std::numbers::pi_v<float> * 0.25f, 0.0f});
 		object->Update();
 		gimmickObjects_.push_back(std::move(object));
 	}
 
-	KamataEngine::Vector3 goalPosition = stage_.GridToWorld(stage_.GetGoalGrid());
+	Vector3 goalPosition = stage_.GridToWorld(stage_.GetGoalGrid());
 	goalPosition.y = 0.45f;
 	goalObject_ = CreateCube(goalPosition, {kGoalScale, kGoalScale, kGoalScale});
 
 	playerObject_ = CreateCube(player_.GetPosition(), {kPlayerScale, kPlayerScale, kPlayerScale});
 }
 
-std::unique_ptr<KamataEngine::Object3d> GameScene::CreateCube(const KamataEngine::Vector3& translation, const KamataEngine::Vector3& scale) {
-	std::unique_ptr<KamataEngine::Object3d> object = std::make_unique<KamataEngine::Object3d>();
+std::unique_ptr<Object3d> GameScene::CreateCube(const Vector3& translation, const Vector3& scale) {
+	std::unique_ptr<Object3d> object = std::make_unique<Object3d>();
 	object->Initialize(cubeModel_.get());
 	object->SetTranslation(translation);
 	object->SetScale(scale);
@@ -192,16 +194,16 @@ void GameScene::UpdatePlayerObject() {
 }
 
 void GameScene::DrawStageGuide() {
-	KamataEngine::PrimitiveDrawer* primitiveDrawer = KamataEngine::PrimitiveDrawer::GetInstance();
+	PrimitiveDrawer* primitiveDrawer = PrimitiveDrawer::GetInstance();
 	primitiveDrawer->SetCamera(&camera_);
 
 	const float halfCell = stage_.GetCellSize() * 0.5f;
 	const float y = 0.03f;
-	const KamataEngine::Vector4 color = {0.25f, 0.35f, 0.50f, 1.0f};
+	const Vector4 color = {0.25f, 0.35f, 0.50f, 1.0f};
 
 	for (int z = 0; z < stage_.GetHeight(); ++z) {
 		for (int x = 0; x < stage_.GetWidth(); ++x) {
-			KamataEngine::Vector3 center = stage_.GridToWorld({x, z});
+			Vector3 center = stage_.GridToWorld({x, z});
 			const float left = center.x - halfCell;
 			const float right = center.x + halfCell;
 			const float front = center.z - halfCell;

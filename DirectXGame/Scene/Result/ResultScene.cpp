@@ -9,10 +9,12 @@
 #endif
 #include <memory>
 
+using namespace KamataEngine;
+
 void ResultScene::Initialize() { isEnd_ = false; }
 
 void ResultScene::Update() {
-	if (KamataEngine::Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 		isEnd_ = true;
 	}
 }

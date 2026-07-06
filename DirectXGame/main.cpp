@@ -6,13 +6,15 @@
 
 #include <memory>
 
+using namespace KamataEngine;
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
     // エンジンの初期化
-    KamataEngine::Initialize(L""); {
+    Initialize(L""); {
         // 描画開始/終了を行うDirectX共通クラス
-        KamataEngine::DirectXCommon* dxCommon = KamataEngine::DirectXCommon::GetInstance();
+        DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
         // シーン管理
         SceneManager sceneManager(std::make_unique<TitleScene>());
@@ -20,13 +22,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
         // メインループ
         while (true) {
             // エンジン更新
-            if (KamataEngine::Update()) { break; }
+            if (Update()) { break; }
 
             sceneManager.Update();
             if (sceneManager.IsEnd()) { break; }
 
 #ifdef USE_IMGUI
-            KamataEngine::ImGuiManager::GetInstance()->Begin();
+            ImGuiManager::GetInstance()->Begin();
 #endif
 
             // 描画処理開始
@@ -34,8 +36,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
             sceneManager.Draw();
 
 #ifdef USE_IMGUI
-            KamataEngine::ImGuiManager::GetInstance()->End();
-            KamataEngine::ImGuiManager::GetInstance()->Draw();
+            ImGuiManager::GetInstance()->End();
+            ImGuiManager::GetInstance()->Draw();
 #endif
 
             // 描画処理終了
@@ -44,7 +46,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
     }
 
     // KamataEngineの終了
-    KamataEngine::Finalize();
+    Finalize();
 
     return 0;
 }

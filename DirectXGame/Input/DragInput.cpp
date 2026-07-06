@@ -8,7 +8,7 @@
 
 #include <cmath>
 
-using KamataEngine::Vector3;
+using namespace KamataEngine;
 
 namespace {
 // ドラッグ入力の調整値
@@ -47,8 +47,8 @@ Vector3 WithGuideY(Vector3 v) {
 } // namespace
 
 void DragInput::Initialize() {
-	arrowTextureHandle_ = KamataEngine::TextureManager::Load("Arrow.png");
-	arrowSprite_.reset(KamataEngine::Sprite::Create(arrowTextureHandle_, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 0.9f}, {0.5f, 0.5f}));
+	arrowTextureHandle_ = TextureManager::Load("Arrow.png");
+	arrowSprite_.reset(Sprite::Create(arrowTextureHandle_, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 0.9f}, {0.5f, 0.5f}));
 }
 
 void DragInput::Reset() {
@@ -61,7 +61,7 @@ void DragInput::Reset() {
 	powerRate_ = 0.0f;
 }
 
-void DragInput::Update(KamataEngine::Input* input, const KamataEngine::Camera& camera, const Vector3& playerPosition, bool canStart) {
+void DragInput::Update(Input* input, const Camera& camera, const Vector3& playerPosition, bool canStart) {
 	hasLaunchVelocity_ = false;
 
 	// マウス位置をプレイヤーと同じ高さのワールド座標に変換する。
@@ -97,12 +97,12 @@ void DragInput::Update(KamataEngine::Input* input, const KamataEngine::Camera& c
 	wasPressingLeft_ = IsPressingLeft(input);
 }
 
-void DragInput::Draw(const KamataEngine::Camera& camera) {
+void DragInput::Draw(const Camera& camera) {
 	if (!isDragging_) {
 		return;
 	}
 
-	KamataEngine::PrimitiveDrawer* primitiveDrawer = KamataEngine::PrimitiveDrawer::GetInstance();
+	PrimitiveDrawer* primitiveDrawer = PrimitiveDrawer::GetInstance();
 	primitiveDrawer->SetCamera(&camera);
 
 	const Vector3 start = WithGuideY(dragStartWorld_);
@@ -145,17 +145,17 @@ bool DragInput::ConsumeLaunchVelocity(Vector3& velocity) {
 	return true;
 }
 
-Vector3 DragInput::MouseToWorldOnPlane(const KamataEngine::Camera& camera, float planeY) const {
-	KamataEngine::Input* input = KamataEngine::Input::GetInstance();
-	const KamataEngine::Vector2& mousePosition = input->GetMousePosition();
+Vector3 DragInput::MouseToWorldOnPlane(const Camera& camera, float planeY) const {
+	Input* input = Input::GetInstance();
+	const Vector2& mousePosition = input->GetMousePosition();
 
 	// 画面座標を NDC に変換する。画面座標は下向きが +Y なので反転する。
-	const float ndcX = (mousePosition.x / static_cast<float>(KamataEngine::WinApp::kWindowWidth)) * 2.0f - 1.0f;
-	const float ndcY = -((mousePosition.y / static_cast<float>(KamataEngine::WinApp::kWindowHeight)) * 2.0f - 1.0f);
+	const float ndcX = (mousePosition.x / static_cast<float>(WinApp::kWindowWidth)) * 2.0f - 1.0f;
+	const float ndcY = -((mousePosition.y / static_cast<float>(WinApp::kWindowHeight)) * 2.0f - 1.0f);
 
 	// near/far の2点をワールド座標に戻し、そのレイと指定高さの平面との交点を求める。
-	const KamataEngine::Matrix4x4 viewProjection = MyMath::Multiply(camera.matView, camera.matProjection);
-	const KamataEngine::Matrix4x4 inverseViewProjection = MyMath::Inverse(viewProjection);
+	const Matrix4x4 viewProjection = MyMath::Multiply(camera.matView, camera.matProjection);
+	const Matrix4x4 inverseViewProjection = MyMath::Inverse(viewProjection);
 	const Vector3 nearPoint = MyMath::Transform({ndcX, ndcY, 0.0f}, inverseViewProjection);
 	const Vector3 farPoint = MyMath::Transform({ndcX, ndcY, 1.0f}, inverseViewProjection);
 	const Vector3 ray = MyMath::Subtract(farPoint, nearPoint);
@@ -168,15 +168,15 @@ Vector3 DragInput::MouseToWorldOnPlane(const KamataEngine::Camera& camera, float
 	return MyMath::Add(nearPoint, MyMath::Multiply(ray, t));
 }
 
-bool DragInput::IsPressingLeft(KamataEngine::Input* input) const {
+bool DragInput::IsPressingLeft(Input* input) const {
 	return input != nullptr && input->IsPressMouse(0);
 }
 
-bool DragInput::IsTriggerLeft(KamataEngine::Input* input) const {
+bool DragInput::IsTriggerLeft(Input* input) const {
 	return input != nullptr && input->IsTriggerMouse(0);
 }
 
-bool DragInput::IsReleaseLeft(KamataEngine::Input* input) const {
+bool DragInput::IsReleaseLeft(Input* input) const {
 	return wasPressingLeft_ && !IsPressingLeft(input);
 }
 
@@ -201,31 +201,31 @@ void DragInput::UpdateDragVector(const Vector3& playerPosition, const Vector3& c
 	launchVelocity_ = MyMath::Multiply(direction, speed);
 }
 
-KamataEngine::Vector2 DragInput::WorldToScreen(const Vector3& worldPosition, const KamataEngine::Camera& camera) const {
-	const KamataEngine::Matrix4x4 viewProjection = MyMath::Multiply(camera.matView, camera.matProjection);
+Vector2 DragInput::WorldToScreen(const Vector3& worldPosition, const Camera& camera) const {
+	const Matrix4x4 viewProjection = MyMath::Multiply(camera.matView, camera.matProjection);
 	const Vector3 ndc = MyMath::Transform(worldPosition, viewProjection);
 	return {
-		(ndc.x + 1.0f) * 0.5f * static_cast<float>(KamataEngine::WinApp::kWindowWidth),
-		(1.0f - ndc.y) * 0.5f * static_cast<float>(KamataEngine::WinApp::kWindowHeight),
+		(ndc.x + 1.0f) * 0.5f * static_cast<float>(WinApp::kWindowWidth),
+		(1.0f - ndc.y) * 0.5f * static_cast<float>(WinApp::kWindowHeight),
 	};
 }
 
-void DragInput::DrawArrowSprite(const Vector3& from, const Vector3& to, const KamataEngine::Camera& camera) {
+void DragInput::DrawArrowSprite(const Vector3& from, const Vector3& to, const Camera& camera) {
 	if (!arrowSprite_) {
 		return;
 	}
 
 	// Arrow.png は 2D スプライトなので、ワールド上の発射方向を画面座標へ変換して描画する。
-	const KamataEngine::Vector2 fromScreen = WorldToScreen(from, camera);
-	const KamataEngine::Vector2 toScreen = WorldToScreen(to, camera);
-	const KamataEngine::Vector2 direction = {toScreen.x - fromScreen.x, toScreen.y - fromScreen.y};
+	const Vector2 fromScreen = WorldToScreen(from, camera);
+	const Vector2 toScreen = WorldToScreen(to, camera);
+	const Vector2 direction = {toScreen.x - fromScreen.x, toScreen.y - fromScreen.y};
 	const float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 	if (length <= 0.001f) {
 		return;
 	}
 
 	const float size = kArrowBaseSize + kArrowPowerSize * powerRate_;
-	const KamataEngine::Vector2 center = {
+	const Vector2 center = {
 		fromScreen.x + direction.x * 0.65f,
 		fromScreen.y + direction.y * 0.65f,
 	};
@@ -233,11 +233,11 @@ void DragInput::DrawArrowSprite(const Vector3& from, const Vector3& to, const Ka
 	// Arrow.png は上向き画像なので、画面上の方向へ合うように 90 度補正する。
 	const float rotation = std::atan2(direction.y, direction.x) + 1.57079632679f;
 
-	KamataEngine::Sprite::PreDraw();
+	Sprite::PreDraw();
 	arrowSprite_->SetPosition(center);
 	arrowSprite_->SetSize({size, size});
 	arrowSprite_->SetRotation(rotation);
 	arrowSprite_->SetColor({1.0f, 1.0f, 1.0f, 0.9f});
 	arrowSprite_->Draw();
-	KamataEngine::Sprite::PostDraw();
+	Sprite::PostDraw();
 }

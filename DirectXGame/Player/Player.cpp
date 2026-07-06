@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+using namespace KamataEngine;
+
 namespace {
 constexpr float kDeltaTime = 1.0f / 60.0f;
 constexpr float kMoveSpeed = 7.0f;
@@ -45,8 +47,8 @@ void Player::Update(const Stage& stage) {
 	}
 
 	// ゴール半径内に入ったらクリアとして停止する
-	const KamataEngine::Vector3 goalPosition = stage.GridToWorld(stage.GetGoalGrid());
-	const KamataEngine::Vector3 toGoal = MyMath::Subtract(position_, goalPosition);
+	const Vector3 goalPosition = stage.GridToWorld(stage.GetGoalGrid());
+	const Vector3 toGoal = MyMath::Subtract(position_, goalPosition);
 	if (MyMath::Length(toGoal) < kGoalRadius) {
 		position_ = goalPosition;
 		velocity_ = {};
@@ -105,7 +107,7 @@ void Player::Fire() {
 	Fire({0.0f, 0.0f, kMoveSpeed});
 }
 
-void Player::Fire(const KamataEngine::Vector3& initialVelocity) {
+void Player::Fire(const Vector3& initialVelocity) {
 	// 発射済みの場合は再発射しない
 	if (state_ != State::Aiming) {
 		return;
