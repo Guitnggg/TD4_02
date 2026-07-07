@@ -154,28 +154,18 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Collision\CollisionManager.cpp" />
-    <ClCompile Include="Effect\EffectManager.cpp" />
-    <ClCompile Include="Math\WorldTransformEx.cpp" />
-    <ClCompile Include="Object\Goal\Goal.cpp" />
-    <ClCompile Include="Math\MathUtility.cpp" />
-    <ClCompile Include="UI\Pause\PauseUI.cpp" />
-    <ClCompile Include="UI\Result\ResultUI.cpp" />
-    <ClCompile Include="UI\HUD\HUD.cpp" />
-    <ClCompile Include="Input\DragInput.cpp" />
-    <ClCompile Include="Game\GameManager.cpp" />
-    <ClCompile Include="Gimmick\GimmickManager.cpp" />
-    <ClCompile Include="Gimmick\GimmickBase.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Player\Player.cpp" />
-    <ClCompile Include="Scene\GameScene\GameScene.cpp" />
-    <ClCompile Include="Scene\Result\ResultScene.cpp" />
-    <ClCompile Include="Scene\SceneManager.cpp" />
-    <ClCompile Include="Scene\Title\TitleScene.cpp" />
-    <ClCompile Include="Game\Stage.cpp" />
-    <ClCompile Include="Game\StageLoader.cpp" />
-    <ClCompile Include="Game\StageManager.cpp" />
-    <ClCompile Include="Object\Wall\Wall.cpp" />
+    <ClCompile Include="Source\Core\Collision\CollisionManager.cpp" />
+    <ClCompile Include="Source\Core\Math\MathUtility.cpp" />
+    <ClCompile Include="Source\Core\Math\WorldTransformEx.cpp" />
+    <ClCompile Include="Source\Game\Stage.cpp" />
+    <ClCompile Include="Source\Gameplay\Player\Player.cpp" />
+    <ClCompile Include="Source\Input\DragInput.cpp" />
+    <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\Rendering\StageRenderer.cpp" />
+    <ClCompile Include="Source\Scene\GameScene\GameScene.cpp" />
+    <ClCompile Include="Source\Scene\Result\ResultScene.cpp" />
+    <ClCompile Include="Source\Scene\SceneManager.cpp" />
+    <ClCompile Include="Source\Scene\Title\TitleScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
@@ -275,29 +265,19 @@
     <None Include="Resources\shaders\Sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Collision\CollisionManager.h" />
-    <ClInclude Include="Collision\Collider.h" />
-    <ClInclude Include="Effect\EffectManager.h" />
-    <ClInclude Include="Object\Goal\Goal.h" />
-    <ClInclude Include="Math\MathUtility.h" />
-    <ClInclude Include="UI\Pause\PauseUI.h" />
-    <ClInclude Include="Scene\SceneName.h" />
-    <ClInclude Include="UI\Result\ResultUI.h" />
-    <ClInclude Include="UI\HUD\HUD.h" />
-    <ClInclude Include="Input\DragInput.h" />
-    <ClInclude Include="Game\GameManager.h" />
-    <ClInclude Include="Gimmick\GimmickManager.h" />
-    <ClInclude Include="Gimmick\GimmickBase.h" />
-    <ClInclude Include="Player\Player.h" />
-    <ClInclude Include="Scene\GameScene\GameScene.h" />
-    <ClInclude Include="Scene\SceneManager.h" />
-    <ClInclude Include="Scene\IScene.h" />
-    <ClInclude Include="Scene\Result\ResultScene.h" />
-    <ClInclude Include="Game\Stage.h" />
-    <ClInclude Include="Game\StageLoader.h" />
-    <ClInclude Include="Game\StageManager.h" />
-    <ClInclude Include="Object\Wall\Wall.h" />
-    <ClInclude Include="Scene\Title\TitleScene.h" />
+    <ClInclude Include="Source\Core\Collision\Collider.h" />
+    <ClInclude Include="Source\Core\Collision\CollisionManager.h" />
+    <ClInclude Include="Source\Core\Math\MathUtility.h" />
+    <ClInclude Include="Source\Game\Stage.h" />
+    <ClInclude Include="Source\Gameplay\Player\Player.h" />
+    <ClInclude Include="Source\Input\DragInput.h" />
+    <ClInclude Include="Source\Rendering\StageRenderer.h" />
+    <ClInclude Include="Source\Scene\GameScene\GameScene.h" />
+    <ClInclude Include="Source\Scene\IScene.h" />
+    <ClInclude Include="Source\Scene\Result\ResultScene.h" />
+    <ClInclude Include="Source\Scene\SceneManager.h" />
+    <ClInclude Include="Source\Scene\SceneName.h" />
+    <ClInclude Include="Source\Scene\Title\TitleScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
