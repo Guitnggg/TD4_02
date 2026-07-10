@@ -23,15 +23,17 @@ void Player::Update(const Stage& stage) {
 	}
 
 	// 反射判定用に移動前のグリッド座標を保持
-	const Stage::GridPosition previousGrid = stage.WorldToGrid(position_);
+	const Vector3 previousPosition = position_;
+	const Stage::GridPosition previousGrid = stage.WorldToGrid(previousPosition);
 
 	// 速度で移動し、摩擦で徐々に減速する
 	MyMath::IntegrateXZ(position_, velocity_, kDeltaTime);
 	MyMath::ApplyFrictionXZ(velocity_, kFriction);
 
 	// 移動後のグリッドで壁またはステージ外との反射を確認
-	const Stage::GridPosition currentGrid = stage.WorldToGrid(position_);
-	ReflectByWallOrBounds(stage, previousGrid, currentGrid);
+	Stage::GridPosition currentGrid = stage.WorldToGrid(position_);
+	ReflectByWallOrBounds(stage, previousPosition, previousGrid, currentGrid);
+	currentGrid = stage.WorldToGrid(position_);
 
 	// ギミックに接触した場合、同じマスで連続反射しないように一度だけ反射する
 	const Stage::GimmickType gimmick = stage.GetGimmick(currentGrid);
@@ -118,14 +120,14 @@ void Player::Fire(const Vector3& initialVelocity) {
 	state_ = State::Moving;
 }
 
-void Player::ReflectByWallOrBounds(const Stage& stage, const Stage::GridPosition& previousGrid, const Stage::GridPosition& currentGrid) {
+void Player::ReflectByWallOrBounds(const Stage& stage, const Vector3& previousPosition, const Stage::GridPosition& previousGrid, const Stage::GridPosition& currentGrid) {
 	// グリッド内かつ壁でなければ反射不要
 	if (stage.IsInsideGrid(currentGrid) && !stage.IsWall(currentGrid)) {
 		return;
 	}
 
 	// めり込みを避けるため、反射前の安全な座標へ戻す
-	position_ = stage.GridToWorld(previousGrid);
+	position_ = previousPosition;
 	position_.y = 0.65f;
 
 	// X/Z のどちらへ進んで衝突したかに応じて速度を反転する

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "../../Game/Stage.h"
 
@@ -85,9 +85,10 @@ private:
 	/// 壁またはステージ外へ進んだ場合に直前位置へ戻して反射する
 	/// </summary>
 	/// <param name="stage">現在のステージ情報</param>
+	/// <param name="previousPosition">移動前の正確なワールド座標</param>
 	/// <param name="previousGrid">移動前のグリッド座標</param>
 	/// <param name="currentGrid">移動後のグリッド座標</param>
-	void ReflectByWallOrBounds(const Stage& stage, const Stage::GridPosition& previousGrid, const Stage::GridPosition& currentGrid);
+	void ReflectByWallOrBounds(const Stage& stage, const KamataEngine::Vector3& previousPosition, const Stage::GridPosition& previousGrid, const Stage::GridPosition& currentGrid);
 
 	// 現在のワールド座標
 	KamataEngine::Vector3 position_{};
