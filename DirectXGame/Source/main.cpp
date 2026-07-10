@@ -1,4 +1,4 @@
-﻿#include <Windows.h>
+#include <Windows.h>
 #include <KamataEngine.h>
 
 #include "Scene/SceneManager.h"
@@ -10,7 +10,7 @@ using namespace KamataEngine;
 
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
-    Initialize(L""); {
+    Initialize(L"一手先"); {
         DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
         SceneManager sceneManager(std::make_unique<TitleScene>());
