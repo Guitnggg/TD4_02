@@ -154,7 +154,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ReflectiveBlock.cpp" />
+    <ClCompile Include="Source\Gameplay\ReflectiveBlock\ReflectiveBlock.cpp" />
     <ClCompile Include="Source\Core\Collision\CollisionManager.cpp" />
     <ClCompile Include="Source\Core\Math\MathUtility.cpp" />
     <ClCompile Include="Source\Core\Math\WorldTransformEx.cpp" />
@@ -266,7 +266,7 @@
     <None Include="Resources\shaders\Sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ReflectiveBlock.h" />
+    <ClInclude Include="Source\Gameplay\ReflectiveBlock\ReflectiveBlock.h" />
     <ClInclude Include="Source\Core\Collision\Collider.h" />
     <ClInclude Include="Source\Core\Collision\CollisionManager.h" />
     <ClInclude Include="Source\Core\Math\MathUtility.h" />
