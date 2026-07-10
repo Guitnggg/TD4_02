@@ -2,6 +2,7 @@
 
 #include <math/Vector3.h>
 
+#include <string>
 #include <vector>
 
 /// <summary>
@@ -35,6 +36,8 @@ public:
 	/// チュートリアル用ステージの配置で初期化する
 	/// </summary>
 	void InitializeTutorial();
+
+	bool LoadFromJson(const std::string& stageFilePath);
 
 	/// <summary>
 	/// グリッド座標をワールド座標へ変換する

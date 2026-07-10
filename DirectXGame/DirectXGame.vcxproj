@@ -262,6 +262,10 @@
     <None Include="Resources\shaders\Terrain.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Maps\TileMap_5x5.json" />
+    <None Include="Resources\Maps\TileMap_6x6.json" />
+    <None Include="Resources\Maps\TileMap_7x7.json" />
+    <None Include="Resources\Stages\Tutorial\Tutorial.json" />
     <None Include="Resources\shaders\Sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>

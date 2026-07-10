@@ -1,0 +1,6 @@
+{
+  "map": "Maps/TileMap_5x5.json",
+  "cellSize": 2.0,
+  "playerMinX": 0,
+  "playerMaxX": 4
+}
