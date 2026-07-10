@@ -1,0 +1,6 @@
+{
+  "map": "Maps/TileMap_5x5.csv",
+  "cellSize": 2.0,
+  "playerMinX": 1,
+  "playerMaxX": 3
+}

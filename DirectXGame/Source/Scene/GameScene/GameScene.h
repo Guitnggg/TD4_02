@@ -9,6 +9,7 @@
 #include <3d/Camera.h>
 
 #include <memory>
+#include <string>
 
 /// <summary>
 /// ゲーム本編シーンの進行、入力、描画を管理するクラス
@@ -20,6 +21,9 @@
 /// </summary>
 class GameScene : public IScene {
 public:
+	GameScene() = default;
+	explicit GameScene(std::string stageFilePath);
+
 	/// <summary>
 	/// ゲーム本編シーンを初期化する
 	/// ステージ、プレイヤー、入力、カメラ、描画オブジェクトを開始状態にする
@@ -56,6 +60,9 @@ public:
 private:
 	// シーン終了済みフラグ
 	bool isEnd_ = false;
+
+	// 読み込むステージ設定ファイル
+	std::string stageFilePath_ = "Resources\\Stages\\Eazy\\Eazy.json";
 
 	// 現在プレイ中のステージ情報
 	Stage stage_;

@@ -162,6 +162,7 @@
     <ClCompile Include="Source\Input\DragInput.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Rendering\StageRenderer.cpp" />
+    <ClCompile Include="Source\Scene\DifficultySelect\DifficultySelectScene.cpp" />
     <ClCompile Include="Source\Scene\GameScene\GameScene.cpp" />
     <ClCompile Include="Source\Scene\Result\ResultScene.cpp" />
     <ClCompile Include="Source\Scene\SceneManager.cpp" />
@@ -262,9 +263,12 @@
     <None Include="Resources\shaders\Terrain.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Maps\TileMap_5x5.json" />
-    <None Include="Resources\Maps\TileMap_6x6.json" />
-    <None Include="Resources\Maps\TileMap_7x7.json" />
+    <None Include="Resources\Maps\TileMap_5x5.csv" />
+    <None Include="Resources\Maps\TileMap_6x6.csv" />
+    <None Include="Resources\Maps\TileMap_7x7.csv" />
+    <None Include="Resources\Stages\Eazy\Eazy.json" />
+    <None Include="Resources\Stages\Hard\Hard.json" />
+    <None Include="Resources\Stages\Normal\Normal.json" />
     <None Include="Resources\Stages\Tutorial\Tutorial.json" />
     <None Include="Resources\shaders\Sprite.hlsli" />
   </ItemGroup>
@@ -276,6 +280,7 @@
     <ClInclude Include="Source\Gameplay\Player\Player.h" />
     <ClInclude Include="Source\Input\DragInput.h" />
     <ClInclude Include="Source\Rendering\StageRenderer.h" />
+    <ClInclude Include="Source\Scene\DifficultySelect\DifficultySelectScene.h" />
     <ClInclude Include="Source\Scene\GameScene\GameScene.h" />
     <ClInclude Include="Source\Scene\IScene.h" />
     <ClInclude Include="Source\Scene\Result\ResultScene.h" />

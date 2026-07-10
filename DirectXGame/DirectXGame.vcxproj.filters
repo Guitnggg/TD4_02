@@ -40,6 +40,9 @@
     <Filter Include="Source\Scene\Title">
       <UniqueIdentifier>{49dc17cc-ce51-4cc2-a431-47a7be3cfdd3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Scene\DifficultySelect">
+      <UniqueIdentifier>{8797a6f8-d0db-4763-a0a8-1c3510ce2107}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{67da6ab6-f800-4c08-8b7a-83bb121aad01}</UniqueIdentifier>
     </Filter>
@@ -54,6 +57,15 @@
     </Filter>
     <Filter Include="Resources\Stages\Tutorial">
       <UniqueIdentifier>{442ae5bc-1096-4e3d-8892-a8ed37051664}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Stages\Eazy">
+      <UniqueIdentifier>{c3a0d4ec-2455-45a1-bcf1-12196a59f04d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Stages\Normal">
+      <UniqueIdentifier>{5f06e144-6c62-431c-91b3-4c4bf6972f55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Stages\Hard">
+      <UniqueIdentifier>{88037ed7-25f4-4f7e-9902-8f45febc0642}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -92,6 +104,9 @@
     </ClCompile>
     <ClCompile Include="Source\Scene\Title\TitleScene.cpp">
       <Filter>Source\Scene\Title</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene\DifficultySelect\DifficultySelectScene.cpp">
+      <Filter>Source\Scene\DifficultySelect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -133,6 +148,9 @@
     </ClInclude>
     <ClInclude Include="Source\Scene\Title\TitleScene.h">
       <Filter>Source\Scene\Title</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\DifficultySelect\DifficultySelectScene.h">
+      <Filter>Source\Scene\DifficultySelect</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -185,17 +203,26 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Maps\TileMap_5x5.json">
+    <None Include="Resources\Maps\TileMap_5x5.csv">
       <Filter>Resources\Maps</Filter>
     </None>
-    <None Include="Resources\Maps\TileMap_6x6.json">
+    <None Include="Resources\Maps\TileMap_6x6.csv">
       <Filter>Resources\Maps</Filter>
     </None>
-    <None Include="Resources\Maps\TileMap_7x7.json">
+    <None Include="Resources\Maps\TileMap_7x7.csv">
       <Filter>Resources\Maps</Filter>
     </None>
     <None Include="Resources\Stages\Tutorial\Tutorial.json">
       <Filter>Resources\Stages\Tutorial</Filter>
+    </None>
+    <None Include="Resources\Stages\Eazy\Eazy.json">
+      <Filter>Resources\Stages\Eazy</Filter>
+    </None>
+    <None Include="Resources\Stages\Normal\Normal.json">
+      <Filter>Resources\Stages\Normal</Filter>
+    </None>
+    <None Include="Resources\Stages\Hard\Hard.json">
+      <Filter>Resources\Stages\Hard</Filter>
     </None>
   </ItemGroup>
 </Project>

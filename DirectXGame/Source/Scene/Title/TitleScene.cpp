@@ -1,6 +1,6 @@
-﻿#include "TitleScene.h"
+#include "TitleScene.h"
 
-#include "../GameScene/GameScene.h"
+#include "../DifficultySelect/DifficultySelectScene.h"
 
 #include <KamataEngine.h>
 #include <dinput.h>
@@ -34,7 +34,7 @@ void TitleScene::Draw() {
 bool TitleScene::IsEnd() const { return isEnd_; }
 
 std::unique_ptr<IScene> TitleScene::NextScene() const {
-	return std::make_unique<GameScene>();
+	return std::make_unique<DifficultySelectScene>();
 }
 
 SceneName TitleScene::GetSceneName() const { return SceneName::Title; }

@@ -99,6 +99,82 @@ bool ExtractStringArray(const std::string& json, const std::string& key, std::ve
 	return !values.empty();
 }
 
+std::string Trim(const std::string& text) {
+	const size_t first = text.find_first_not_of(" \t\r\n");
+	if (first == std::string::npos) {
+		return {};
+	}
+
+	const size_t last = text.find_last_not_of(" \t\r\n");
+	return text.substr(first, last - first + 1);
+}
+
+bool ParseCsvTileMap(const std::string& csv, std::vector<std::vector<int>>& rows) {
+	rows.clear();
+
+	std::istringstream csvStream(csv);
+	std::string line;
+	while (std::getline(csvStream, line)) {
+		line = Trim(line);
+		if (line.empty()) {
+			continue;
+		}
+
+		std::vector<int> row;
+		std::istringstream lineStream(line);
+		std::string cell;
+		while (std::getline(lineStream, cell, ',')) {
+			cell = Trim(cell);
+			if (cell.empty()) {
+				return false;
+			}
+			row.push_back(std::stoi(cell));
+		}
+
+		if (row.empty()) {
+			return false;
+		}
+		rows.push_back(std::move(row));
+	}
+
+	return !rows.empty();
+}
+
+bool ConvertLegacyJsonTiles(const std::string& mapJson, std::vector<std::vector<int>>& rows) {
+	std::vector<std::string> stringRows;
+	if (!ExtractStringArray(mapJson, "tiles", stringRows)) {
+		return false;
+	}
+
+	rows.clear();
+	for (const std::string& stringRow : stringRows) {
+		std::vector<int> row;
+		row.reserve(stringRow.size());
+		for (const char tile : stringRow) {
+			switch (tile) {
+			case '#':
+				row.push_back(1);
+				break;
+			case 'P':
+				row.push_back(2);
+				break;
+			case 'G':
+				row.push_back(3);
+				break;
+			case '*':
+				row.push_back(4);
+				break;
+			default:
+				row.push_back(0);
+				break;
+			}
+		}
+		rows.push_back(std::move(row));
+	}
+
+	return !rows.empty();
+}
+
 std::string ResolveResourcePath(const std::string& stageFilePath, const std::string& resourcePath) {
 	if (resourcePath.find(':') != std::string::npos || resourcePath.starts_with("./") || resourcePath.starts_with("../")) {
 		return resourcePath;
@@ -132,13 +208,13 @@ bool Stage::LoadFromJson(const std::string& stageFilePath) {
 		return false;
 	}
 
-	const std::string mapJson = ReadTextFile(ResolveResourcePath(stageFilePath, mapPath));
-	if (mapJson.empty()) {
+	const std::string mapText = ReadTextFile(ResolveResourcePath(stageFilePath, mapPath));
+	if (mapText.empty()) {
 		return false;
 	}
 
-	std::vector<std::string> rows;
-	if (!ExtractStringArray(mapJson, "tiles", rows)) {
+	std::vector<std::vector<int>> rows;
+	if (!ParseCsvTileMap(mapText, rows) && !ConvertLegacyJsonTiles(mapText, rows)) {
 		return false;
 	}
 
@@ -148,7 +224,7 @@ bool Stage::LoadFromJson(const std::string& stageFilePath) {
 		return false;
 	}
 
-	for (const std::string& row : rows) {
+	for (const std::vector<int>& row : rows) {
 		if (static_cast<int>(row.size()) != loadedWidth) {
 			return false;
 		}
@@ -167,27 +243,27 @@ bool Stage::LoadFromJson(const std::string& stageFilePath) {
 		for (int x = 0; x < loadedWidth; ++x) {
 			const GridPosition grid{x, z};
 			switch (rows[z][x]) {
-			case '#':
+			case 1:
 				loadedWalls.push_back(grid);
 				break;
-			case '*':
-				loadedPlaceableTiles.push_back(grid);
-				break;
-			case '/':
-				loadedPlaceableTiles.push_back(grid);
-				loadedReflectSlashTiles.push_back(grid);
-				break;
-			case '\\':
-				loadedPlaceableTiles.push_back(grid);
-				loadedReflectBackSlashTiles.push_back(grid);
-				break;
-			case 'P':
+			case 2:
 				loadedPlayerStart = grid;
 				hasPlayerStart = true;
 				break;
-			case 'G':
+			case 3:
 				loadedGoal = grid;
 				hasGoal = true;
+				break;
+			case 4:
+				loadedPlaceableTiles.push_back(grid);
+				break;
+			case 5:
+				loadedPlaceableTiles.push_back(grid);
+				loadedReflectSlashTiles.push_back(grid);
+				break;
+			case 6:
+				loadedPlaceableTiles.push_back(grid);
+				loadedReflectBackSlashTiles.push_back(grid);
 				break;
 			default:
 				break;

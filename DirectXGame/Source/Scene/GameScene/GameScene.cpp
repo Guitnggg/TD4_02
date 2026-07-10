@@ -9,6 +9,7 @@
 #endif
 
 #include <memory>
+#include <utility>
 
 using namespace KamataEngine;
 
@@ -17,8 +18,14 @@ constexpr float kTopDownCameraHeight = 18.0f;
 constexpr float kTopDownCameraPitch = 1.57079632679f;
 } // namespace
 
+GameScene::GameScene(std::string stageFilePath) : stageFilePath_(std::move(stageFilePath)) {}
+
 void GameScene::Initialize() {
 	isEnd_ = false;
+
+	if (!stage_.LoadFromJson(stageFilePath_)) {
+		stage_.LoadFromJson("Resources\\Stages\\Eazy\\Eazy.json");
+	}
 
 	player_.Initialize(stage_);
 	dragInput_.Initialize();
@@ -35,14 +42,11 @@ void GameScene::Initialize() {
 void GameScene::Update() {
 	Input* input = Input::GetInstance();
 
-	if (input->TriggerKey(DIK_A)) {
+	if (input->TriggerKey(DIK_D)) {
 		player_.MoveAimLeft(stage_);
 	}
-	if (input->TriggerKey(DIK_D)) {
+	if (input->TriggerKey(DIK_A)) {
 		player_.MoveAimRight(stage_);
-	}
-	if (input->TriggerKey(DIK_SPACE)) {
-		player_.Fire();
 	}
 	if (input->TriggerKey(DIK_R)) {
 		player_.Reset(stage_);
@@ -73,6 +77,7 @@ void GameScene::Draw() {
 	ImGui::SetNextWindowSize(ImVec2(280.0f, 140.0f), ImGuiCond_FirstUseEver);
 	ImGui::Begin("GameScene");
 	ImGui::Text("3D One-Step Puzzle");
+	ImGui::Text("Stage: %s", stageFilePath_.c_str());
 	ImGui::Separator();
 	ImGui::Text("A/D: adjust launch position");
 	ImGui::Text("Drag player: launch");
