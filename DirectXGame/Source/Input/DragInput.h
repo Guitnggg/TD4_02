@@ -1,10 +1,13 @@
-﻿#pragma once
+#pragma once
 
 #include <2d/Sprite.h>
 #include <3d/Camera.h>
 #include <input/Input.h>
 #include <math/Vector2.h>
 #include <math/Vector3.h>
+#include"../GamePlay/Gauge/Gauge.h"
+
+
 
 #include <memory>
 
@@ -50,6 +53,8 @@ public:
 	bool IsDragging() const { return isDragging_; }
 
 	float GetPowerRate() const { return powerRate_; }
+	
+
 
 private:
 	/// <summary>
@@ -102,4 +107,5 @@ private:
 	float powerRate_ = 0.0f;  // ドラッグ量を 0.0f から 1.0f で表した値
 	uint32_t arrowTextureHandle_ = 0;
 	std::unique_ptr<KamataEngine::Sprite> arrowSprite_;
+	Gauge gauge_;
 };
