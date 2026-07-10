@@ -55,10 +55,10 @@ void GameScene::Update() {
 	// 発射前のみ、プレイヤーの開始位置調整とギミック配置が可能
 	if (player_.GetState() == Player::State::Aiming) {
 		if (input->TriggerKey(DIK_A)) {
-			player_.MoveAimLeft(stage_);
+			player_.MoveAimRight(stage_);
 		}
 		if (input->TriggerKey(DIK_D)) {
-			player_.MoveAimRight(stage_);
+			player_.MoveAimLeft(stage_);
 		}
 
 		UpdateGimmickPlacement();
@@ -125,10 +125,10 @@ void GameScene::UpdateGimmickPlacement() {
 	Input* input = Input::GetInstance();
 
 	if (input->TriggerKey(DIK_LEFT)) {
-		--placementCursor_.x;
+		++placementCursor_.x;
 	}
 	if (input->TriggerKey(DIK_RIGHT)) {
-		++placementCursor_.x;
+		--placementCursor_.x;
 	}
 	if (input->TriggerKey(DIK_UP)) {
 		--placementCursor_.z;
