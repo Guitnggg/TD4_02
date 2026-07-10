@@ -1,208 +1,178 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="ソース ファイル">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Source">
+      <UniqueIdentifier>{e0a82d6d-0280-4d46-8dd8-c96f83d9271d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="Source\Core">
+      <UniqueIdentifier>{6cf7e1b8-09b5-45c3-a43a-cf98790d8242}</UniqueIdentifier>
     </Filter>
-    <Filter Include="リソース ファイル">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Source\Core\Collision">
+      <UniqueIdentifier>{0d525539-ec26-4a9f-b7a1-b18e1dab981f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="シェーダー ファイル">
+    <Filter Include="Source\Core\Math">
+      <UniqueIdentifier>{285445e2-bf6a-4887-8895-4558fb9de855}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Game">
+      <UniqueIdentifier>{ae61a946-ec03-4a59-b498-9e388f753f44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Gameplay">
+      <UniqueIdentifier>{e50ad04c-232a-4c45-bc5b-8cd5f9be7df4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Gameplay\Player">
+      <UniqueIdentifier>{c37047d7-6b7d-469c-b521-481d8eb102de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Input">
+      <UniqueIdentifier>{bc27f7af-0da9-41ff-893c-6e6203bcc166}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Rendering">
+      <UniqueIdentifier>{ea849ac6-7a63-47c7-bd60-27a969125b41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Scene">
+      <UniqueIdentifier>{b6ff1f03-5699-4638-b18b-7d0b0fa3be83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Scene\GameScene">
+      <UniqueIdentifier>{6734ad1c-70b9-4c35-a345-ff27e3418d57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Scene\Result">
+      <UniqueIdentifier>{16f856b1-592d-4507-b15d-191e9645a3ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Scene\Title">
+      <UniqueIdentifier>{49dc17cc-ce51-4cc2-a431-47a7be3cfdd3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{67da6ab6-f800-4c08-8b7a-83bb121aad01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Shaders">
       <UniqueIdentifier>{718c7f4c-fc51-40ad-a221-b9456a7a1a3c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\main.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\SceneManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\Core\Collision\CollisionManager.cpp">
+      <Filter>Source\Core\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="Player\Player.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\Core\Math\MathUtility.cpp">
+      <Filter>Source\Core\Math</Filter>
     </ClCompile>
-    <ClCompile Include="Gimmick\GimmickBase.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\Core\Math\WorldTransformEx.cpp">
+      <Filter>Source\Core\Math</Filter>
     </ClCompile>
-    <ClCompile Include="Gimmick\GimmickManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\Game\Stage.cpp">
+      <Filter>Source\Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\GameManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\Gameplay\Player\Player.cpp">
+      <Filter>Source\Gameplay\Player</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Stage.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\Input\DragInput.cpp">
+      <Filter>Source\Input</Filter>
     </ClCompile>
-    <ClCompile Include="Game\StageManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\Rendering\StageRenderer.cpp">
+      <Filter>Source\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Game\StageLoader.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\Scene\GameScene\GameScene.cpp">
+      <Filter>Source\Scene\GameScene</Filter>
     </ClCompile>
-    <ClCompile Include="Collision\CollisionManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\Scene\Result\ResultScene.cpp">
+      <Filter>Source\Scene\Result</Filter>
     </ClCompile>
-    <ClCompile Include="Input\DragInput.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\Scene\SceneManager.cpp">
+      <Filter>Source\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="UI\HUD\HUD.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Source\Scene\Title\TitleScene.cpp">
+      <Filter>Source\Scene\Title</Filter>
     </ClCompile>
-    <ClCompile Include="UI\Result\ResultUI.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Math\MathUtility.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Goal\Goal.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Object\Wall\Wall.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="UI\Pause\PauseUI.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\GameScene\GameScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\Result\ResultScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\Title\TitleScene.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Effect\EffectManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Math\WorldTransformEx.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Core\Collision\Collider.h">
+      <Filter>Source\Core\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Collision\CollisionManager.h">
+      <Filter>Source\Core\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Math\MathUtility.h">
+      <Filter>Source\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Stage.h">
+      <Filter>Source\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Gameplay\Player\Player.h">
+      <Filter>Source\Gameplay\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Input\DragInput.h">
+      <Filter>Source\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rendering\StageRenderer.h">
+      <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\GameScene\GameScene.h">
+      <Filter>Source\Scene\GameScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\IScene.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\Result\ResultScene.h">
+      <Filter>Source\Scene\Result</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\SceneManager.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\SceneName.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\Title\TitleScene.h">
+      <Filter>Source\Scene\Title</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\SpritePS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\shaders\SpriteVS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\shaders\ShapeVS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\shaders\ShapePS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\shaders\ObjPS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\shaders\ObjVS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\shaders\PrimitivePS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\shaders\PrimitiveVS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Resources\shaders\TerrainVS.hlsl">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\shaders\Sprite.hlsli">
-      <Filter>シェーダー ファイル</Filter>
-    </None>
-    <None Include="Resources\shaders\Shape.hlsli">
-      <Filter>シェーダー ファイル</Filter>
-    </None>
     <None Include="Resources\shaders\Obj.hlsli">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
     </None>
     <None Include="Resources\shaders\Primitive.hlsli">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Resources\shaders\Shape.hlsli">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="Resources\shaders\Sprite.hlsli">
+      <Filter>Resources\Shaders</Filter>
     </None>
     <None Include="Resources\shaders\Terrain.hlsli">
-      <Filter>シェーダー ファイル</Filter>
+      <Filter>Resources\Shaders</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Scene\IScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Player\Player.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Gimmick\GimmickBase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Gimmick\GimmickManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\GameManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Stage.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\StageManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\StageLoader.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Collision\Collider.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Collision\CollisionManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Input\DragInput.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\HUD\HUD.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\Result\ResultUI.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Math\MathUtility.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Goal\Goal.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Object\Wall\Wall.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\SceneName.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\Pause\PauseUI.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\GameScene\GameScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Result\ResultScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Title\TitleScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Effect\EffectManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
