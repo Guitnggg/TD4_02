@@ -1,4 +1,4 @@
-﻿#include "DragInput.h"
+#include "DragInput.h"
 
 #include "../Core/Math/MathUtility.h"
 
@@ -47,7 +47,7 @@ Vector3 WithGuideY(Vector3 v) {
 } // namespace
 
 void DragInput::Initialize() {
-	arrowTextureHandle_ = TextureManager::Load("Arrow.png");
+	arrowTextureHandle_ = TextureManager::Load("UI/Arrow.png");
 	arrowSprite_.reset(Sprite::Create(arrowTextureHandle_, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 0.9f}, {0.5f, 0.5f}));
 }
 

@@ -46,6 +46,9 @@
     <Filter Include="Resources\Shaders">
       <UniqueIdentifier>{718c7f4c-fc51-40ad-a221-b9456a7a1a3c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\UI">
+      <UniqueIdentifier>{bbf54962-e853-4cca-b572-18c2e75bf04f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp">
@@ -83,6 +86,9 @@
     </ClCompile>
     <ClCompile Include="Source\Scene\Title\TitleScene.cpp">
       <Filter>Source\Scene\Title</Filter>
+    </ClCompile>
+    <ClCompile Include="UI.cpp">
+      <Filter>Source\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -125,6 +131,7 @@
     <ClInclude Include="Source\Scene\Title\TitleScene.h">
       <Filter>Source\Scene\Title</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\SpritePS.hlsl">
@@ -174,5 +181,8 @@
     <None Include="Resources\shaders\Terrain.hlsli">
       <Filter>Resources\Shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DirectXGame.rc" />
   </ItemGroup>
 </Project>
