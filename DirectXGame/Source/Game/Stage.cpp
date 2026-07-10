@@ -121,40 +121,6 @@ std::string ResolveResourcePath(const std::string& stageFilePath, const std::str
 }
 } // namespace
 
-void Stage::InitializeTutorial() {
-	if (LoadFromJson("Resources/Stages/Tutorial/Tutorial.json") || LoadFromJson("DirectXGame/Resources/Stages/Tutorial/Tutorial.json")) {
-		return;
-	}
-
-	width_ = 5;
-	height_ = 5;
-	cellSize_ = 2.0f;
-	playerStartGrid_ = {2, 4};
-	goalGrid_ = {2, 0};
-	playerMinX_ = 0;
-	playerMaxX_ = width_ - 1;
-
-	walls_ = {
-	    {0, 2},
-	    {4, 2},
-	    {1, 1},
-	};
-
-	placeableTiles_ = {
-	    {1, 3},
-	    {3, 3},
-	    {2, 2},
-	    {3, 1},
-	};
-
-	reflectSlashTiles_ = {
-	    {3, 3},
-	};
-	reflectBackSlashTiles_ = {
-	    {2, 2},
-	};
-}
-
 bool Stage::LoadFromJson(const std::string& stageFilePath) {
 	const std::string stageJson = ReadTextFile(stageFilePath);
 	if (stageJson.empty()) {
