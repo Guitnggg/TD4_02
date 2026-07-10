@@ -1,9 +1,10 @@
-﻿#pragma once
+#pragma once
 
 #include "../../Game/Stage.h"
 #include "../../Gameplay/Player/Player.h"
 #include "../../Input/DragInput.h"
 #include "../../Rendering/StageRenderer.h"
+#include "../../UI/UI.h"
 #include "../IScene.h"
 
 #include <3d/Camera.h>
@@ -21,9 +22,11 @@ public:
 
 private:
 	bool isEnd_ = false;
+	bool returnTitle_ = false;
 	Stage stage_;
 	Player player_;
 	DragInput dragInput_;
 	StageRenderer stageRenderer_;
 	KamataEngine::Camera camera_;
+	UI ui_;
 };

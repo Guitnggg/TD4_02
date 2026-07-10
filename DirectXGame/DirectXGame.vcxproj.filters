@@ -87,7 +87,7 @@
     <ClCompile Include="Source\Scene\Title\TitleScene.cpp">
       <Filter>Source\Scene\Title</Filter>
     </ClCompile>
-    <ClCompile Include="UI.cpp">
+    <ClCompile Include="Source\UI\UI.cpp">
       <Filter>Source\UI</Filter>
     </ClCompile>
   </ItemGroup>
@@ -131,7 +131,9 @@
     <ClInclude Include="Source\Scene\Title\TitleScene.h">
       <Filter>Source\Scene\Title</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="Source\UI\UI.h">
+      <Filter>Source\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\SpritePS.hlsl">
@@ -181,8 +183,5 @@
     <None Include="Resources\shaders\Terrain.hlsli">
       <Filter>Resources\Shaders</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="DirectXGame.rc" />
   </ItemGroup>
 </Project>
