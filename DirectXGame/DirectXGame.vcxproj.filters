@@ -46,6 +46,15 @@
     <Filter Include="Resources\Shaders">
       <UniqueIdentifier>{718c7f4c-fc51-40ad-a221-b9456a7a1a3c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources\Maps">
+      <UniqueIdentifier>{0d7ccbad-17d1-4b19-8374-cf3266a99f07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Stages">
+      <UniqueIdentifier>{8ad1975f-cf38-466d-8b73-b2cb714a46a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Stages\Tutorial">
+      <UniqueIdentifier>{442ae5bc-1096-4e3d-8892-a8ed37051664}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp">
@@ -173,6 +182,20 @@
     </None>
     <None Include="Resources\shaders\Terrain.hlsli">
       <Filter>Resources\Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Maps\TileMap_5x5.json">
+      <Filter>Resources\Maps</Filter>
+    </None>
+    <None Include="Resources\Maps\TileMap_6x6.json">
+      <Filter>Resources\Maps</Filter>
+    </None>
+    <None Include="Resources\Maps\TileMap_7x7.json">
+      <Filter>Resources\Maps</Filter>
+    </None>
+    <None Include="Resources\Stages\Tutorial\Tutorial.json">
+      <Filter>Resources\Stages\Tutorial</Filter>
     </None>
   </ItemGroup>
 </Project>

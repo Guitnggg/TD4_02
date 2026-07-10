@@ -2,30 +2,222 @@
 
 #include <algorithm>
 #include <cmath>
+#include <fstream>
+#include <regex>
+#include <sstream>
 
 using namespace KamataEngine;
 
-void Stage::InitializeTutorial() {
-	width_ = 5;
-	height_ = 5;
+namespace {
+std::string ReadTextFile(const std::string& filePath) {
+	std::ifstream file(filePath);
+	if (!file.is_open()) {
+		return {};
+	}
+
+	std::ostringstream stream;
+	stream << file.rdbuf();
+	return stream.str();
+}
+
+std::string DecodeJsonString(const std::string& value) {
+	std::string decoded;
+	decoded.reserve(value.size());
+
+	for (size_t i = 0; i < value.size(); ++i) {
+		if (value[i] != '\\' || i + 1 >= value.size()) {
+			decoded.push_back(value[i]);
+			continue;
+		}
+
+		++i;
+		switch (value[i]) {
+		case '\\':
+		case '"':
+		case '/':
+			decoded.push_back(value[i]);
+			break;
+		case 'n':
+			decoded.push_back('\n');
+			break;
+		default:
+			decoded.push_back(value[i]);
+			break;
+		}
+	}
+
+	return decoded;
+}
+
+bool ExtractStringValue(const std::string& json, const std::string& key, std::string& value) {
+	const std::regex pattern("\"" + key + "\"\\s*:\\s*\"((?:\\\\.|[^\"])*)\"");
+	std::smatch match;
+	if (!std::regex_search(json, match, pattern)) {
+		return false;
+	}
+
+	value = DecodeJsonString(match[1].str());
+	return true;
+}
+
+bool ExtractIntValue(const std::string& json, const std::string& key, int& value) {
+	const std::regex pattern("\"" + key + "\"\\s*:\\s*(-?\\d+)");
+	std::smatch match;
+	if (!std::regex_search(json, match, pattern)) {
+		return false;
+	}
+
+	value = std::stoi(match[1].str());
+	return true;
+}
+
+bool ExtractFloatValue(const std::string& json, const std::string& key, float& value) {
+	const std::regex pattern("\"" + key + "\"\\s*:\\s*(-?\\d+(?:\\.\\d+)?)");
+	std::smatch match;
+	if (!std::regex_search(json, match, pattern)) {
+		return false;
+	}
+
+	value = std::stof(match[1].str());
+	return true;
+}
+
+bool ExtractStringArray(const std::string& json, const std::string& key, std::vector<std::string>& values) {
+	const std::regex arrayPattern("\"" + key + "\"\\s*:\\s*\\[([\\s\\S]*?)\\]");
+	std::smatch arrayMatch;
+	if (!std::regex_search(json, arrayMatch, arrayPattern)) {
+		return false;
+	}
+
+	values.clear();
+	const std::string arrayBody = arrayMatch[1].str();
+	const std::regex stringPattern("\"((?:\\\\.|[^\"])*)\"");
+	for (std::sregex_iterator iterator(arrayBody.begin(), arrayBody.end(), stringPattern), end; iterator != end; ++iterator) {
+		values.push_back(DecodeJsonString((*iterator)[1].str()));
+	}
+
+	return !values.empty();
+}
+
+std::string ResolveResourcePath(const std::string& stageFilePath, const std::string& resourcePath) {
+	if (resourcePath.find(':') != std::string::npos || resourcePath.starts_with("./") || resourcePath.starts_with("../")) {
+		return resourcePath;
+	}
+
+	std::string normalizedPath = resourcePath;
+	std::replace(normalizedPath.begin(), normalizedPath.end(), '/', '\\');
+
+	const std::string resourcesMarker = "Resources\\";
+	if (normalizedPath.starts_with(resourcesMarker)) {
+		return normalizedPath;
+	}
+
+	const size_t resourcesPos = stageFilePath.find(resourcesMarker);
+	if (resourcesPos == std::string::npos) {
+		return normalizedPath;
+	}
+
+	return stageFilePath.substr(0, resourcesPos) + "Resources\\" + normalizedPath;
+}
+} // namespace
+
+bool Stage::LoadFromJson(const std::string& stageFilePath) {
+	const std::string stageJson = ReadTextFile(stageFilePath);
+	if (stageJson.empty()) {
+		return false;
+	}
+
+	std::string mapPath;
+	if (!ExtractStringValue(stageJson, "map", mapPath)) {
+		return false;
+	}
+
+	const std::string mapJson = ReadTextFile(ResolveResourcePath(stageFilePath, mapPath));
+	if (mapJson.empty()) {
+		return false;
+	}
+
+	std::vector<std::string> rows;
+	if (!ExtractStringArray(mapJson, "tiles", rows)) {
+		return false;
+	}
+
+	const int loadedHeight = static_cast<int>(rows.size());
+	const int loadedWidth = static_cast<int>(rows.front().size());
+	if (loadedWidth <= 0 || loadedHeight <= 0) {
+		return false;
+	}
+
+	for (const std::string& row : rows) {
+		if (static_cast<int>(row.size()) != loadedWidth) {
+			return false;
+		}
+	}
+
+	std::vector<GridPosition> loadedWalls;
+	std::vector<GridPosition> loadedPlaceableTiles;
+	std::vector<GridPosition> loadedReflectSlashTiles;
+	std::vector<GridPosition> loadedReflectBackSlashTiles;
+	GridPosition loadedPlayerStart{};
+	GridPosition loadedGoal{};
+	bool hasPlayerStart = false;
+	bool hasGoal = false;
+
+	for (int z = 0; z < loadedHeight; ++z) {
+		for (int x = 0; x < loadedWidth; ++x) {
+			const GridPosition grid{x, z};
+			switch (rows[z][x]) {
+			case '#':
+				loadedWalls.push_back(grid);
+				break;
+			case '*':
+				loadedPlaceableTiles.push_back(grid);
+				break;
+			case '/':
+				loadedPlaceableTiles.push_back(grid);
+				loadedReflectSlashTiles.push_back(grid);
+				break;
+			case '\\':
+				loadedPlaceableTiles.push_back(grid);
+				loadedReflectBackSlashTiles.push_back(grid);
+				break;
+			case 'P':
+				loadedPlayerStart = grid;
+				hasPlayerStart = true;
+				break;
+			case 'G':
+				loadedGoal = grid;
+				hasGoal = true;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	if (!hasPlayerStart || !hasGoal) {
+		return false;
+	}
+
+	width_ = loadedWidth;
+	height_ = loadedHeight;
 	cellSize_ = 2.0f;
-	playerStartGrid_ = {2, 4};
-	goalGrid_ = {2, 0};
+	playerStartGrid_ = loadedPlayerStart;
+	goalGrid_ = loadedGoal;
 	playerMinX_ = 0;
 	playerMaxX_ = width_ - 1;
 
-	walls_ = {
-	    {0, 2},
-	    {4, 2},
-	    {1, 1},
-	};
+	ExtractFloatValue(stageJson, "cellSize", cellSize_);
+	ExtractIntValue(stageJson, "playerMinX", playerMinX_);
+	ExtractIntValue(stageJson, "playerMaxX", playerMaxX_);
 
-	placeableTiles_ = {
-	    {1, 3},
-	    {3, 3},
-	    {2, 2},
-	    {3, 1},
-	};
+	playerMinX_ = std::clamp(playerMinX_, 0, width_ - 1);
+	playerMaxX_ = std::clamp(playerMaxX_, playerMinX_, width_ - 1);
+
+	walls_ = std::move(loadedWalls);
+	placeableTiles_ = std::move(loadedPlaceableTiles);
+	reflectSlashTiles_ = std::move(loadedReflectSlashTiles);
+	reflectBackSlashTiles_ = std::move(loadedReflectBackSlashTiles);
 
 	// ギミックはプレイヤーが発射前に配置するため、初期状態では空にする
 	reflectSlashTiles_.clear();

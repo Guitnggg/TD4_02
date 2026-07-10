@@ -19,7 +19,6 @@ constexpr float kTopDownCameraPitch = 1.57079632679f;
 void GameScene::Initialize() {
 	isEnd_ = false;
 
-	stage_.InitializeTutorial();
 	player_.Initialize(stage_);
 	dragInput_.Initialize();
 	dragInput_.Reset();
