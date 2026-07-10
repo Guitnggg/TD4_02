@@ -1,4 +1,4 @@
-﻿#include "DragInput.h"
+#include "DragInput.h"
 
 #include "../Core/Math/MathUtility.h"
 
@@ -49,6 +49,7 @@ Vector3 WithGuideY(Vector3 v) {
 void DragInput::Initialize() {
 	arrowTextureHandle_ = TextureManager::Load("Arrow.png");
 	arrowSprite_.reset(Sprite::Create(arrowTextureHandle_, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 0.9f}, {0.5f, 0.5f}));
+	gauge_.Initalize();
 }
 
 void DragInput::Reset() {
@@ -63,6 +64,8 @@ void DragInput::Reset() {
 
 void DragInput::Update(Input* input, const Camera& camera, const Vector3& playerPosition, bool canStart) {
 	hasLaunchVelocity_ = false;
+	/*ゲージアップデート*/
+	gauge_.Update(powerRate_, playerPosition);
 
 	// マウス位置をプレイヤーと同じ高さのワールド座標に変換する。
 	const Vector3 mouseWorld = MouseToWorldOnPlane(camera, playerPosition.y);
@@ -133,6 +136,8 @@ void DragInput::Draw(const Camera& camera) {
 	primitiveDrawer->DrawLine3d(gaugeStart, gaugeValueEnd, {1.0f, 0.85f, 0.15f, 1.0f});
 
 	DrawArrowSprite(start, arrowEnd, camera);
+	/*ゲージの描画*/
+	gauge_.Draw();
 }
 
 bool DragInput::ConsumeLaunchVelocity(Vector3& velocity) {
