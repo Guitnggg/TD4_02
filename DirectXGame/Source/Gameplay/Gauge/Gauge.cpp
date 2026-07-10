@@ -20,7 +20,7 @@ void Gauge::Initalize() {
 
 	gaugeSprite1_->SetSize({300.0f, 48.0f});
 	gaugeSprite1_->SetColor({1.0f, 1.0f, 1.0f, 0.8f});
-	gaugeSprite2_->SetSize({0.0f, 48.0f});
+	gaugeSprite2_->SetSize({0.0f, 20.0f});
 	gaugeSprite2_->SetColor({1.0f, 1.0f, 1.0f, 0.8f});
 
 }
@@ -39,7 +39,7 @@ void Gauge::Draw() {
 	// ゲージ（緑）
 
 	// 横幅をpowerRateに応じて変更
-	gaugeSprite2_->SetSize({200.0f * powerRate_, 48.0f});
+	gaugeSprite2_->SetSize({300.0f * powerRate_, 48.0f});
 
 	gaugeSprite2_->Draw();
 
