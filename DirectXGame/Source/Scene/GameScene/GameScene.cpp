@@ -1,4 +1,4 @@
-﻿#include "GameScene.h"
+#include "GameScene.h"
 
 #include "../Result/ResultScene.h"
 
@@ -12,6 +12,11 @@
 
 using namespace KamataEngine;
 
+namespace {
+constexpr float kTopDownCameraHeight = 18.0f;
+constexpr float kTopDownCameraPitch = 1.57079632679f;
+} // namespace
+
 void GameScene::Initialize() {
 	isEnd_ = false;
 
@@ -21,8 +26,8 @@ void GameScene::Initialize() {
 	dragInput_.Reset();
 
 	camera_.Initialize();
-	camera_.translation_ = {0.0f, 12.5f, -13.0f};
-	camera_.rotation_ = {0.72f, 0.0f, 0.0f};
+	camera_.translation_ = {0.0f, kTopDownCameraHeight, 0.0f};
+	camera_.rotation_ = {kTopDownCameraPitch, 0.0f, 0.0f};
 	camera_.UpdateMatrix();
 
 	stageRenderer_.Initialize(stage_, player_.GetPosition());
