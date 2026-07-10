@@ -93,6 +93,9 @@
     <ClCompile Include="Source\Scene\Title\TitleScene.cpp">
       <Filter>Source\Scene\Title</Filter>
     </ClCompile>
+    <ClCompile Include="Source\UI\UI.cpp">
+      <Filter>Source\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Collision\Collider.h">
@@ -133,6 +136,9 @@
     </ClInclude>
     <ClInclude Include="Source\Scene\Title\TitleScene.h">
       <Filter>Source\Scene\Title</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\UI\UI.h">
+      <Filter>Source\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -182,20 +188,6 @@
     </None>
     <None Include="Resources\shaders\Terrain.hlsli">
       <Filter>Resources\Shaders</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Maps\TileMap_5x5.json">
-      <Filter>Resources\Maps</Filter>
-    </None>
-    <None Include="Resources\Maps\TileMap_6x6.json">
-      <Filter>Resources\Maps</Filter>
-    </None>
-    <None Include="Resources\Maps\TileMap_7x7.json">
-      <Filter>Resources\Maps</Filter>
-    </None>
-    <None Include="Resources\Stages\Tutorial\Tutorial.json">
-      <Filter>Resources\Stages\Tutorial</Filter>
     </None>
   </ItemGroup>
 </Project>

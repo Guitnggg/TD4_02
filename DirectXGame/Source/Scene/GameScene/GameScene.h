@@ -4,6 +4,7 @@
 #include "../../Gameplay/Player/Player.h"
 #include "../../Input/DragInput.h"
 #include "../../Rendering/StageRenderer.h"
+#include "../../UI/UI.h"
 #include "../IScene.h"
 
 #include <3d/Camera.h>
@@ -75,6 +76,7 @@ private:
 	bool isEnd_ = false;
 
 	// 現在プレイ中のステージ情報
+	bool returnTitle_ = false;
 	Stage stage_;
 
 	// ステージ上で操作するプレイヤー
@@ -88,13 +90,4 @@ private:
 
 	// ゲーム本編を上から見下ろすカメラ
 	KamataEngine::Camera camera_;
-
-	// ギミック配置カーソルのグリッド座標
-	Stage::GridPosition placementCursor_{};
-
-	// 現在選択しているギミックの種類
-	Stage::GimmickType selectedGimmickType_ = Stage::GimmickType::ReflectSlash;
-
-	// 1ステージで配置できるギミック数
-	int maxGimmickCount_ = 3;
 };

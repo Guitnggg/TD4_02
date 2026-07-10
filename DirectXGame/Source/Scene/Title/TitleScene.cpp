@@ -1,6 +1,6 @@
-﻿#include "TitleScene.h"
-
+#include "TitleScene.h"
 #include "../GameScene/GameScene.h"
+#include "../../UI/UI.h"
 
 #include <KamataEngine.h>
 #include <dinput.h>
