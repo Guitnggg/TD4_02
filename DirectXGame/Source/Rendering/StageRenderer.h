@@ -46,6 +46,16 @@ public:
 	/// <param name="playerPosition">プレイヤーの現在ワールド座標</param>
 	void UpdatePlayer(const KamataEngine::Vector3& playerPosition);
 
+	/// <summary>
+	/// ステージ上に配置されたギミックの描画を作り直す
+	/// </summary>
+	void RebuildGimmicks(const Stage& stage);
+
+	/// <summary>
+	/// ギミック配置カーソルの表示位置と向きを更新する
+	/// </summary>
+	void UpdatePlacementCursor(const Stage& stage, const Stage::GridPosition& grid, Stage::GimmickType selectedType, bool isVisible);
+
 private:
 	/// <summary>
 	/// 指定した位置と大きさでキューブオブジェクトを生成する
@@ -62,6 +72,11 @@ private:
 	/// <param name="playerPosition">プレイヤーの初期ワールド座標</param>
 	void BuildStageObjects(const Stage& stage, const KamataEngine::Vector3& playerPosition);
 
+	/// <summary>
+	/// ギミック用オブジェクトだけを作り直す
+	/// </summary>
+	void BuildGimmickObjects(const Stage& stage);
+
 	// ステージ描画に共通して使用するキューブモデル
 	std::unique_ptr<KamataEngine::Model> cubeModel_;
 
@@ -76,6 +91,12 @@ private:
 
 	// 反射ギミックの描画オブジェクト一覧
 	std::vector<std::unique_ptr<KamataEngine::Object3d>> gimmickObjects_;
+
+	// 配置予定ギミックのプレビュー表示
+	std::unique_ptr<KamataEngine::Object3d> placementCursorObject_;
+
+	// 配置カーソルを表示するかどうか
+	bool isPlacementCursorVisible_ = false;
 
 	// ゴールの描画オブジェクト
 	std::unique_ptr<KamataEngine::Object3d> goalObject_;
