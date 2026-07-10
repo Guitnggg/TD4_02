@@ -9,26 +9,26 @@ void Stage::InitializeTutorial() {
 	width_ = 5;
 	height_ = 5;
 	cellSize_ = 2.0f;
-	playerStartGrid_ = {2, 0};
-	goalGrid_ = {2, 4};
+	playerStartGrid_ = {2, 4};
+	goalGrid_ = {2, 0};
 	playerMinX_ = 0;
 	playerMaxX_ = width_ - 1;
 
 	walls_ = {
 	    {0, 2},
 	    {4, 2},
-	    {1, 3},
+	    {1, 1},
 	};
 
 	placeableTiles_ = {
-	    {1, 1},
-	    {3, 1},
-	    {2, 2},
+	    {1, 3},
 	    {3, 3},
+	    {2, 2},
+	    {3, 1},
 	};
 
 	reflectSlashTiles_ = {
-	    {3, 1},
+	    {3, 3},
 	};
 	reflectBackSlashTiles_ = {
 	    {2, 2},

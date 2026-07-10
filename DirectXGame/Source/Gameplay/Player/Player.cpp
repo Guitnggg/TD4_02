@@ -106,7 +106,7 @@ void Player::MoveAimRight(const Stage& stage) {
 }
 
 void Player::Fire() {
-	Fire({0.0f, 0.0f, kMoveSpeed});
+	Fire({0.0f, 0.0f, -kMoveSpeed});
 }
 
 void Player::Fire(const Vector3& initialVelocity) {
