@@ -49,9 +49,6 @@
     <Filter Include="Resources\Shaders">
       <UniqueIdentifier>{718c7f4c-fc51-40ad-a221-b9456a7a1a3c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resources\Maps">
-      <UniqueIdentifier>{0d7ccbad-17d1-4b19-8374-cf3266a99f07}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resources\Stages">
       <UniqueIdentifier>{8ad1975f-cf38-466d-8b73-b2cb714a46a8}</UniqueIdentifier>
     </Filter>
@@ -203,25 +200,58 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Maps\TileMap_5x5.csv">
-      <Filter>Resources\Maps</Filter>
-    </None>
-    <None Include="Resources\Maps\TileMap_6x6.csv">
-      <Filter>Resources\Maps</Filter>
-    </None>
-    <None Include="Resources\Maps\TileMap_7x7.csv">
-      <Filter>Resources\Maps</Filter>
-    </None>
-    <None Include="Resources\Stages\Tutorial\Tutorial.json">
+    <None Include="Resources\Stages\Tutorial\Tutorial_01.csv">
       <Filter>Resources\Stages\Tutorial</Filter>
     </None>
-    <None Include="Resources\Stages\Eazy\Eazy.json">
+    <None Include="Resources\Stages\Tutorial\Tutorial_02.csv">
+      <Filter>Resources\Stages\Tutorial</Filter>
+    </None>
+    <None Include="Resources\Stages\Tutorial\Tutorial_03.csv">
+      <Filter>Resources\Stages\Tutorial</Filter>
+    </None>
+    <None Include="Resources\Stages\Eazy\Eazy_01.csv">
       <Filter>Resources\Stages\Eazy</Filter>
     </None>
-    <None Include="Resources\Stages\Normal\Normal.json">
+    <None Include="Resources\Stages\Eazy\Eazy_02.csv">
+      <Filter>Resources\Stages\Eazy</Filter>
+    </None>
+    <None Include="Resources\Stages\Eazy\Eazy_03.csv">
+      <Filter>Resources\Stages\Eazy</Filter>
+    </None>
+    <None Include="Resources\Stages\Eazy\Eazy_04.csv">
+      <Filter>Resources\Stages\Eazy</Filter>
+    </None>
+    <None Include="Resources\Stages\Eazy\Eazy_05.csv">
+      <Filter>Resources\Stages\Eazy</Filter>
+    </None>
+    <None Include="Resources\Stages\Normal\Normal_01.csv">
       <Filter>Resources\Stages\Normal</Filter>
     </None>
-    <None Include="Resources\Stages\Hard\Hard.json">
+    <None Include="Resources\Stages\Normal\Normal_02.csv">
+      <Filter>Resources\Stages\Normal</Filter>
+    </None>
+    <None Include="Resources\Stages\Normal\Normal_03.csv">
+      <Filter>Resources\Stages\Normal</Filter>
+    </None>
+    <None Include="Resources\Stages\Normal\Normal_04.csv">
+      <Filter>Resources\Stages\Normal</Filter>
+    </None>
+    <None Include="Resources\Stages\Normal\Normal_05.csv">
+      <Filter>Resources\Stages\Normal</Filter>
+    </None>
+    <None Include="Resources\Stages\Hard\Hard_01.csv">
+      <Filter>Resources\Stages\Hard</Filter>
+    </None>
+    <None Include="Resources\Stages\Hard\Hard_02.csv">
+      <Filter>Resources\Stages\Hard</Filter>
+    </None>
+    <None Include="Resources\Stages\Hard\Hard_03.csv">
+      <Filter>Resources\Stages\Hard</Filter>
+    </None>
+    <None Include="Resources\Stages\Hard\Hard_04.csv">
+      <Filter>Resources\Stages\Hard</Filter>
+    </None>
+    <None Include="Resources\Stages\Hard\Hard_05.csv">
       <Filter>Resources\Stages\Hard</Filter>
     </None>
   </ItemGroup>

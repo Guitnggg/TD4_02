@@ -23,8 +23,8 @@ GameScene::GameScene(std::string stageFilePath) : stageFilePath_(std::move(stage
 void GameScene::Initialize() {
 	isEnd_ = false;
 
-	if (!stage_.LoadFromJson(stageFilePath_)) {
-		stage_.LoadFromJson("Resources\\Stages\\Eazy\\Eazy.json");
+	if (!stage_.LoadFromCsv(stageFilePath_)) {
+		stage_.LoadFromCsv("Resources\\Stages\\Eazy\\Eazy_01.csv");
 	}
 
 	player_.Initialize(stage_);

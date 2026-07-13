@@ -62,7 +62,7 @@ private:
 	bool isEnd_ = false;
 
 	// 読み込むステージ設定ファイル
-	std::string stageFilePath_ = "Resources\\Stages\\Eazy\\Eazy.json";
+	std::string stageFilePath_ = "Resources\\Stages\\Eazy\\Eazy_01.csv";
 
 	// 現在プレイ中のステージ情報
 	Stage stage_;

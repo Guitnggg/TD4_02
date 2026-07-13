@@ -25,10 +25,11 @@ private:
 		const char* stageFilePath = "";
 	};
 
-	static constexpr std::array<Difficulty, 3> kDifficulties{{
-	    {"EASY", "Resources\\Stages\\Eazy\\Eazy.json"},
-	    {"NORMAL", "Resources\\Stages\\Normal\\Normal.json"},
-	    {"HARD", "Resources\\Stages\\Hard\\Hard.json"},
+	static constexpr std::array<Difficulty, 4> kDifficulties{{
+	    {"TUTORIAL", "Resources\\Stages\\Tutorial\\Tutorial_01.csv"},
+	    {"EAZY", "Resources\\Stages\\Eazy\\Eazy_01.csv"},
+	    {"NORMAL", "Resources\\Stages\\Normal\\Normal_01.csv"},
+	    {"HARD", "Resources\\Stages\\Hard\\Hard_01.csv"},
 	}};
 
 	bool isEnd_ = false;

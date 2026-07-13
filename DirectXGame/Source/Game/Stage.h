@@ -35,7 +35,7 @@ public:
 	/// <summary>
 	/// チュートリアル用ステージの配置で初期化する
 	/// </summary>
-	bool LoadFromJson(const std::string& stageFilePath);
+	bool LoadFromCsv(const std::string& stageFilePath);
 
 	/// <summary>
 	/// グリッド座標をワールド座標へ変換する

@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
-#include <regex>
 #include <sstream>
 
 using namespace KamataEngine;
@@ -18,85 +17,6 @@ std::string ReadTextFile(const std::string& filePath) {
 	std::ostringstream stream;
 	stream << file.rdbuf();
 	return stream.str();
-}
-
-std::string DecodeJsonString(const std::string& value) {
-	std::string decoded;
-	decoded.reserve(value.size());
-
-	for (size_t i = 0; i < value.size(); ++i) {
-		if (value[i] != '\\' || i + 1 >= value.size()) {
-			decoded.push_back(value[i]);
-			continue;
-		}
-
-		++i;
-		switch (value[i]) {
-		case '\\':
-		case '"':
-		case '/':
-			decoded.push_back(value[i]);
-			break;
-		case 'n':
-			decoded.push_back('\n');
-			break;
-		default:
-			decoded.push_back(value[i]);
-			break;
-		}
-	}
-
-	return decoded;
-}
-
-bool ExtractStringValue(const std::string& json, const std::string& key, std::string& value) {
-	const std::regex pattern("\"" + key + "\"\\s*:\\s*\"((?:\\\\.|[^\"])*)\"");
-	std::smatch match;
-	if (!std::regex_search(json, match, pattern)) {
-		return false;
-	}
-
-	value = DecodeJsonString(match[1].str());
-	return true;
-}
-
-bool ExtractIntValue(const std::string& json, const std::string& key, int& value) {
-	const std::regex pattern("\"" + key + "\"\\s*:\\s*(-?\\d+)");
-	std::smatch match;
-	if (!std::regex_search(json, match, pattern)) {
-		return false;
-	}
-
-	value = std::stoi(match[1].str());
-	return true;
-}
-
-bool ExtractFloatValue(const std::string& json, const std::string& key, float& value) {
-	const std::regex pattern("\"" + key + "\"\\s*:\\s*(-?\\d+(?:\\.\\d+)?)");
-	std::smatch match;
-	if (!std::regex_search(json, match, pattern)) {
-		return false;
-	}
-
-	value = std::stof(match[1].str());
-	return true;
-}
-
-bool ExtractStringArray(const std::string& json, const std::string& key, std::vector<std::string>& values) {
-	const std::regex arrayPattern("\"" + key + "\"\\s*:\\s*\\[([\\s\\S]*?)\\]");
-	std::smatch arrayMatch;
-	if (!std::regex_search(json, arrayMatch, arrayPattern)) {
-		return false;
-	}
-
-	values.clear();
-	const std::string arrayBody = arrayMatch[1].str();
-	const std::regex stringPattern("\"((?:\\\\.|[^\"])*)\"");
-	for (std::sregex_iterator iterator(arrayBody.begin(), arrayBody.end(), stringPattern), end; iterator != end; ++iterator) {
-		values.push_back(DecodeJsonString((*iterator)[1].str()));
-	}
-
-	return !values.empty();
 }
 
 std::string Trim(const std::string& text) {
@@ -140,81 +60,16 @@ bool ParseCsvTileMap(const std::string& csv, std::vector<std::vector<int>>& rows
 	return !rows.empty();
 }
 
-bool ConvertLegacyJsonTiles(const std::string& mapJson, std::vector<std::vector<int>>& rows) {
-	std::vector<std::string> stringRows;
-	if (!ExtractStringArray(mapJson, "tiles", stringRows)) {
-		return false;
-	}
-
-	rows.clear();
-	for (const std::string& stringRow : stringRows) {
-		std::vector<int> row;
-		row.reserve(stringRow.size());
-		for (const char tile : stringRow) {
-			switch (tile) {
-			case '#':
-				row.push_back(1);
-				break;
-			case 'P':
-				row.push_back(2);
-				break;
-			case 'G':
-				row.push_back(3);
-				break;
-			case '*':
-				row.push_back(4);
-				break;
-			default:
-				row.push_back(0);
-				break;
-			}
-		}
-		rows.push_back(std::move(row));
-	}
-
-	return !rows.empty();
-}
-
-std::string ResolveResourcePath(const std::string& stageFilePath, const std::string& resourcePath) {
-	if (resourcePath.find(':') != std::string::npos || resourcePath.starts_with("./") || resourcePath.starts_with("../")) {
-		return resourcePath;
-	}
-
-	std::string normalizedPath = resourcePath;
-	std::replace(normalizedPath.begin(), normalizedPath.end(), '/', '\\');
-
-	const std::string resourcesMarker = "Resources\\";
-	if (normalizedPath.starts_with(resourcesMarker)) {
-		return normalizedPath;
-	}
-
-	const size_t resourcesPos = stageFilePath.find(resourcesMarker);
-	if (resourcesPos == std::string::npos) {
-		return normalizedPath;
-	}
-
-	return stageFilePath.substr(0, resourcesPos) + "Resources\\" + normalizedPath;
-}
 } // namespace
 
-bool Stage::LoadFromJson(const std::string& stageFilePath) {
-	const std::string stageJson = ReadTextFile(stageFilePath);
-	if (stageJson.empty()) {
-		return false;
-	}
-
-	std::string mapPath;
-	if (!ExtractStringValue(stageJson, "map", mapPath)) {
-		return false;
-	}
-
-	const std::string mapText = ReadTextFile(ResolveResourcePath(stageFilePath, mapPath));
+bool Stage::LoadFromCsv(const std::string& stageFilePath) {
+	const std::string mapText = ReadTextFile(stageFilePath);
 	if (mapText.empty()) {
 		return false;
 	}
 
 	std::vector<std::vector<int>> rows;
-	if (!ParseCsvTileMap(mapText, rows) && !ConvertLegacyJsonTiles(mapText, rows)) {
+	if (!ParseCsvTileMap(mapText, rows)) {
 		return false;
 	}
 
@@ -282,13 +137,6 @@ bool Stage::LoadFromJson(const std::string& stageFilePath) {
 	goalGrid_ = loadedGoal;
 	playerMinX_ = 0;
 	playerMaxX_ = width_ - 1;
-
-	ExtractFloatValue(stageJson, "cellSize", cellSize_);
-	ExtractIntValue(stageJson, "playerMinX", playerMinX_);
-	ExtractIntValue(stageJson, "playerMaxX", playerMaxX_);
-
-	playerMinX_ = std::clamp(playerMinX_, 0, width_ - 1);
-	playerMaxX_ = std::clamp(playerMaxX_, playerMinX_, width_ - 1);
 
 	walls_ = std::move(loadedWalls);
 	placeableTiles_ = std::move(loadedPlaceableTiles);
