@@ -1,11 +1,27 @@
-#include <cassert>
 #include "UI.h"
+
+#include <algorithm>
+#include <cassert>
 
 using namespace KamataEngine;
 
+namespace {
+constexpr float kPauseButtonLeft = 1216.0f;
+constexpr float kPauseButtonTop = 0.0f;
+constexpr float kPauseButtonSize = 64.0f;
+
+constexpr float kMenuLeft = 320.0f;
+constexpr float kMenuTop = 180.0f;
+constexpr float kMenuWidth = 640.0f;
+constexpr float kMenuHeight = 320.0f;
+
+constexpr float kMenuItemTop = 260.0f;
+constexpr float kMenuItemHeight = 80.0f;
+constexpr int kMenuItemCount = 3;
+} // namespace
+
 UI::~UI() {
-	// 一時停止ボタン削除
-	for ( int i = 0; i < 4; i++ ) {
+	for (int i = 0; i < 4; i++) {
 		delete spritePause_[i];
 	}
 }
@@ -15,45 +31,41 @@ void UI::Initialize() {
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
 
-	// ワールド変数の初期化
 	worldTransfrom_.Initialize();
-	worldTransfrom_.scale_ = { 2, 2, 2 };
+	worldTransfrom_.scale_ = {2, 2, 2};
 
-	// ファイル名を指定してテクスチャを読み込む
 	textureHandle_[0] = TextureManager::Load("UI/Pause.png");
 	textureHandle_[1] = TextureManager::Load("UI/Pose1.png");
 	textureHandle_[2] = TextureManager::Load("UI/Pose2.png");
 	textureHandle_[3] = TextureManager::Load("UI/Pose3.png");
 
-	// BGM・SE読み込み
 	Click = audio_->LoadWave("SE/Dicision.mp3");
 
-	// 一時停止ボタン用スプライト	
-	spritePause_[0] = Sprite::Create(textureHandle_[0], { 1216, 0 });
-	spritePause_[1] = Sprite::Create(textureHandle_[1], { 320, 180 });
-	spritePause_[2] = Sprite::Create(textureHandle_[2], { 320, 180 });
-	spritePause_[3] = Sprite::Create(textureHandle_[3], { 320, 180 });
+	spritePause_[0] = Sprite::Create(textureHandle_[0], {1216, 0});
+	spritePause_[1] = Sprite::Create(textureHandle_[1], {320, 180});
+	spritePause_[2] = Sprite::Create(textureHandle_[2], {320, 180});
+	spritePause_[3] = Sprite::Create(textureHandle_[3], {320, 180});
+
+	moveC = 0;
+	mouseSelectedItem_ = -1;
+	Uiflag = false;
+	Stageselect = false;
+	Progress = false;
 }
 
 void UI::Update() {
-	// 一時停止の判定
 	Pause();
-
-	// カーソル移動
 	MoveC();
 
-	// 行列を更新
 	worldTransfrom_.UpdateMatrix();
 }
 
 void UI::Draw() {
-	// コマンドリストの取得
 	ID3D12GraphicsCommandList* commandList = dxCommon_->GetCommandList();
-	// 背景スプライト描画前処理
+
 	Sprite::PreDraw(commandList);
-	// 一時停止ボタン用描画
 	spritePause_[0]->Draw();
-	// ポーズ描画
+
 	if (Uiflag && moveC == 0) {
 		spritePause_[1]->Draw();
 	}
@@ -63,52 +75,102 @@ void UI::Draw() {
 	if (Uiflag && moveC == 2) {
 		spritePause_[3]->Draw();
 	}
-	// プライト描画後処理
+
 	Sprite::PostDraw();
-	// 深度バッファクリア
 	dxCommon_->ClearDepthBuffer();
 }
 
-// 一時停止の判定
 void UI::Pause() {
-	// 設定を開く
-	if (Input::GetInstance()->IsTriggerMouse(0)) {
-		// マウスの位置取得
-		Vector2 v = Input::GetInstance()->GetMousePosition();
-
-		if ( v.x >= 1216 && v.y <= 64 ) {
-			audio_->PlayWave(Click, false);
-			Uiflag = true;
-		}
+	if (!input_->IsTriggerMouse(0)) {
+		return;
 	}
+
+	const Vector2& mousePosition = input_->GetMousePosition();
+
+	if (IsPauseButton(mousePosition)) {
+		audio_->PlayWave(Click, false);
+		Uiflag = !Uiflag;
+		mouseSelectedItem_ = -1;
+		return;
+	}
+
+	if (!Uiflag) {
+		return;
+	}
+
+	const int clickedItem = GetMenuItemIndex(mousePosition);
+	if (clickedItem < 0) {
+		return;
+	}
+
+	if (mouseSelectedItem_ == clickedItem && moveC == clickedItem) {
+		ExecuteSelectedItem();
+		mouseSelectedItem_ = -1;
+		return;
+	}
+
+	audio_->PlayWave(Click, false);
+	moveC = clickedItem;
+	mouseSelectedItem_ = clickedItem;
 }
 
-// カーソル移動
 void UI::MoveC() {
-	// 移動
+	bool moved = false;
+
 	if (input_->TriggerKey(DIK_UP)) {
 		moveC -= 1;
+		moved = true;
 	}
 	if (input_->TriggerKey(DIK_DOWN)) {
 		moveC += 1;
+		moved = true;
 	}
 
-	// 決定
-	if (input_->PushKey(DIK_RETURN) && moveC == 0) {
+	moveC = std::clamp(moveC, 0, kMenuItemCount - 1);
+
+	if (moved) {
+		mouseSelectedItem_ = -1;
+	}
+
+	if (Uiflag && input_->TriggerKey(DIK_RETURN)) {
+		ExecuteSelectedItem();
+		mouseSelectedItem_ = -1;
+	}
+}
+
+void UI::ExecuteSelectedItem() {
+	audio_->PlayWave(Click, false);
+
+	if (moveC == 0) {
 		Uiflag = false;
+		return;
 	}
-	if (input_->PushKey(DIK_RETURN) && moveC == 1) {
+	if (moveC == 1) {
 		Stageselect = true;
+		return;
 	}
-	if (input_->PushKey(DIK_RETURN) && moveC == 2) {
+	if (moveC == 2) {
 		Progress = true;
 	}
+}
 
-	// 上限
-	if (moveC < 0) {
-		moveC = 0;
+int UI::GetMenuItemIndex(const Vector2& mousePosition) const {
+	if (mousePosition.x < kMenuLeft || mousePosition.x > kMenuLeft + kMenuWidth) {
+		return -1;
 	}
-	if (moveC > 2) {
-		moveC = 2;
+	if (mousePosition.y < kMenuTop || mousePosition.y > kMenuTop + kMenuHeight) {
+		return -1;
 	}
+
+	const float itemOffsetY = mousePosition.y - kMenuItemTop;
+	if (itemOffsetY < 0.0f || itemOffsetY >= kMenuItemHeight * kMenuItemCount) {
+		return -1;
+	}
+
+	return static_cast<int>(itemOffsetY / kMenuItemHeight);
+}
+
+bool UI::IsPauseButton(const Vector2& mousePosition) const {
+	return mousePosition.x >= kPauseButtonLeft && mousePosition.x <= kPauseButtonLeft + kPauseButtonSize &&
+	       mousePosition.y >= kPauseButtonTop && mousePosition.y <= kPauseButtonTop + kPauseButtonSize;
 }

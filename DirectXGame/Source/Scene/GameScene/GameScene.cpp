@@ -1,4 +1,5 @@
 #include "GameScene.h"
+#include "../DifficultySelect/DifficultySelectScene.h"
 #include "../Result/ResultScene.h"
 #include "../Title/TitleScene.h"
 
@@ -23,6 +24,7 @@ GameScene::GameScene(std::string stageFilePath) : stageFilePath_(std::move(stage
 void GameScene::Initialize() {
     isEnd_ = false;
     returnTitle_ = false;
+    returnStageSelect_ = false;
 
     if (!stage_.LoadFromCsv(stageFilePath_)) {
         stage_.LoadFromCsv("Resources\\Stages\\Eazy\\Eazy_01.csv");
@@ -65,6 +67,12 @@ void GameScene::Update() {
 
     player_.Update(stage_);
     stageRenderer_.UpdatePlayer(player_.GetPosition());
+
+    if (ui_.IsStageselect()) {
+        returnStageSelect_ = true;
+        isEnd_ = true;
+        return;
+    }
 
     if (ui_.IsProgress()) {
         returnTitle_ = true;
@@ -109,6 +117,9 @@ bool GameScene::IsEnd() const { return isEnd_; }
 std::unique_ptr<IScene> GameScene::NextScene() const {
     if (returnTitle_) {
         return std::make_unique<TitleScene>();
+    }
+    if (returnStageSelect_) {
+        return std::make_unique<DifficultySelectScene>();
     }
 
     return std::make_unique<ResultScene>();

@@ -31,6 +31,7 @@ private:
 	bool isEnd_ = false;
 	std::string stageFilePath_ = "Resources\\Stages\\Eazy\\Eazy_01.csv";
 	bool returnTitle_ = false;
+	bool returnStageSelect_ = false;
 
 	Stage stage_;
 	Player player_;
