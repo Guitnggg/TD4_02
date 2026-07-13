@@ -1,6 +1,6 @@
 #include "GameScene.h"
-
 #include "../Result/ResultScene.h"
+#include "../Title/TitleScene.h"
 
 #include <KamataEngine.h>
 #include <dinput.h>
@@ -22,6 +22,7 @@ GameScene::GameScene(std::string stageFilePath) : stageFilePath_(std::move(stage
 
 void GameScene::Initialize() {
     isEnd_ = false;
+    returnTitle_ = false;
 
     if (!stage_.LoadFromCsv(stageFilePath_)) {
         stage_.LoadFromCsv("Resources\\Stages\\Eazy\\Eazy_01.csv");
@@ -29,6 +30,7 @@ void GameScene::Initialize() {
 
     player_.Initialize(stage_);
     dragInput_.Initialize();
+    ui_.Initialize();
     dragInput_.Reset();
 
     camera_.Initialize();
@@ -59,10 +61,19 @@ void GameScene::Update() {
         player_.Fire(dragLaunchVelocity);
     }
 
+    ui_.Update();
+
     player_.Update(stage_);
     stageRenderer_.UpdatePlayer(player_.GetPosition());
 
+    if (ui_.IsProgress()) {
+        returnTitle_ = true;
+        isEnd_ = true;
+        return;
+    }
+
     if (player_.IsClear()) {
+        returnTitle_ = false;
         isEnd_ = true;
     }
 }
@@ -71,6 +82,7 @@ void GameScene::Draw() {
     stageRenderer_.Draw(camera_);
     stageRenderer_.DrawGuide(stage_, camera_);
     dragInput_.Draw(camera_);
+    ui_.Draw();
 
 #ifdef USE_IMGUI
     ImGui::SetNextWindowPos(ImVec2(520.0f, 280.0f), ImGuiCond_FirstUseEver);
@@ -95,6 +107,10 @@ void GameScene::Draw() {
 bool GameScene::IsEnd() const { return isEnd_; }
 
 std::unique_ptr<IScene> GameScene::NextScene() const {
+    if (returnTitle_) {
+        return std::make_unique<TitleScene>();
+    }
+
     return std::make_unique<ResultScene>();
 }
 

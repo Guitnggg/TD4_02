@@ -22,6 +22,9 @@
     <Filter Include="Source\Gameplay\Player">
       <UniqueIdentifier>{c37047d7-6b7d-469c-b521-481d8eb102de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Gameplay\ReflectiveBlock">
+      <UniqueIdentifier>{e0805ea9-42d0-4f04-9dbb-b2169b4350b2}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Input">
       <UniqueIdentifier>{bc27f7af-0da9-41ff-893c-6e6203bcc166}</UniqueIdentifier>
     </Filter>
@@ -30,6 +33,9 @@
     </Filter>
     <Filter Include="Source\Scene">
       <UniqueIdentifier>{b6ff1f03-5699-4638-b18b-7d0b0fa3be83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Scene\DifficultySelect">
+      <UniqueIdentifier>{8797a6f8-d0db-4763-a0a8-1c3510ce2107}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Scene\GameScene">
       <UniqueIdentifier>{6734ad1c-70b9-4c35-a345-ff27e3418d57}</UniqueIdentifier>
@@ -40,8 +46,8 @@
     <Filter Include="Source\Scene\Title">
       <UniqueIdentifier>{49dc17cc-ce51-4cc2-a431-47a7be3cfdd3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Scene\DifficultySelect">
-      <UniqueIdentifier>{8797a6f8-d0db-4763-a0a8-1c3510ce2107}</UniqueIdentifier>
+    <Filter Include="Source\UI">
+      <UniqueIdentifier>{bbf54962-e853-4cca-b572-18c2e75bf04f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{67da6ab6-f800-4c08-8b7a-83bb121aad01}</UniqueIdentifier>
@@ -84,11 +90,17 @@
     <ClCompile Include="Source\Gameplay\Player\Player.cpp">
       <Filter>Source\Gameplay\Player</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Gameplay\ReflectiveBlock\ReflectiveBlock.cpp">
+      <Filter>Source\Gameplay\ReflectiveBlock</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Input\DragInput.cpp">
       <Filter>Source\Input</Filter>
     </ClCompile>
     <ClCompile Include="Source\Rendering\StageRenderer.cpp">
       <Filter>Source\Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene\DifficultySelect\DifficultySelectScene.cpp">
+      <Filter>Source\Scene\DifficultySelect</Filter>
     </ClCompile>
     <ClCompile Include="Source\Scene\GameScene\GameScene.cpp">
       <Filter>Source\Scene\GameScene</Filter>
@@ -102,8 +114,8 @@
     <ClCompile Include="Source\Scene\Title\TitleScene.cpp">
       <Filter>Source\Scene\Title</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Scene\DifficultySelect\DifficultySelectScene.cpp">
-      <Filter>Source\Scene\DifficultySelect</Filter>
+    <ClCompile Include="Source\UI\UI.cpp">
+      <Filter>Source\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -122,11 +134,17 @@
     <ClInclude Include="Source\Gameplay\Player\Player.h">
       <Filter>Source\Gameplay\Player</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Gameplay\ReflectiveBlock\ReflectiveBlock.h">
+      <Filter>Source\Gameplay\ReflectiveBlock</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Input\DragInput.h">
       <Filter>Source\Input</Filter>
     </ClInclude>
     <ClInclude Include="Source\Rendering\StageRenderer.h">
       <Filter>Source\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scene\DifficultySelect\DifficultySelectScene.h">
+      <Filter>Source\Scene\DifficultySelect</Filter>
     </ClInclude>
     <ClInclude Include="Source\Scene\GameScene\GameScene.h">
       <Filter>Source\Scene\GameScene</Filter>
@@ -146,8 +164,8 @@
     <ClInclude Include="Source\Scene\Title\TitleScene.h">
       <Filter>Source\Scene\Title</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Scene\DifficultySelect\DifficultySelectScene.h">
-      <Filter>Source\Scene\DifficultySelect</Filter>
+    <ClInclude Include="Source\UI\UI.h">
+      <Filter>Source\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

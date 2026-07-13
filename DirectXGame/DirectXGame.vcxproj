@@ -168,6 +168,7 @@
     <ClCompile Include="Source\Scene\Result\ResultScene.cpp" />
     <ClCompile Include="Source\Scene\SceneManager.cpp" />
     <ClCompile Include="Source\Scene\Title\TitleScene.cpp" />
+    <ClCompile Include="Source\UI\UI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
@@ -300,6 +301,7 @@
     <ClInclude Include="Source\Scene\SceneManager.h" />
     <ClInclude Include="Source\Scene\SceneName.h" />
     <ClInclude Include="Source\Scene\Title\TitleScene.h" />
+    <ClInclude Include="Source\UI\UI.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
