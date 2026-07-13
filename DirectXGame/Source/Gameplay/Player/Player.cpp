@@ -11,7 +11,6 @@ constexpr float kDeltaTime = 1.0f / 60.0f;
 constexpr float kMoveSpeed = 7.0f;
 constexpr float kFriction = 0.992f;
 constexpr float kStopSpeed = 0.18f;
-constexpr float kGoalRadius = 0.55f;
 } // namespace
 
 void Player::Initialize(const Stage& stage) { Reset(stage); }
@@ -48,11 +47,8 @@ void Player::Update(const Stage& stage) {
 		lastGimmickGrid_ = {-1, -1};
 	}
 
-	// ゴール半径内に入ったらクリアとして停止する
-	const Vector3 goalPosition = stage.GridToWorld(stage.GetGoalGrid());
-	const Vector3 toGoal = MyMath::Subtract(position_, goalPosition);
-	if (MyMath::Length(toGoal) < kGoalRadius) {
-		position_ = goalPosition;
+	// ゴールタイルに入った瞬間にクリアする
+	if (stage.IsGoal(currentGrid)) {
 		velocity_ = {};
 		isClear_ = true;
 		state_ = State::Stopped;

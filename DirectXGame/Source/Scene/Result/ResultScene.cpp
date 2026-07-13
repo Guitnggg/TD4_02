@@ -24,9 +24,9 @@ void ResultScene::Draw() {
 	ImGui::SetNextWindowPos(ImVec2(520.0f, 280.0f), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(ImVec2(240.0f, 120.0f), ImGuiCond_FirstUseEver);
 	ImGui::Begin("ResultScene");
-	ImGui::Text("Result Scene");
+	ImGui::Text("CLEAR!");
 	ImGui::Separator();
-	ImGui::Text("Press SPACE");
+	ImGui::Text("Press SPACE to title");
 	ImGui::End();
 #endif
 }
