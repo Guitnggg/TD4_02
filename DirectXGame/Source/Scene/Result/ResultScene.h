@@ -1,9 +1,12 @@
-﻿#pragma once
+#pragma once
 
 #include "../IScene.h"
+#include <string>
 
 class ResultScene : public IScene {
 public:
+	explicit ResultScene(int placedGimmickCount);
+
 	void Initialize() override;
 
 	void Update() override;
@@ -18,4 +21,8 @@ public:
 
 private:
 	bool isEnd_ = false;
+
+	int placedGimmickCount_ = 0;
+
+	std::string evaluationLabel_;
 };

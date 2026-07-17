@@ -122,7 +122,8 @@ std::unique_ptr<IScene> GameScene::NextScene() const {
         return std::make_unique<DifficultySelectScene>();
     }
 
-    return std::make_unique<ResultScene>();
+    const int gimmickCount = static_cast<int>(stage_.GetReflectSlashTiles().size() + stage_.GetReflectBackSlashTiles().size());
+    return std::make_unique<ResultScene>(gimmickCount);
 }
 
 SceneName GameScene::GetSceneName() const { return SceneName::InGame; }
