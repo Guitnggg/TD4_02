@@ -14,8 +14,8 @@ public:
 	void Draw();
 
 	//位置設定
-	void SetBlockPos(KamataEngine::Vector3 pos) { blockPosition_ = pos; }
-	KamataEngine::Vector3 GetBlockPos() { return blockPosition_; }
+	void SetBlockPos(KamataEngine::Vector3 pos) { blockPosition_.translation_ = pos; }
+	KamataEngine::Vector3 GetBlockPos() { return blockPosition_.translation_; }
 
 	/// 左クリックが押されているか判定する
 	bool IsPressingLeft(KamataEngine::Input* input) const;
@@ -28,7 +28,7 @@ public:
 
 private:
 	/*ブロックの位置*/
-	KamataEngine::Vector3 blockPosition_;
+	KamataEngine::WorldTransform blockPosition_;
 
 	/*マウスの位置*/
 	KamataEngine::Vector3 mousePosition_;
