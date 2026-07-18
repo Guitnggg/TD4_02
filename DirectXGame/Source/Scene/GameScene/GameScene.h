@@ -8,6 +8,7 @@
 #include "../IScene.h"
 
 #include <3d/Camera.h>
+#include <2d/Sprite.h>
 
 #include <memory>
 #include <string>
@@ -23,6 +24,8 @@
 /// </summary>
 class GameScene : public IScene {
 public:
+	enum class InteractionPhase { Placement, Launch };
+
 	GameScene() = default;
 	explicit GameScene(std::string stageFilePath);
 
@@ -43,6 +46,11 @@ private:
 	/// 発射前のギミック配置入力を更新する
 	/// </summary>
 	void UpdateGimmickPlacement();
+	bool UpdatePlacementCursorFromMouse();
+	KamataEngine::Vector3 MouseToWorldOnStage() const;
+	bool IsMouseOverPlacementPalette() const;
+	void InitializePlacementPalette();
+	void DrawPlacementPalette();
 
 	/// <summary>
 	/// ギミック配置カーソルをステージ範囲内に収める
@@ -72,6 +80,11 @@ private:
 
 	// 現在選択しているギミックの種類
 	Stage::GimmickType selectedGimmickType_ = Stage::GimmickType::ReflectSlash;
+	bool isGimmickSelected_ = false;
+	bool isPlacementCursorValid_ = false;
+	InteractionPhase interactionPhase_ = InteractionPhase::Placement;
+	std::unique_ptr<KamataEngine::Sprite> placementPaletteSprite_;
+	std::unique_ptr<KamataEngine::Sprite> placementIconSprite_;
 
 	// 1ステージで配置できるギミック数
 	int maxGimmickCount_ = 3;

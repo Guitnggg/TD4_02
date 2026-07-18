@@ -15,6 +15,7 @@ public:
 
 	bool IsStageselect() const { return Stageselect; }
 	bool IsProgress() const { return Progress; }
+	bool IsPaused() const { return Uiflag; }
 
 private:
 	int GetMenuItemIndex(const KamataEngine::Vector2& mousePosition) const;
