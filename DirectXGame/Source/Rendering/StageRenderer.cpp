@@ -97,6 +97,8 @@ void StageRenderer::UpdatePlacementCursor(const Stage& stage, const Stage::GridP
 
 	if (selectedType == Stage::GimmickType::ReflectBackSlash) {
 		placementCursorObject_->SetRotation({0.0f, std::numbers::pi_v<float> * 0.25f, 0.0f});
+	} else if (selectedType == Stage::GimmickType::AccelerationPanel) {
+		placementCursorObject_->SetRotation({0.0f, 0.0f, 0.0f});
 	} else {
 		placementCursorObject_->SetRotation({0.0f, -std::numbers::pi_v<float> * 0.25f, 0.0f});
 	}
@@ -176,5 +178,11 @@ void StageRenderer::BuildGimmickObjects(const Stage& stage) {
 		object->SetRotation({0.0f, std::numbers::pi_v<float> * 0.25f, 0.0f});
 		object->Update();
 		gimmickObjects_.push_back(std::move(object));
+	}
+
+	for (const AccelerationPanel& panel : stage.GetAccelerationPanels()) {
+		Vector3 position = stage.GridToWorld({panel.GetGridX(), panel.GetGridZ()});
+		position.y = 0.08f;
+		gimmickObjects_.push_back(CreateCube(position, {cellSize * 0.40f, 0.035f, cellSize * 0.40f}));
 	}
 }

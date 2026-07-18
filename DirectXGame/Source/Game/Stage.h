@@ -1,6 +1,7 @@
 #pragma once
 
 #include <math/Vector3.h>
+#include "../Gameplay/Gimmick/AccelerationPanel/AccelerationPanel.h"
 
 #include <string>
 #include <vector>
@@ -19,6 +20,7 @@ public:
 	/// グリッド上に配置されているギミックの種類
 	/// </summary>
 	enum class GimmickType {
+		AccelerationPanel = -1,
 		None,              // ギミックなし
 		ReflectSlash,      // 「／」方向の反射ギミック
 		ReflectBackSlash,  // 「＼」方向の反射ギミック
@@ -144,6 +146,9 @@ public:
 	/// ReflectBackSlash ギミックのグリッド座標一覧を取得する
 	/// </summary>
 	const std::vector<GridPosition>& GetReflectBackSlashTiles() const { return reflectBackSlashTiles_; }
+	const std::vector<AccelerationPanel>& GetAccelerationPanels() const { return accelerationPanels_; }
+	const AccelerationPanel* FindAccelerationPanel(const GridPosition& grid) const;
+	int GetAccelerationPanelCount() const { return static_cast<int>(accelerationPanels_.size()); }
 
 	/// <summary>
 	/// プレイヤー開始位置のグリッド座標を取得する
@@ -211,4 +216,5 @@ private:
 
 	// ReflectBackSlash ギミックのグリッド座標一覧
 	std::vector<GridPosition> reflectBackSlashTiles_;
+	std::vector<AccelerationPanel> accelerationPanels_;
 };

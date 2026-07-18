@@ -89,6 +89,7 @@ bool Stage::LoadFromCsv(const std::string& stageFilePath) {
 	std::vector<GridPosition> loadedPlaceableTiles;
 	std::vector<GridPosition> loadedReflectSlashTiles;
 	std::vector<GridPosition> loadedReflectBackSlashTiles;
+	std::vector<AccelerationPanel> loadedAccelerationPanels;
 	GridPosition loadedPlayerStart{};
 	GridPosition loadedGoal{};
 	bool hasPlayerStart = false;
@@ -120,6 +121,10 @@ bool Stage::LoadFromCsv(const std::string& stageFilePath) {
 				loadedPlaceableTiles.push_back(grid);
 				loadedReflectBackSlashTiles.push_back(grid);
 				break;
+			case 7:
+				loadedPlaceableTiles.push_back(grid);
+				loadedAccelerationPanels.emplace_back(grid.x, grid.z);
+				break;
 			default:
 				break;
 			}
@@ -142,10 +147,12 @@ bool Stage::LoadFromCsv(const std::string& stageFilePath) {
 	placeableTiles_ = std::move(loadedPlaceableTiles);
 	reflectSlashTiles_ = std::move(loadedReflectSlashTiles);
 	reflectBackSlashTiles_ = std::move(loadedReflectBackSlashTiles);
+	accelerationPanels_ = std::move(loadedAccelerationPanels);
 
 	// ギミックはプレイヤーが発射前に配置するため、初期状態では空にする
 	reflectSlashTiles_.clear();
 	reflectBackSlashTiles_.clear();
+	accelerationPanels_.clear();
 
 	return true;
 }
@@ -178,6 +185,9 @@ Stage::GimmickType Stage::GetGimmick(const GridPosition& grid) const {
 	if (Contains(reflectBackSlashTiles_, grid)) {
 		return GimmickType::ReflectBackSlash;
 	}
+	if (FindAccelerationPanel(grid) != nullptr) {
+		return GimmickType::AccelerationPanel;
+	}
 	return GimmickType::None;
 }
 
@@ -208,6 +218,10 @@ bool Stage::PlaceGimmick(const GridPosition& grid, GimmickType type) {
 		reflectBackSlashTiles_.push_back(grid);
 		return true;
 	}
+	if (type == GimmickType::AccelerationPanel) {
+		accelerationPanels_.emplace_back(grid.x, grid.z);
+		return true;
+	}
 
 	return false;
 }
@@ -215,16 +229,28 @@ bool Stage::PlaceGimmick(const GridPosition& grid, GimmickType type) {
 bool Stage::RemoveGimmick(const GridPosition& grid) {
 	const bool removedSlash = RemoveFromList(reflectSlashTiles_, grid);
 	const bool removedBackSlash = RemoveFromList(reflectBackSlashTiles_, grid);
-	return removedSlash || removedBackSlash;
+	const auto oldPanelEnd = accelerationPanels_.end();
+	const auto newPanelEnd = std::remove_if(accelerationPanels_.begin(), accelerationPanels_.end(),
+		[grid](const AccelerationPanel& panel) { return panel.IsAt(grid.x, grid.z); });
+	const bool removedPanel = newPanelEnd != oldPanelEnd;
+	accelerationPanels_.erase(newPanelEnd, oldPanelEnd);
+	return removedSlash || removedBackSlash || removedPanel;
 }
 
 void Stage::ClearGimmicks() {
 	reflectSlashTiles_.clear();
 	reflectBackSlashTiles_.clear();
+	accelerationPanels_.clear();
 }
 
 int Stage::GetPlacedGimmickCount() const {
-	return static_cast<int>(reflectSlashTiles_.size() + reflectBackSlashTiles_.size());
+	return static_cast<int>(reflectSlashTiles_.size() + reflectBackSlashTiles_.size() + accelerationPanels_.size());
+}
+
+const AccelerationPanel* Stage::FindAccelerationPanel(const GridPosition& grid) const {
+	const auto it = std::find_if(accelerationPanels_.begin(), accelerationPanels_.end(),
+		[grid](const AccelerationPanel& panel) { return panel.IsAt(grid.x, grid.z); });
+	return it == accelerationPanels_.end() ? nullptr : &(*it);
 }
 
 bool Stage::Contains(const std::vector<GridPosition>& grids, const GridPosition& target) const {

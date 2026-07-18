@@ -134,6 +134,7 @@ void Player::Update(const Stage& stage) {
 
 	// ギミックは「同じマスに入ったか」ではなく、見た目の斜め板に近いかで判定する
 	ReflectByGimmick(stage, previousPosition);
+	AccelerateOnPanel(stage);
 
 	// ゴールタイルに入った瞬間にクリアする
 	if (stage.IsGoal(currentGrid)) {
@@ -160,6 +161,7 @@ void Player::Reset(const Stage& stage) {
 	// 発射前の初期状態へ戻す
 	velocity_ = {};
 	lastGimmickGrid_ = {-1, -1};
+	lastAccelerationPanelGrid_ = {-1, -1};
 	state_ = State::Aiming;
 	isClear_ = false;
 	isFailed_ = false;
@@ -263,4 +265,18 @@ bool Player::ReflectByGimmick(const Stage& stage, const Vector3& previousPositio
 
 	lastGimmickGrid_ = hitGrid;
 	return true;
+}
+
+void Player::AccelerateOnPanel(const Stage& stage) {
+	const Stage::GridPosition currentGrid = stage.WorldToGrid(position_);
+	const AccelerationPanel* panel = stage.FindAccelerationPanel(currentGrid);
+	if (panel == nullptr) {
+		lastAccelerationPanelGrid_ = {-1, -1};
+		return;
+	}
+
+	if (!IsSameGrid(lastAccelerationPanelGrid_, currentGrid)) {
+		panel->Apply(velocity_);
+		lastAccelerationPanelGrid_ = currentGrid;
+	}
 }

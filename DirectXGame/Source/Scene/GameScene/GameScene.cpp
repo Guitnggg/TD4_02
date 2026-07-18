@@ -178,6 +178,12 @@ void GameScene::Draw() {
 		placementTool_ = PlacementTool::Place;
 		isGimmickSelected_ = true;
 	}
+	ImGui::SameLine();
+	if (ImGui::RadioButton("AccelerationPanel", gimmickType == static_cast<int>(Stage::GimmickType::AccelerationPanel))) {
+		selectedGimmickType_ = Stage::GimmickType::AccelerationPanel;
+		placementTool_ = PlacementTool::Place;
+		isGimmickSelected_ = true;
+	}
 	ImGui::SliderInt("Gimmick limit", &maxGimmickCount_, 0, 20);
 	if (ImGui::Button("Clear gimmicks")) {
 		ClearPlacedGimmicks();
@@ -188,8 +194,11 @@ void GameScene::Draw() {
 	}
 	ImGui::Separator();
 	ImGui::Text("Cursor: X %d / Z %d", placementCursor_.x, placementCursor_.z);
-	ImGui::Text("Selected: %s", selectedGimmickType_ == Stage::GimmickType::ReflectSlash ? "/" : "\\");
+	const char* selectedName = selectedGimmickType_ == Stage::GimmickType::ReflectSlash ? "/" :
+		selectedGimmickType_ == Stage::GimmickType::ReflectBackSlash ? "\\" : "AccelerationPanel";
+	ImGui::Text("Selected: %s", selectedName);
 	ImGui::Text("Gimmicks: %d / %d", stage_.GetPlacedGimmickCount(), maxGimmickCount_);
+	ImGui::Text("Acceleration panels: %d", stage_.GetAccelerationPanelCount());
 	ImGui::Text("Phase: %s", interactionPhase_ == InteractionPhase::Placement ? "PLACEMENT" : "LAUNCH");
 	ImGui::Text("Drag power: %.0f%%", dragInput_.GetPowerRate() * 100.0f);
 	ImGui::Text("State: %s", player_.GetState() == Player::State::Aiming ? "Aiming" : player_.GetState() == Player::State::Moving ? "Moving" : "Stopped");
@@ -243,9 +252,13 @@ void GameScene::UpdateGimmickPlacement() {
 	isPlacementCursorValid_ = UpdatePlacementCursorFromMouse();
 
 	if (placementTool_ == PlacementTool::Place && input->IsTriggerMouse(1)) {
-		selectedGimmickType_ = selectedGimmickType_ == Stage::GimmickType::ReflectSlash
-			? Stage::GimmickType::ReflectBackSlash
-			: Stage::GimmickType::ReflectSlash;
+		if (selectedGimmickType_ == Stage::GimmickType::ReflectSlash) {
+			selectedGimmickType_ = Stage::GimmickType::ReflectBackSlash;
+		} else if (selectedGimmickType_ == Stage::GimmickType::ReflectBackSlash) {
+			selectedGimmickType_ = Stage::GimmickType::AccelerationPanel;
+		} else {
+			selectedGimmickType_ = Stage::GimmickType::ReflectSlash;
+		}
 	}
 
 	if (placementTool_ == PlacementTool::Remove && input->IsTriggerMouse(0) && isPlacementCursorValid_) {
@@ -333,9 +346,12 @@ void GameScene::DrawPlacementPalette() {
 
 	Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
 	placementPaletteSprite_->Draw();
-	placementIconSprite_->SetRotation(selectedGimmickType_ == Stage::GimmickType::ReflectSlash ? -0.78539816339f : 0.78539816339f);
+	placementIconSprite_->SetRotation(selectedGimmickType_ == Stage::GimmickType::ReflectSlash ? -0.78539816339f :
+		selectedGimmickType_ == Stage::GimmickType::ReflectBackSlash ? 0.78539816339f : 0.0f);
 	const bool isActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Place && isGimmickSelected_;
-	placementIconSprite_->SetColor(isActive ? Vector4{1.0f, 0.72f, 0.2f, 1.0f} : Vector4{0.55f, 0.72f, 0.78f, 1.0f});
+	const Vector4 selectedColor = selectedGimmickType_ == Stage::GimmickType::AccelerationPanel
+		? Vector4{0.2f, 1.0f, 0.35f, 1.0f} : Vector4{1.0f, 0.72f, 0.2f, 1.0f};
+	placementIconSprite_->SetColor(isActive ? selectedColor : Vector4{0.55f, 0.72f, 0.78f, 1.0f});
 	placementIconSprite_->Draw();
 	const bool isRemoveActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Remove;
 	const Vector4 removeColor = isRemoveActive ? Vector4{1.0f, 0.45f, 0.15f, 1.0f} : Vector4{0.85f, 0.18f, 0.18f, 1.0f};

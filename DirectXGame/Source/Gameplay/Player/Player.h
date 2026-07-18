@@ -94,6 +94,7 @@ private:
 	/// 配置済み反射ギミックに当たった場合、見た目の斜め板に合わせて反射する
 	/// </summary>
 	bool ReflectByGimmick(const Stage& stage, const KamataEngine::Vector3& previousPosition);
+	void AccelerateOnPanel(const Stage& stage);
 
 	// 現在のワールド座標
 	KamataEngine::Vector3 position_{};
@@ -106,6 +107,7 @@ private:
 
 	// 同じ反射ギミックで連続反射しないための直前接触グリッド
 	Stage::GridPosition lastGimmickGrid_{-1, -1};
+	Stage::GridPosition lastAccelerationPanelGrid_{-1, -1};
 
 	// 現在のプレイヤー状態
 	State state_ = State::Aiming;

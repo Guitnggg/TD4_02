@@ -22,9 +22,15 @@
     <Filter Include="Source\Gameplay\Player">
       <UniqueIdentifier>{c37047d7-6b7d-469c-b521-481d8eb102de}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Gameplay\ReflectiveBlock">
+    <Filter Include="Source\Gameplay\Gimmick">
       <UniqueIdentifier>{e0805ea9-42d0-4f04-9dbb-b2169b4350b2}</UniqueIdentifier>
     </Filter>
+	<Filter Include="Source\Gameplay\Gimmick\ReflectiveBlock">
+	  <UniqueIdentifier>{6408aabd-4401-4af1-a5a1-454f4b26b865}</UniqueIdentifier>
+	</Filter>
+	<Filter Include="Source\Gameplay\Gimmick\AccelerationPanel">
+	  <UniqueIdentifier>{b2a30ec7-52db-4e92-9984-fc02bd601faf}</UniqueIdentifier>
+	</Filter>
     <Filter Include="Source\Input">
       <UniqueIdentifier>{bc27f7af-0da9-41ff-893c-6e6203bcc166}</UniqueIdentifier>
     </Filter>
@@ -90,9 +96,12 @@
     <ClCompile Include="Source\Gameplay\Player\Player.cpp">
       <Filter>Source\Gameplay\Player</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Gameplay\ReflectiveBlock\ReflectiveBlock.cpp">
-      <Filter>Source\Gameplay\ReflectiveBlock</Filter>
+    <ClCompile Include="Source\Gameplay\Gimmick\ReflectiveBlock\ReflectiveBlock.cpp">
+      <Filter>Source\Gameplay\Gimmick\ReflectiveBlock</Filter>
     </ClCompile>
+	<ClCompile Include="Source\Gameplay\Gimmick\AccelerationPanel\AccelerationPanel.cpp">
+	  <Filter>Source\Gameplay\Gimmick\AccelerationPanel</Filter>
+	</ClCompile>
     <ClCompile Include="Source\Input\DragInput.cpp">
       <Filter>Source\Input</Filter>
     </ClCompile>
@@ -134,9 +143,12 @@
     <ClInclude Include="Source\Gameplay\Player\Player.h">
       <Filter>Source\Gameplay\Player</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Gameplay\ReflectiveBlock\ReflectiveBlock.h">
-      <Filter>Source\Gameplay\ReflectiveBlock</Filter>
+    <ClInclude Include="Source\Gameplay\Gimmick\ReflectiveBlock\ReflectiveBlock.h">
+      <Filter>Source\Gameplay\Gimmick\ReflectiveBlock</Filter>
     </ClInclude>
+	<ClInclude Include="Source\Gameplay\Gimmick\AccelerationPanel\AccelerationPanel.h">
+	  <Filter>Source\Gameplay\Gimmick\AccelerationPanel</Filter>
+	</ClInclude>
     <ClInclude Include="Source\Input\DragInput.h">
       <Filter>Source\Input</Filter>
     </ClInclude>
