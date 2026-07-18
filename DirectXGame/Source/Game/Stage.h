@@ -20,8 +20,8 @@ public:
 	/// </summary>
 	enum class GimmickType {
 		None,              // ギミックなし
-		ReflectSlash,      // 右上がり方向へ反射するギミック
-		ReflectBackSlash,  // 右下方向へ反射するギミック
+		ReflectSlash,      // 「／」方向の反射ギミック
+		ReflectBackSlash,  // 「＼」方向の反射ギミック
 	};
 
 	/// <summary>
@@ -78,6 +78,37 @@ public:
 	/// <param name="grid">判定するグリッド座標</param>
 	/// <returns>ゴールなら true</returns>
 	bool IsGoal(const GridPosition& grid) const;
+
+	/// <summary>
+	/// 指定したグリッド座標がギミック設置可能マスか判定する
+	/// </summary>
+	bool IsPlaceable(const GridPosition& grid) const;
+
+	/// <summary>
+	/// 指定したグリッド座標にギミックを配置できるか判定する
+	/// </summary>
+	bool CanPlaceGimmick(const GridPosition& grid) const;
+
+	/// <summary>
+	/// 指定したグリッド座標にギミックを配置する
+	/// 既にギミックがある場合は向きを上書きする
+	/// </summary>
+	bool PlaceGimmick(const GridPosition& grid, GimmickType type);
+
+	/// <summary>
+	/// 指定したグリッド座標のギミックを削除する
+	/// </summary>
+	bool RemoveGimmick(const GridPosition& grid);
+
+	/// <summary>
+	/// 配置済みギミックをすべて削除する
+	/// </summary>
+	void ClearGimmicks();
+
+	/// <summary>
+	/// 現在配置されているギミック数を取得する
+	/// </summary>
+	int GetPlacedGimmickCount() const;
 
 	/// <summary>
 	/// ステージの横幅を取得する
@@ -142,6 +173,11 @@ private:
 	/// <param name="target">検索するグリッド座標</param>
 	/// <returns>含まれていれば true</returns>
 	bool Contains(const std::vector<GridPosition>& grids, const GridPosition& target) const;
+
+	/// <summary>
+	/// 指定したグリッド座標一覧から対象座標を削除する
+	/// </summary>
+	bool RemoveFromList(std::vector<GridPosition>& grids, const GridPosition& target);
 
 	// ステージの横幅
 	int width_ = 0;

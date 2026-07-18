@@ -3,6 +3,7 @@
 #include "../../Core/Math/MathUtility.h"
 
 #include <algorithm>
+#include <limits>
 
 using namespace KamataEngine;
 
@@ -11,6 +12,103 @@ constexpr float kDeltaTime = 1.0f / 60.0f;
 constexpr float kMoveSpeed = 7.0f;
 constexpr float kFriction = 0.992f;
 constexpr float kStopSpeed = 0.18f;
+// 反射板の当たり判定用。
+// 以前は「プレイヤーの中心が反射板と同じマスに入ったか」で判定していたため、
+// 見た目の斜め板から離れていても反射してしまうことがあった。
+// ここでは、プレイヤーの移動線分と反射板の斜め線分の距離で判定する。
+constexpr float kGimmickDiagonalHalfRate = 0.48f;
+constexpr float kGimmickCollisionRadius = 0.52f;
+constexpr float kCollisionEpsilon = 0.0001f;
+
+float Clamp01(float value) {
+	return std::clamp(value, 0.0f, 1.0f);
+}
+
+bool IsSameGrid(const Stage::GridPosition& a, const Stage::GridPosition& b) {
+	return a.x == b.x && a.z == b.z;
+}
+
+Vector3 MakeXZ(float x, float z) {
+	return {x, 0.0f, z};
+}
+
+float CrossXZ(const Vector3& a, const Vector3& b, const Vector3& c) {
+	const float abx = b.x - a.x;
+	const float abz = b.z - a.z;
+	const float acx = c.x - a.x;
+	const float acz = c.z - a.z;
+	return abx * acz - abz * acx;
+}
+
+bool IsRangeOverlap(float aMin, float aMax, float bMin, float bMax) {
+	if (aMin > aMax) {
+		std::swap(aMin, aMax);
+	}
+	if (bMin > bMax) {
+		std::swap(bMin, bMax);
+	}
+	return aMin <= bMax + kCollisionEpsilon && bMin <= aMax + kCollisionEpsilon;
+}
+
+bool IsSegmentIntersectXZ(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d) {
+	if (!IsRangeOverlap(a.x, b.x, c.x, d.x) || !IsRangeOverlap(a.z, b.z, c.z, d.z)) {
+		return false;
+	}
+
+	const float c1 = CrossXZ(a, b, c);
+	const float c2 = CrossXZ(a, b, d);
+	const float c3 = CrossXZ(c, d, a);
+	const float c4 = CrossXZ(c, d, b);
+
+	return c1 * c2 <= kCollisionEpsilon && c3 * c4 <= kCollisionEpsilon;
+}
+
+float SegmentPointDistanceSqXZ(const Vector3& point, const Vector3& segmentStart, const Vector3& segmentEnd) {
+	const float abx = segmentEnd.x - segmentStart.x;
+	const float abz = segmentEnd.z - segmentStart.z;
+	const float apx = point.x - segmentStart.x;
+	const float apz = point.z - segmentStart.z;
+	const float abLengthSq = abx * abx + abz * abz;
+
+	float t = 0.0f;
+	if (abLengthSq > kCollisionEpsilon) {
+		t = Clamp01((apx * abx + apz * abz) / abLengthSq);
+	}
+
+	const float closestX = segmentStart.x + abx * t;
+	const float closestZ = segmentStart.z + abz * t;
+	const float dx = point.x - closestX;
+	const float dz = point.z - closestZ;
+	return dx * dx + dz * dz;
+}
+
+float SegmentSegmentDistanceSqXZ(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d) {
+	if (IsSegmentIntersectXZ(a, b, c, d)) {
+		return 0.0f;
+	}
+
+	float result = SegmentPointDistanceSqXZ(a, c, d);
+	result = std::min(result, SegmentPointDistanceSqXZ(b, c, d));
+	result = std::min(result, SegmentPointDistanceSqXZ(c, a, b));
+	result = std::min(result, SegmentPointDistanceSqXZ(d, a, b));
+	return result;
+}
+
+void MakeGimmickSegment(const Stage& stage, const Stage::GridPosition& grid, Stage::GimmickType type, Vector3& start, Vector3& end) {
+	const Vector3 center = stage.GridToWorld(grid);
+	const float halfLength = stage.GetCellSize() * kGimmickDiagonalHalfRate;
+	const float invSqrt2 = 0.70710678118f;
+
+	Vector3 direction{};
+	if (type == Stage::GimmickType::ReflectBackSlash) {
+		direction = MakeXZ(invSqrt2, invSqrt2);
+	} else {
+		direction = MakeXZ(invSqrt2, -invSqrt2);
+	}
+
+	start = {center.x - direction.x * halfLength, 0.0f, center.z - direction.z * halfLength};
+	end = {center.x + direction.x * halfLength, 0.0f, center.z + direction.z * halfLength};
+}
 } // namespace
 
 void Player::Initialize(const Stage& stage) { Reset(stage); }
@@ -34,18 +132,8 @@ void Player::Update(const Stage& stage) {
 	ReflectByWallOrBounds(stage, previousPosition, previousGrid, currentGrid);
 	currentGrid = stage.WorldToGrid(position_);
 
-	// ギミックに接触した場合、同じマスで連続反射しないように一度だけ反射する
-	const Stage::GimmickType gimmick = stage.GetGimmick(currentGrid);
-	if (gimmick != Stage::GimmickType::None && (lastGimmickGrid_.x != currentGrid.x || lastGimmickGrid_.z != currentGrid.z)) {
-		if (gimmick == Stage::GimmickType::ReflectSlash) {
-			velocity_ = MyMath::ReflectSlashXZ(velocity_);
-		} else if (gimmick == Stage::GimmickType::ReflectBackSlash) {
-			velocity_ = MyMath::ReflectBackSlashXZ(velocity_);
-		}
-		lastGimmickGrid_ = currentGrid;
-	} else if (gimmick == Stage::GimmickType::None) {
-		lastGimmickGrid_ = {-1, -1};
-	}
+	// ギミックは「同じマスに入ったか」ではなく、見た目の斜め板に近いかで判定する
+	ReflectByGimmick(stage, previousPosition);
 
 	// ゴールタイルに入った瞬間にクリアする
 	if (stage.IsGoal(currentGrid)) {
@@ -128,4 +216,51 @@ void Player::ReflectByWallOrBounds(const Stage& stage, const Vector3& previousPo
 
 	// X/Z のどちらへ進んで衝突したかに応じて速度を反転する
 	MyMath::ReflectGridBounceXZ(velocity_, currentGrid.x != previousGrid.x, currentGrid.z != previousGrid.z);
+}
+
+bool Player::ReflectByGimmick(const Stage& stage, const Vector3& previousPosition) {
+	const Vector3 moveStart = {previousPosition.x, 0.0f, previousPosition.z};
+	const Vector3 moveEnd = {position_.x, 0.0f, position_.z};
+	const float hitRadiusSq = kGimmickCollisionRadius * kGimmickCollisionRadius;
+
+	Stage::GridPosition hitGrid{-1, -1};
+	Stage::GimmickType hitType = Stage::GimmickType::None;
+	float nearestDistanceSq = std::numeric_limits<float>::max();
+
+	auto checkGimmickList = [&](const std::vector<Stage::GridPosition>& grids, Stage::GimmickType type) {
+		for (const Stage::GridPosition& grid : grids) {
+			Vector3 boardStart{};
+			Vector3 boardEnd{};
+			MakeGimmickSegment(stage, grid, type, boardStart, boardEnd);
+
+			const float distanceSq = SegmentSegmentDistanceSqXZ(moveStart, moveEnd, boardStart, boardEnd);
+			if (distanceSq <= hitRadiusSq && distanceSq < nearestDistanceSq) {
+				nearestDistanceSq = distanceSq;
+				hitGrid = grid;
+				hitType = type;
+			}
+		}
+	};
+
+	checkGimmickList(stage.GetReflectSlashTiles(), Stage::GimmickType::ReflectSlash);
+	checkGimmickList(stage.GetReflectBackSlashTiles(), Stage::GimmickType::ReflectBackSlash);
+
+	if (hitType == Stage::GimmickType::None) {
+		lastGimmickGrid_ = {-1, -1};
+		return false;
+	}
+
+	// 同じ反射板に触れ続けている間は、1回だけ反射させる
+	if (IsSameGrid(lastGimmickGrid_, hitGrid)) {
+		return true;
+	}
+
+	if (hitType == Stage::GimmickType::ReflectSlash) {
+		velocity_ = MyMath::ReflectSlashXZ(velocity_);
+	} else if (hitType == Stage::GimmickType::ReflectBackSlash) {
+		velocity_ = MyMath::ReflectBackSlashXZ(velocity_);
+	}
+
+	lastGimmickGrid_ = hitGrid;
+	return true;
 }

@@ -90,6 +90,11 @@ private:
 	/// <param name="currentGrid">移動後のグリッド座標</param>
 	void ReflectByWallOrBounds(const Stage& stage, const KamataEngine::Vector3& previousPosition, const Stage::GridPosition& previousGrid, const Stage::GridPosition& currentGrid);
 
+	/// <summary>
+	/// 配置済み反射ギミックに当たった場合、見た目の斜め板に合わせて反射する
+	/// </summary>
+	bool ReflectByGimmick(const Stage& stage, const KamataEngine::Vector3& previousPosition);
+
 	// 現在のワールド座標
 	KamataEngine::Vector3 position_{};
 
