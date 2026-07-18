@@ -7,14 +7,14 @@
 using namespace KamataEngine;
 
 namespace {
-constexpr float kFloorHeight = -0.12f;
-constexpr float kTileHalfHeight = 0.06f;
-constexpr float kObjectHeight = 0.75f;
-constexpr float kPlayerScale = 0.45f;
-constexpr float kGoalScale = 0.55f;
-constexpr float kGimmickScale = 0.42f;
-constexpr float kWallScale = 0.82f;
-constexpr float kCursorHeight = 0.50f;
+constexpr float kFloorHeight = -0.06f;
+constexpr float kTileHalfHeight = 0.03f;
+constexpr float kObjectHeight = 0.375f;
+constexpr float kPlayerScale = 0.225f;
+constexpr float kGoalScale = 0.275f;
+constexpr float kGimmickScale = 0.21f;
+constexpr float kWallScale = 0.41f;
+constexpr float kCursorHeight = 0.25f;
 } // namespace
 
 void StageRenderer::Initialize(const Stage& stage, const Vector3& playerPosition) {
@@ -93,7 +93,7 @@ void StageRenderer::UpdatePlacementCursor(const Stage& stage, const Stage::GridP
 	Vector3 position = stage.GridToWorld(grid);
 	position.y = kCursorHeight;
 	placementCursorObject_->SetTranslation(position);
-	placementCursorObject_->SetScale({kGimmickScale * 1.15f, 0.12f, stage.GetCellSize() * 0.62f});
+	placementCursorObject_->SetScale({kGimmickScale * 1.15f, 0.06f, stage.GetCellSize() * 0.62f});
 
 	if (selectedType == Stage::GimmickType::ReflectBackSlash) {
 		placementCursorObject_->SetRotation({0.0f, std::numbers::pi_v<float> * 0.25f, 0.0f});
@@ -133,8 +133,8 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 
 	for (const Stage::GridPosition& grid : stage.GetPlaceableTiles()) {
 		Vector3 position = stage.GridToWorld(grid);
-		position.y = 0.02f;
-		placeableObjects_.push_back(CreateCube(position, {cellSize * 0.36f, 0.08f, cellSize * 0.36f}));
+		position.y = 0.01f;
+		placeableObjects_.push_back(CreateCube(position, {cellSize * 0.36f, 0.04f, cellSize * 0.36f}));
 	}
 
 	for (const Stage::GridPosition& grid : stage.GetWalls()) {
@@ -146,12 +146,12 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 	BuildGimmickObjects(stage);
 
 	Vector3 goalPosition = stage.GridToWorld(stage.GetGoalGrid());
-	goalPosition.y = 0.45f;
+	goalPosition.y = 0.225f;
 	goalObject_ = CreateCube(goalPosition, {kGoalScale, kGoalScale, kGoalScale});
 
 	playerObject_ = CreateCube(playerPosition, {kPlayerScale, kPlayerScale, kPlayerScale});
 
-	placementCursorObject_ = CreateCube(stage.GridToWorld({0, 0}), {kGimmickScale, 0.12f, cellSize * 0.62f});
+	placementCursorObject_ = CreateCube(stage.GridToWorld({0, 0}), {kGimmickScale, 0.06f, cellSize * 0.62f});
 	isPlacementCursorVisible_ = false;
 }
 
@@ -162,8 +162,8 @@ void StageRenderer::BuildGimmickObjects(const Stage& stage) {
 
 	for (const Stage::GridPosition& grid : stage.GetReflectSlashTiles()) {
 		Vector3 position = stage.GridToWorld(grid);
-		position.y = 0.35f;
-		std::unique_ptr<Object3d> object = CreateCube(position, {kGimmickScale, 0.14f, cellSize * 0.58f});
+		position.y = 0.175f;
+		std::unique_ptr<Object3d> object = CreateCube(position, {kGimmickScale, 0.07f, cellSize * 0.58f});
 		object->SetRotation({0.0f, -std::numbers::pi_v<float> * 0.25f, 0.0f});
 		object->Update();
 		gimmickObjects_.push_back(std::move(object));
@@ -171,8 +171,8 @@ void StageRenderer::BuildGimmickObjects(const Stage& stage) {
 
 	for (const Stage::GridPosition& grid : stage.GetReflectBackSlashTiles()) {
 		Vector3 position = stage.GridToWorld(grid);
-		position.y = 0.35f;
-		std::unique_ptr<Object3d> object = CreateCube(position, {kGimmickScale, 0.14f, cellSize * 0.58f});
+		position.y = 0.175f;
+		std::unique_ptr<Object3d> object = CreateCube(position, {kGimmickScale, 0.07f, cellSize * 0.58f});
 		object->SetRotation({0.0f, std::numbers::pi_v<float> * 0.25f, 0.0f});
 		object->Update();
 		gimmickObjects_.push_back(std::move(object));

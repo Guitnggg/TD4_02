@@ -12,14 +12,14 @@ using namespace KamataEngine;
 
 namespace {
 // ドラッグ入力の調整値
-constexpr float kPlayerPickRadius = 0.85f;
-constexpr float kMaxDragDistance = 4.0f;
-constexpr float kMinLaunchDistance = 0.12f;
-constexpr float kMinLaunchSpeed = 2.5f;
-constexpr float kMaxLaunchSpeed = 10.0f;
+constexpr float kPlayerPickRadius = 0.425f;
+constexpr float kMaxDragDistance = 2.0f;
+constexpr float kMinLaunchDistance = 0.06f;
+constexpr float kMinLaunchSpeed = 1.25f;
+constexpr float kMaxLaunchSpeed = 5.0f;
 
 // ドラッグ中の表示調整値
-constexpr float kGuideY = 0.08f;
+constexpr float kGuideY = 0.04f;
 constexpr float kArrowBaseSize = 70.0f;
 constexpr float kArrowPowerSize = 70.0f;
 
@@ -109,7 +109,7 @@ void DragInput::Draw(const Camera& camera) {
 	const Vector3 current = WithGuideY(dragCurrentWorld_);
 	const Vector3 launchDirection = NormalizeXZ(MyMath::Subtract(dragStartWorld_, dragCurrentWorld_));
 	const float previewSpeed = MyMath::Length(launchVelocity_);
-	const Vector3 arrowEnd = WithGuideY(MyMath::Add(dragStartWorld_, MyMath::Multiply(launchDirection, 1.2f + powerRate_ * 1.6f)));
+	const Vector3 arrowEnd = WithGuideY(MyMath::Add(dragStartWorld_, MyMath::Multiply(launchDirection, 0.6f + powerRate_ * 0.8f)));
 
 	// ドラッグした方向を示すライン。
 	primitiveDrawer->DrawLine3d(start, current, {0.95f, 0.30f, 0.20f, 1.0f});
@@ -126,9 +126,9 @@ void DragInput::Draw(const Camera& camera) {
 	}
 
 	// ドラッグ距離に応じた発射速度ゲージ。
-	const Vector3 gaugeStart = WithGuideY(MyMath::Add(dragStartWorld_, {-2.0f, 0.0f, -1.4f}));
-	const Vector3 gaugeEnd = MyMath::Add(gaugeStart, {4.0f, 0.0f, 0.0f});
-	const Vector3 gaugeValueEnd = MyMath::Add(gaugeStart, {4.0f * powerRate_, 0.0f, 0.0f});
+	const Vector3 gaugeStart = WithGuideY(MyMath::Add(dragStartWorld_, {-1.0f, 0.0f, -0.7f}));
+	const Vector3 gaugeEnd = MyMath::Add(gaugeStart, {2.0f, 0.0f, 0.0f});
+	const Vector3 gaugeValueEnd = MyMath::Add(gaugeStart, {2.0f * powerRate_, 0.0f, 0.0f});
 	primitiveDrawer->DrawLine3d(gaugeStart, gaugeEnd, {0.20f, 0.20f, 0.20f, 1.0f});
 	primitiveDrawer->DrawLine3d(gaugeStart, gaugeValueEnd, {1.0f, 0.85f, 0.15f, 1.0f});
 

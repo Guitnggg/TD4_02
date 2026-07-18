@@ -132,7 +132,7 @@ bool Stage::LoadFromCsv(const std::string& stageFilePath) {
 
 	width_ = loadedWidth;
 	height_ = loadedHeight;
-	cellSize_ = 2.0f;
+	cellSize_ = 1.0f;
 	playerStartGrid_ = loadedPlayerStart;
 	goalGrid_ = loadedGoal;
 	playerMinX_ = 0;

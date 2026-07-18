@@ -9,15 +9,15 @@ using namespace KamataEngine;
 
 namespace {
 constexpr float kDeltaTime = 1.0f / 60.0f;
-constexpr float kMoveSpeed = 7.0f;
+constexpr float kMoveSpeed = 3.5f;
 constexpr float kFriction = 0.992f;
-constexpr float kStopSpeed = 0.18f;
+constexpr float kStopSpeed = 0.09f;
 // 反射板の当たり判定用。
 // 以前は「プレイヤーの中心が反射板と同じマスに入ったか」で判定していたため、
 // 見た目の斜め板から離れていても反射してしまうことがあった。
 // ここでは、プレイヤーの移動線分と反射板の斜め線分の距離で判定する。
 constexpr float kGimmickDiagonalHalfRate = 0.48f;
-constexpr float kGimmickCollisionRadius = 0.52f;
+constexpr float kGimmickCollisionRadius = 0.26f;
 constexpr float kCollisionEpsilon = 0.0001f;
 
 float Clamp01(float value) {
@@ -155,7 +155,7 @@ void Player::Reset(const Stage& stage) {
 	// ステージ設定の開始グリッドへ戻す
 	aimGrid_ = stage.GetPlayerStartGrid();
 	position_ = stage.GridToWorld(aimGrid_);
-	position_.y = 0.65f;
+	position_.y = 0.325f;
 
 	// 発射前の初期状態へ戻す
 	velocity_ = {};
@@ -174,7 +174,7 @@ void Player::MoveAimLeft(const Stage& stage) {
 	// ステージごとの移動範囲内で左へ移動する
 	aimGrid_.x = std::max(stage.GetPlayerMinX(), aimGrid_.x - 1);
 	position_ = stage.GridToWorld(aimGrid_);
-	position_.y = 0.65f;
+	position_.y = 0.325f;
 }
 
 void Player::MoveAimRight(const Stage& stage) {
@@ -186,7 +186,7 @@ void Player::MoveAimRight(const Stage& stage) {
 	// ステージごとの移動範囲内で右へ移動する
 	aimGrid_.x = std::min(stage.GetPlayerMaxX(), aimGrid_.x + 1);
 	position_ = stage.GridToWorld(aimGrid_);
-	position_.y = 0.65f;
+	position_.y = 0.325f;
 }
 
 void Player::Fire() {
@@ -212,7 +212,7 @@ void Player::ReflectByWallOrBounds(const Stage& stage, const Vector3& previousPo
 
 	// めり込みを避けるため、反射前の安全な座標へ戻す
 	position_ = previousPosition;
-	position_.y = 0.65f;
+	position_.y = 0.325f;
 
 	// X/Z のどちらへ進んで衝突したかに応じて速度を反転する
 	MyMath::ReflectGridBounceXZ(velocity_, currentGrid.x != previousGrid.x, currentGrid.z != previousGrid.z);

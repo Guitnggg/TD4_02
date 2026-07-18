@@ -186,7 +186,7 @@ private:
 	int height_ = 0;
 
 	// 1マスあたりのワールド座標上の大きさ
-	float cellSize_ = 2.0f;
+	float cellSize_ = 1.0f;
 
 	// プレイヤー開始位置のグリッド座標
 	GridPosition playerStartGrid_{};

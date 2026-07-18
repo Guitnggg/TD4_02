@@ -17,7 +17,7 @@
 using namespace KamataEngine;
 
 namespace {
-    constexpr float kTopDownCameraHeight = 18.0f;
+    constexpr float kTopDownCameraHeight = 9.0f;
     constexpr float kTopDownCameraPitch = 1.57079632679f;
 	constexpr float kPaletteLeft = 0.0f;
 	constexpr float kPaletteTop = 656.0f;
