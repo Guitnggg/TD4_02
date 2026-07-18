@@ -17,6 +17,7 @@
 using namespace KamataEngine;
 
 namespace {
+    // 1マス単位のステージ全体が収まるように設定した真上視点カメラの値。
     constexpr float kTopDownCameraHeight = 9.0f;
     constexpr float kTopDownCameraPitch = 1.57079632679f;
 	constexpr float kPaletteLeft = 0.0f;
@@ -72,11 +73,12 @@ void GameScene::Update() {
 		return;
 	}
 
-	// Process pause UI first so its click cannot also operate the board below it.
+	// ポーズボタンのクリックが背後の盤面操作にも使われないよう、UIを先に更新する。
 	ui_.Update();
 
 	// 発射前のみ、プレイヤーの開始位置調整とギミック配置が可能
 	if (player_.GetState() == Player::State::Aiming && !ui_.IsPaused() && input->TriggerKey(DIK_TAB)) {
+		// 配置操作と発射操作を同時に受け付けないよう、フェーズを明確に分ける。
 		interactionPhase_ = interactionPhase_ == InteractionPhase::Placement ? InteractionPhase::Launch : InteractionPhase::Placement;
 		isPlacementCursorValid_ = false;
 		dragInput_.Reset();
@@ -105,6 +107,7 @@ void GameScene::Update() {
     dragInput_.Update(input, camera_, player_.GetPosition(), player_.GetState() == Player::State::Aiming && interactionPhase_ == InteractionPhase::Launch && !ui_.IsPaused());
 	const bool isDragging = dragInput_.IsDragging();
 	if (!wasDragging && isDragging) {
+		// ボタンを押している間の連続再生を避け、ドラッグ開始時に一度だけ再生する。
 		Audio::GetInstance()->PlayWave(pullSoundHandle_, false, 0.75f);
 	}
     Vector3 dragLaunchVelocity{};
@@ -131,7 +134,8 @@ void GameScene::Update() {
         return;
     }
 
-    if (player_.IsClear()) {
+	if (player_.IsClear()) {
+		// この終了フラグをSceneManagerが検知し、ResultSceneへ切り替える。
         returnTitle_ = false;
         isEnd_ = true;
     }
@@ -230,7 +234,7 @@ void GameScene::UpdateGimmickPlacement() {
 	Input* input = Input::GetInstance();
 
 #ifdef USE_IMGUI
-	// Prevent clicks on the debug window from also editing the stage behind it.
+	// デバッグウィンドウのクリックが背後のステージ編集にも使われることを防ぐ。
 	if (ImGui::GetIO().WantCaptureMouse) {
 		isPlacementCursorValid_ = false;
 		return;
@@ -252,6 +256,7 @@ void GameScene::UpdateGimmickPlacement() {
 	isPlacementCursorValid_ = UpdatePlacementCursorFromMouse();
 
 	if (placementTool_ == PlacementTool::Place && input->IsTriggerMouse(1)) {
+		// 右クリックするたびに、配置可能なギミックを順番に切り替える。
 		if (selectedGimmickType_ == Stage::GimmickType::ReflectSlash) {
 			selectedGimmickType_ = Stage::GimmickType::ReflectBackSlash;
 		} else if (selectedGimmickType_ == Stage::GimmickType::ReflectBackSlash) {
@@ -269,6 +274,7 @@ void GameScene::UpdateGimmickPlacement() {
 	}
 
 	if (placementTool_ == PlacementTool::Place && input->IsTriggerMouse(0) && isPlacementCursorValid_) {
+		// 共通の配置上限に達していても、配置済みマスの置き換えは許可する。
 		const bool alreadyPlaced = stage_.GetGimmick(placementCursor_) != Stage::GimmickType::None;
 		if (alreadyPlaced || stage_.GetPlacedGimmickCount() < maxGimmickCount_) {
 			if (stage_.PlaceGimmick(placementCursor_, selectedGimmickType_)) {

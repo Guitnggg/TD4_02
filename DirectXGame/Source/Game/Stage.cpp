@@ -8,6 +8,7 @@
 using namespace KamataEngine;
 
 namespace {
+// 読み込み途中でStageを書き換えないよう、CSV全体を取得してから解析する。
 std::string ReadTextFile(const std::string& filePath) {
 	std::ifstream file(filePath);
 	if (!file.is_open()) {
@@ -30,6 +31,7 @@ std::string Trim(const std::string& text) {
 }
 
 bool ParseCsvTileMap(const std::string& csv, std::vector<std::vector<int>>& rows) {
+	// 不正な行を含むマップを部分的に読み込まず、全体をエラーとして扱う。
 	rows.clear();
 
 	std::istringstream csvStream(csv);
@@ -63,6 +65,7 @@ bool ParseCsvTileMap(const std::string& csv, std::vector<std::vector<int>>& rows
 } // namespace
 
 bool Stage::LoadFromCsv(const std::string& stageFilePath) {
+	// 一時コンテナへ解析し、検証が完了してからメンバーへ反映する。
 	const std::string mapText = ReadTextFile(stageFilePath);
 	if (mapText.empty()) {
 		return false;
@@ -96,6 +99,7 @@ bool Stage::LoadFromCsv(const std::string& stageFilePath) {
 	bool hasGoal = false;
 
 	for (int z = 0; z < loadedHeight; ++z) {
+		// CSVの数値から、固定マップ要素と初期ギミックを判別する。
 		for (int x = 0; x < loadedWidth; ++x) {
 			const GridPosition grid{x, z};
 			switch (rows[z][x]) {
@@ -248,6 +252,7 @@ int Stage::GetPlacedGimmickCount() const {
 }
 
 const AccelerationPanel* Stage::FindAccelerationPanel(const GridPosition& grid) const {
+	// コピーを避け、Playerから床の処理を直接呼べるようポインターを返す。
 	const auto it = std::find_if(accelerationPanels_.begin(), accelerationPanels_.end(),
 		[grid](const AccelerationPanel& panel) { return panel.IsAt(grid.x, grid.z); });
 	return it == accelerationPanels_.end() ? nullptr : &(*it);

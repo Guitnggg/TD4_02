@@ -49,6 +49,6 @@ public:
     /// </summary>
     virtual SceneName GetSceneName() const = 0;
 
-    // Scenes can lower the BGM while foreground sounds need priority.
+    // 効果音などを優先したいシーンでは、BGM音量を個別に下げられる。
     virtual float GetBgmVolumeScale() const { return 1.0f; }
 };

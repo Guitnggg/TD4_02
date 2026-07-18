@@ -9,6 +9,7 @@
 using namespace KamataEngine;
 
 namespace {
+// 1280x720のゲーム画面右上に配置するポーズアイコンの判定範囲。
 constexpr float kPauseButtonLeft = 1216.0f;
 constexpr float kPauseButtonTop = 0.0f;
 constexpr float kPauseButtonSize = 64.0f;
@@ -57,6 +58,7 @@ void UI::Initialize() {
 }
 
 void UI::Update() {
+	// 毎フレーム、マウス選択をキーボード選択より先に処理する。
 	Pause();
 	MoveC();
 
@@ -93,6 +95,7 @@ void UI::Pause() {
 	const bool clicked = input_->IsTriggerMouse(0);
 
 	if (clicked && IsPauseButton(mousePosition)) {
+		// 同じアイコンでポーズメニューの開閉を切り替える。
 		audio_->PlayWave(Click, false);
 		Uiflag = !Uiflag;
 		mouseSelectedItem_ = -1;
@@ -110,6 +113,7 @@ void UI::Pause() {
 
 	moveC = clickedItem;
 	mouseSelectedItem_ = clickedItem;
+	// ホバーでは選択のみを変更し、クリックされた場合はその場で決定する。
 	if (clicked) {
 		ExecuteSelectedItem();
 		mouseSelectedItem_ = -1;
@@ -141,6 +145,7 @@ void UI::MoveC() {
 }
 
 void UI::ExecuteSelectedItem() {
+	// ここで設定したフラグをGameSceneが参照し、次のシーンを決定する。
 	audio_->PlayWave(Click, false);
 
 	if (moveC == 0) {

@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 
+/// ゲーム中のポーズボタンと、3項目のポーズメニューを管理する。
 class UI {
 public:
 	~UI();
@@ -11,6 +12,7 @@ public:
 
 	void Pause();
 	void MoveC();
+	/// moveCの値に応じて、続ける・ステージ選択・タイトルへ戻る処理を実行する。
 	void ExecuteSelectedItem();
 
 	bool IsStageselect() const { return Stageselect; }
@@ -33,10 +35,10 @@ private:
 	uint32_t Click = 0;
 	uint32_t voiceHandle_ = 0u;
 
-	int moveC = 0;
+	int moveC = 0; // 現在選択中のポーズメニュー項目。
 	int mouseSelectedItem_ = -1;
 
-	bool Uiflag = false;
+	bool Uiflag = false;      // ポーズメニューを開いているか。
 	bool Stageselect = false;
 	bool Progress = false;
 };

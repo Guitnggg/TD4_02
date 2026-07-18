@@ -13,6 +13,7 @@
 using namespace KamataEngine;
 
 namespace {
+// 全難易度項目で共有する画面座標上の当たり判定。
 constexpr float kDifficultyItemLeft = 430.0f;
 constexpr float kDifficultyItemTop = 245.0f;
 constexpr float kDifficultyItemWidth = 420.0f;
@@ -45,6 +46,7 @@ void DifficultySelectScene::Update() {
 	mouseAvailable = !ImGui::GetIO().WantCaptureMouse;
 #endif
 	if (mouseAvailable) {
+		// ホバー時もキーボード操作と同じ選択番号を更新する。
 		const Vector2& mouse = input->GetMousePosition();
 		if (mouse.x >= kDifficultyItemLeft && mouse.x <= kDifficultyItemLeft + kDifficultyItemWidth &&
 			mouse.y >= kDifficultyItemTop && mouse.y < kDifficultyItemTop + kDifficultyItemHeight * static_cast<float>(kDifficulties.size())) {
@@ -58,6 +60,7 @@ void DifficultySelectScene::Update() {
 	}
 
 	if (input->TriggerKey(DIK_W) || input->TriggerKey(DIK_UP)) {
+		// 先頭から上へ移動した場合は末尾へ戻す。
 		selectedIndex_ = (selectedIndex_ + static_cast<int>(kDifficulties.size()) - 1) % static_cast<int>(kDifficulties.size());
 	}
 	if (input->TriggerKey(DIK_S) || input->TriggerKey(DIK_DOWN)) {
@@ -70,6 +73,7 @@ void DifficultySelectScene::Update() {
 }
 
 void DifficultySelectScene::Draw() {
+	// どの入力方法でも表示が一致するよう、描画時に選択番号からカーソル位置を求める。
 	if (cursorSprite_) { cursorSprite_->SetPosition({430.0f, 280.0f + 65.0f * static_cast<float>(selectedIndex_)}); }
 	Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
 	if (backgroundSprite_) { backgroundSprite_->Draw(); }

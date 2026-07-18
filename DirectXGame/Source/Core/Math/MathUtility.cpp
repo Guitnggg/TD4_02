@@ -82,7 +82,7 @@ float MyMath::ToDegree(float radian) {
 }
 
 // =========================
-// Clamp
+// 値の範囲制限
 // =========================
 float MyMath::Clamp(float value, float min, float max) {
 	if (value < min) {
@@ -95,7 +95,7 @@ float MyMath::Clamp(float value, float min, float max) {
 }
 
 // =========================
-// Matrix
+// 行列処理
 // =========================
 Matrix4x4 MyMath::Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 result{};

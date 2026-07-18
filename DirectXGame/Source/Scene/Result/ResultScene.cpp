@@ -17,12 +17,14 @@
 using namespace KamataEngine;
 
 namespace {
+// リザルトの2項目は、画面上で縦に並んだ判定範囲を持つ。
 constexpr float kResultItemLeft = 250.0f;
 constexpr float kResultItemWidth = 780.0f;
 constexpr float kResultItemTop = 385.0f;
 constexpr float kResultItemHeight = 125.0f;
 
 std::string FindNextStagePath(const std::string& currentPath) {
+	// ステージ名末尾の_NN.csvを1つ進め、実在する場合だけ次ステージとして採用する。
 	const size_t underscore = currentPath.find_last_of('_');
 	const size_t extension = currentPath.rfind(".csv");
 	if (underscore == std::string::npos || extension == std::string::npos || extension <= underscore + 1) { return {}; }
@@ -48,7 +50,7 @@ ResultScene::ResultScene(int usedGimmickCount, std::string clearedStagePath)
 void ResultScene::Initialize() {
 	isEnd_ = false;
 	selectedIndex_ = nextStagePath_.empty() ? 1 : 0;
-	// Each star rating has two images for the two menu selections.
+	// 星評価ごとに、2種類のメニュー選択状態に対応する画像を読み込む。
 	const int firstImageNumber = starCount_ * 2 + 1;
 	for (size_t i = 0; i < kSelectionFrameCount; ++i) {
 		resultTextureHandles_[i] = TextureManager::Load("Result/GameClear" + std::to_string(firstImageNumber + static_cast<int>(i)) + ".png");
@@ -68,10 +70,12 @@ void ResultScene::Update() {
 	mouseAvailable = !ImGui::GetIO().WantCaptureMouse;
 #endif
 	if (mouseAvailable) {
+		// ホバーした項目の選択枠を即座に表示するため、背景画像も更新する。
 		const Vector2& mouse = input->GetMousePosition();
 		if (mouse.x >= kResultItemLeft && mouse.x <= kResultItemLeft + kResultItemWidth &&
 			mouse.y >= kResultItemTop && mouse.y < kResultItemTop + kResultItemHeight * 2.0f) {
 			int hoveredIndex = static_cast<int>((mouse.y - kResultItemTop) / kResultItemHeight);
+			// 最終ステージでは「次のステージ」を選択できないようにする。
 			if (hoveredIndex == 0 && nextStagePath_.empty()) { hoveredIndex = 1; }
 			if (selectedIndex_ != hoveredIndex) {
 				selectedIndex_ = hoveredIndex;

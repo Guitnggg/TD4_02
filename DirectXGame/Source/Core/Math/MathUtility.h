@@ -93,14 +93,14 @@ public:
 	static float ToDegree(float radian);
 
 	// =========================
-	// Clamp
+	// 値の範囲制限
 	// =========================
 
 	// value を min から max の範囲に収める
 	static float Clamp(float value, float min, float max);
 
 	// =========================
-	// Matrix
+	// 行列処理
 	// =========================
 
 	// 行列同士を乗算する
@@ -143,7 +143,7 @@ public:
 	static KamataEngine::Vector3 TransformNormal(const KamataEngine::Vector3& vector, const KamataEngine::Matrix4x4& matrix);
 
 	// =========================
-	// Physics helper
+	// 物理計算の補助処理
 	// =========================
 
 	// ドラッグ開始位置と終了位置から発射方向を計算する

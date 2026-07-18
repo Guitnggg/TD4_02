@@ -7,6 +7,7 @@
 using namespace KamataEngine;
 
 namespace {
+// キューブモデルは中心基準のため、各スケール値は半径方向の大きさを表す。
 constexpr float kFloorHeight = -0.06f;
 constexpr float kTileHalfHeight = 0.03f;
 constexpr float kObjectHeight = 0.375f;
@@ -23,6 +24,7 @@ void StageRenderer::Initialize(const Stage& stage, const Vector3& playerPosition
 }
 
 void StageRenderer::Draw(Camera& camera) {
+	// 不透明なステージ部品を一定順序で描画し、その後に補助表示とキャラクターを描く。
 	Object3d::PreDraw(&camera);
 
 	for (const std::unique_ptr<Object3d>& object : floorObjects_) {
@@ -51,6 +53,7 @@ void StageRenderer::Draw(Camera& camera) {
 }
 
 void StageRenderer::DrawGuide(const Stage& stage, Camera& camera) {
+	// 描画とゲーム座標を一致させるため、グリッド線にもStageのセルサイズを使用する。
 	PrimitiveDrawer* primitiveDrawer = PrimitiveDrawer::GetInstance();
 	primitiveDrawer->SetCamera(&camera);
 
@@ -116,6 +119,7 @@ std::unique_ptr<Object3d> StageRenderer::CreateCube(const Vector3& translation, 
 }
 
 void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerPosition) {
+	// 新しいマップを構築する前に、以前のObject3dをすべて破棄する。
 	floorObjects_.clear();
 	wallObjects_.clear();
 	placeableObjects_.clear();
@@ -181,6 +185,7 @@ void StageRenderer::BuildGimmickObjects(const Stage& stage) {
 	}
 
 	for (const AccelerationPanel& panel : stage.GetAccelerationPanels()) {
+		// 斜めの反射ギミックと見分けられるよう、低い正方形の床として描画する。
 		Vector3 position = stage.GridToWorld({panel.GetGridX(), panel.GetGridZ()});
 		position.y = 0.08f;
 		gimmickObjects_.push_back(CreateCube(position, {cellSize * 0.40f, 0.035f, cellSize * 0.40f}));
