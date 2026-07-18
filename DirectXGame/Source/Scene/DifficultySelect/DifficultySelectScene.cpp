@@ -12,6 +12,13 @@
 
 using namespace KamataEngine;
 
+namespace {
+constexpr float kDifficultyItemLeft = 430.0f;
+constexpr float kDifficultyItemTop = 245.0f;
+constexpr float kDifficultyItemWidth = 420.0f;
+constexpr float kDifficultyItemHeight = 65.0f;
+}
+
 void DifficultySelectScene::Initialize() {
 	isEnd_ = false;
 	selectedIndex_ = 0;
@@ -33,6 +40,22 @@ void DifficultySelectScene::Initialize() {
 
 void DifficultySelectScene::Update() {
 	Input* input = Input::GetInstance();
+	bool mouseAvailable = true;
+#ifdef USE_IMGUI
+	mouseAvailable = !ImGui::GetIO().WantCaptureMouse;
+#endif
+	if (mouseAvailable) {
+		const Vector2& mouse = input->GetMousePosition();
+		if (mouse.x >= kDifficultyItemLeft && mouse.x <= kDifficultyItemLeft + kDifficultyItemWidth &&
+			mouse.y >= kDifficultyItemTop && mouse.y < kDifficultyItemTop + kDifficultyItemHeight * static_cast<float>(kDifficulties.size())) {
+			selectedIndex_ = static_cast<int>((mouse.y - kDifficultyItemTop) / kDifficultyItemHeight);
+			if (input->IsTriggerMouse(0)) {
+				Audio::GetInstance()->PlayWave(decisionSoundHandle_, false, 0.8f);
+				isEnd_ = true;
+				return;
+			}
+		}
+	}
 
 	if (input->TriggerKey(DIK_W) || input->TriggerKey(DIK_UP)) {
 		selectedIndex_ = (selectedIndex_ + static_cast<int>(kDifficulties.size()) - 1) % static_cast<int>(kDifficulties.size());
@@ -58,8 +81,8 @@ void DifficultySelectScene::Draw() {
 	for (int i = 0; i < static_cast<int>(kDifficulties.size()); ++i) {
 		debugText->Print(kDifficulties[i].name, 480.0f, 265.0f + 65.0f * static_cast<float>(i), 2.0f);
 	}
-	debugText->Print("W/S OR UP/DOWN : SELECT", 430.0f, 540.0f, 1.2f);
-	debugText->Print("SPACE/ENTER : START", 455.0f, 565.0f, 1.2f);
+	debugText->Print("MOUSE OR W/S : SELECT", 430.0f, 540.0f, 1.2f);
+	debugText->Print("LEFT CLICK OR ENTER : START", 430.0f, 565.0f, 1.2f);
 	debugText->DrawAll();
 	Sprite::PostDraw();
 
@@ -73,8 +96,8 @@ void DifficultySelectScene::Draw() {
 		ImGui::Text("%s %s", selectedIndex_ == i ? ">" : " ", kDifficulties[i].name);
 	}
 	ImGui::Separator();
-	ImGui::Text("W/S or UP/DOWN: select");
-	ImGui::Text("SPACE/ENTER: start");
+	ImGui::Text("Mouse or W/S: select");
+	ImGui::Text("Left click or SPACE/ENTER: start");
 	ImGui::End();
 #endif
 }

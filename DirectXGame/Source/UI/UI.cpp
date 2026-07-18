@@ -2,6 +2,9 @@
 
 #include <algorithm>
 #include <cassert>
+#ifdef USE_IMGUI
+#include <imgui.h>
+#endif
 
 using namespace KamataEngine;
 
@@ -81,13 +84,15 @@ void UI::Draw() {
 }
 
 void UI::Pause() {
-	if (!input_->IsTriggerMouse(0)) {
+#ifdef USE_IMGUI
+	if (ImGui::GetIO().WantCaptureMouse) {
 		return;
 	}
-
+#endif
 	const Vector2& mousePosition = input_->GetMousePosition();
+	const bool clicked = input_->IsTriggerMouse(0);
 
-	if (IsPauseButton(mousePosition)) {
+	if (clicked && IsPauseButton(mousePosition)) {
 		audio_->PlayWave(Click, false);
 		Uiflag = !Uiflag;
 		mouseSelectedItem_ = -1;
@@ -103,15 +108,12 @@ void UI::Pause() {
 		return;
 	}
 
-	if (mouseSelectedItem_ == clickedItem && moveC == clickedItem) {
-		ExecuteSelectedItem();
-		mouseSelectedItem_ = -1;
-		return;
-	}
-
-	audio_->PlayWave(Click, false);
 	moveC = clickedItem;
 	mouseSelectedItem_ = clickedItem;
+	if (clicked) {
+		ExecuteSelectedItem();
+		mouseSelectedItem_ = -1;
+	}
 }
 
 void UI::MoveC() {

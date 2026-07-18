@@ -17,6 +17,11 @@
 using namespace KamataEngine;
 
 namespace {
+constexpr float kResultItemLeft = 250.0f;
+constexpr float kResultItemWidth = 780.0f;
+constexpr float kResultItemTop = 385.0f;
+constexpr float kResultItemHeight = 125.0f;
+
 std::string FindNextStagePath(const std::string& currentPath) {
 	const size_t underscore = currentPath.find_last_of('_');
 	const size_t extension = currentPath.rfind(".csv");
@@ -58,6 +63,27 @@ void ResultScene::Initialize() {
 
 void ResultScene::Update() {
 	Input* input = Input::GetInstance();
+	bool mouseAvailable = true;
+#ifdef USE_IMGUI
+	mouseAvailable = !ImGui::GetIO().WantCaptureMouse;
+#endif
+	if (mouseAvailable) {
+		const Vector2& mouse = input->GetMousePosition();
+		if (mouse.x >= kResultItemLeft && mouse.x <= kResultItemLeft + kResultItemWidth &&
+			mouse.y >= kResultItemTop && mouse.y < kResultItemTop + kResultItemHeight * 2.0f) {
+			int hoveredIndex = static_cast<int>((mouse.y - kResultItemTop) / kResultItemHeight);
+			if (hoveredIndex == 0 && nextStagePath_.empty()) { hoveredIndex = 1; }
+			if (selectedIndex_ != hoveredIndex) {
+				selectedIndex_ = hoveredIndex;
+				if (resultSprite_) { resultSprite_->SetTextureHandle(resultTextureHandles_[selectedIndex_]); }
+			}
+			if (input->IsTriggerMouse(0)) {
+				Audio::GetInstance()->PlayWave(decisionSoundHandle_, false, 0.8f);
+				isEnd_ = true;
+				return;
+			}
+		}
+	}
 	if (input->TriggerKey(DIK_W) || input->TriggerKey(DIK_UP) || input->TriggerKey(DIK_S) || input->TriggerKey(DIK_DOWN)) {
 		selectedIndex_ = 1 - selectedIndex_;
 		if (resultSprite_) { resultSprite_->SetTextureHandle(resultTextureHandles_[selectedIndex_]); }
@@ -82,7 +108,7 @@ void ResultScene::Draw() {
 	ImGui::Text("Stars: %d", starCount_);
 	ImGui::Text("Selected: %s", selectedIndex_ == 0 ? "NEXT STAGE" : "STAGE SELECT");
 	ImGui::Separator();
-	ImGui::Text("UP/DOWN: select, SPACE/ENTER: decide");
+	ImGui::Text("Mouse/UP/DOWN: select, click/ENTER: decide");
 	ImGui::End();
 #endif
 }

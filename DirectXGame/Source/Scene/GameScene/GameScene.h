@@ -53,6 +53,7 @@ private:
 	bool IsMouseOverPlacementPalette() const;
 	void InitializePlacementPalette();
 	void DrawPlacementPalette();
+	void ResetGame();
 
 	/// <summary>
 	/// ギミック配置カーソルをステージ範囲内に収める

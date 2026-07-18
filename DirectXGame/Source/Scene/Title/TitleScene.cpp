@@ -19,7 +19,13 @@ void TitleScene::Initialize() {
 }
 
 void TitleScene::Update() {
-    if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+    Input* input = Input::GetInstance();
+#ifdef USE_IMGUI
+    const bool mouseAvailable = !ImGui::GetIO().WantCaptureMouse;
+#else
+    const bool mouseAvailable = true;
+#endif
+    if (input->TriggerKey(DIK_SPACE) || (mouseAvailable && input->IsTriggerMouse(0))) {
         isEnd_ = true;
     }
 }
@@ -34,7 +40,7 @@ void TitleScene::Draw() {
     ImGui::Begin("TitleScene");
     ImGui::Text("Title Scene");
     ImGui::Separator();
-    ImGui::Text("Press SPACE");
+    ImGui::Text("Press SPACE or left click");
     ImGui::End();
 #endif
 }

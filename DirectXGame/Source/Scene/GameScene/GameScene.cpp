@@ -68,19 +68,12 @@ void GameScene::Update() {
     Input* input = Input::GetInstance();
 
 	if (input->TriggerKey(DIK_R)) {
-		stage_.ClearGimmicks();
-		player_.Reset(stage_);
-		dragInput_.Reset();
-		const std::vector<Stage::GridPosition>& placeableTiles = stage_.GetPlaceableTiles();
-		placementCursor_ = placeableTiles.empty() ? Stage::GridPosition{0, 0} : placeableTiles.front();
-		stageRenderer_.Initialize(stage_, player_.GetPosition());
-		isGimmickSelected_ = false;
-		isPlacementCursorValid_ = false;
-		interactionPhase_ = InteractionPhase::Placement;
-		placementTool_ = PlacementTool::Place;
-		stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, false);
+		ResetGame();
 		return;
 	}
+
+	// Process pause UI first so its click cannot also operate the board below it.
+	ui_.Update();
 
 	// 発射前のみ、プレイヤーの開始位置調整とギミック配置が可能
 	if (player_.GetState() == Player::State::Aiming && !ui_.IsPaused() && input->TriggerKey(DIK_TAB)) {
@@ -120,7 +113,6 @@ void GameScene::Update() {
 		Audio::GetInstance()->PlayWave(firingSoundHandle_, false, 0.9f);
     }
 
-    ui_.Update();
 	const bool hasActivePlacementTool = placementTool_ == PlacementTool::Remove || isGimmickSelected_;
 	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, player_.GetState() == Player::State::Aiming && interactionPhase_ == InteractionPhase::Placement && hasActivePlacementTool && isPlacementCursorValid_ && !ui_.IsPaused());
 
@@ -154,21 +146,46 @@ void GameScene::Draw() {
 
 #ifdef USE_IMGUI
 	ImGui::SetNextWindowPos(ImVec2(520.0f, 240.0f), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(360.0f, 260.0f), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(380.0f, 420.0f), ImGuiCond_FirstUseEver);
 	ImGui::Begin("GameScene");
 	ImGui::Text("3D One-Step Puzzle");
 	ImGui::Text("Stage: %s", stageFilePath_.c_str());
+	ImGui::Text("Performance: %.1f FPS (%.2f ms)", ImGui::GetIO().Framerate,
+		ImGui::GetIO().Framerate > 0.0f ? 1000.0f / ImGui::GetIO().Framerate : 0.0f);
 	ImGui::Separator();
-	ImGui::Text("TAB: switch placement / launch phase");
-	ImGui::Text("A/D: adjust launch position");
-	ImGui::Text("Left click palette: select gimmick");
-	ImGui::Text("Select red X, then click gimmick: remove");
-	ImGui::Text("Right click: rotate gimmick");
-	ImGui::Text("Left click board: place gimmick");
-	ImGui::Text("X: remove gimmick");
-	ImGui::Text("C: clear gimmicks");
-	ImGui::Text("Drag player or SPACE: launch");
-	ImGui::Text("R: reset");
+	ImGui::Text("Debug Controls");
+	int phase = static_cast<int>(interactionPhase_);
+	if (ImGui::RadioButton("Placement", phase == static_cast<int>(InteractionPhase::Placement))) {
+		interactionPhase_ = InteractionPhase::Placement;
+		dragInput_.Reset();
+	}
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Launch", phase == static_cast<int>(InteractionPhase::Launch))) {
+		interactionPhase_ = InteractionPhase::Launch;
+		isPlacementCursorValid_ = false;
+		dragInput_.Reset();
+	}
+
+	int gimmickType = static_cast<int>(selectedGimmickType_);
+	if (ImGui::RadioButton("Reflect /", gimmickType == static_cast<int>(Stage::GimmickType::ReflectSlash))) {
+		selectedGimmickType_ = Stage::GimmickType::ReflectSlash;
+		placementTool_ = PlacementTool::Place;
+		isGimmickSelected_ = true;
+	}
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Reflect \\", gimmickType == static_cast<int>(Stage::GimmickType::ReflectBackSlash))) {
+		selectedGimmickType_ = Stage::GimmickType::ReflectBackSlash;
+		placementTool_ = PlacementTool::Place;
+		isGimmickSelected_ = true;
+	}
+	ImGui::SliderInt("Gimmick limit", &maxGimmickCount_, 0, 20);
+	if (ImGui::Button("Clear gimmicks")) {
+		ClearPlacedGimmicks();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Reset game")) {
+		ResetGame();
+	}
 	ImGui::Separator();
 	ImGui::Text("Cursor: X %d / Z %d", placementCursor_.x, placementCursor_.z);
 	ImGui::Text("Selected: %s", selectedGimmickType_ == Stage::GimmickType::ReflectSlash ? "/" : "\\");
@@ -177,8 +194,10 @@ void GameScene::Draw() {
 	ImGui::Text("Drag power: %.0f%%", dragInput_.GetPowerRate() * 100.0f);
 	ImGui::Text("State: %s", player_.GetState() == Player::State::Aiming ? "Aiming" : player_.GetState() == Player::State::Moving ? "Moving" : "Stopped");
 	if (player_.IsFailed()) {
-		ImGui::Text("FAILED: press R");
+		ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.2f, 1.0f), "FAILED: press R or Reset game");
 	}
+	ImGui::Separator();
+	ImGui::TextDisabled("TAB: phase  A/D: aim  RMB: rotate  R: reset");
 	ImGui::End();
 #endif
 }
@@ -200,6 +219,14 @@ SceneName GameScene::GetSceneName() const { return SceneName::InGame; }
 
 void GameScene::UpdateGimmickPlacement() {
 	Input* input = Input::GetInstance();
+
+#ifdef USE_IMGUI
+	// Prevent clicks on the debug window from also editing the stage behind it.
+	if (ImGui::GetIO().WantCaptureMouse) {
+		isPlacementCursorValid_ = false;
+		return;
+	}
+#endif
 
 	if (input->IsTriggerMouse(0) && IsMouseOverPlacementPalette()) {
 		const float mouseX = input->GetMousePosition().x;
@@ -327,4 +354,18 @@ void GameScene::ClampPlacementCursor() {
 void GameScene::ClearPlacedGimmicks() {
 	stage_.ClearGimmicks();
 	stageRenderer_.RebuildGimmicks(stage_);
+}
+
+void GameScene::ResetGame() {
+	stage_.ClearGimmicks();
+	player_.Reset(stage_);
+	dragInput_.Reset();
+	const std::vector<Stage::GridPosition>& placeableTiles = stage_.GetPlaceableTiles();
+	placementCursor_ = placeableTiles.empty() ? Stage::GridPosition{0, 0} : placeableTiles.front();
+	stageRenderer_.Initialize(stage_, player_.GetPosition());
+	isGimmickSelected_ = false;
+	isPlacementCursorValid_ = false;
+	interactionPhase_ = InteractionPhase::Placement;
+	placementTool_ = PlacementTool::Place;
+	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, false);
 }
