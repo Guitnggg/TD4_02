@@ -25,6 +25,7 @@
 class GameScene : public IScene {
 public:
 	enum class InteractionPhase { Placement, Launch };
+	enum class PlacementTool { Place, Remove };
 
 	GameScene() = default;
 	explicit GameScene(std::string stageFilePath);
@@ -83,8 +84,11 @@ private:
 	bool isGimmickSelected_ = false;
 	bool isPlacementCursorValid_ = false;
 	InteractionPhase interactionPhase_ = InteractionPhase::Placement;
+	PlacementTool placementTool_ = PlacementTool::Place;
 	std::unique_ptr<KamataEngine::Sprite> placementPaletteSprite_;
 	std::unique_ptr<KamataEngine::Sprite> placementIconSprite_;
+	std::unique_ptr<KamataEngine::Sprite> removeIconSpriteA_;
+	std::unique_ptr<KamataEngine::Sprite> removeIconSpriteB_;
 
 	// 1ステージで配置できるギミック数
 	int maxGimmickCount_ = 3;

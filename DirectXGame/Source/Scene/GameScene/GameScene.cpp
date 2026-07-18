@@ -23,6 +23,7 @@ namespace {
 	constexpr float kPaletteTop = 656.0f;
 	constexpr float kPaletteWidth = 256.0f;
 	constexpr float kPaletteHeight = 64.0f;
+	constexpr float kPaletteItemWidth = 128.0f;
 } // namespace
 
 GameScene::GameScene(std::string stageFilePath) : stageFilePath_(std::move(stageFilePath)) {}
@@ -52,6 +53,7 @@ void GameScene::Initialize() {
 	isGimmickSelected_ = false;
 	isPlacementCursorValid_ = false;
 	interactionPhase_ = InteractionPhase::Placement;
+	placementTool_ = PlacementTool::Place;
 	maxGimmickCount_ = 3;
 	InitializePlacementPalette();
 
@@ -72,6 +74,7 @@ void GameScene::Update() {
 		isGimmickSelected_ = false;
 		isPlacementCursorValid_ = false;
 		interactionPhase_ = InteractionPhase::Placement;
+		placementTool_ = PlacementTool::Place;
 		stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, false);
 		return;
 	}
@@ -108,7 +111,8 @@ void GameScene::Update() {
     }
 
     ui_.Update();
-	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, player_.GetState() == Player::State::Aiming && interactionPhase_ == InteractionPhase::Placement && isGimmickSelected_ && isPlacementCursorValid_ && !ui_.IsPaused());
+	const bool hasActivePlacementTool = placementTool_ == PlacementTool::Remove || isGimmickSelected_;
+	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, player_.GetState() == Player::State::Aiming && interactionPhase_ == InteractionPhase::Placement && hasActivePlacementTool && isPlacementCursorValid_ && !ui_.IsPaused());
 
     player_.Update(stage_);
     stageRenderer_.UpdatePlayer(player_.GetPosition());
@@ -148,6 +152,7 @@ void GameScene::Draw() {
 	ImGui::Text("TAB: switch placement / launch phase");
 	ImGui::Text("A/D: adjust launch position");
 	ImGui::Text("Left click palette: select gimmick");
+	ImGui::Text("Select red X, then click gimmick: remove");
 	ImGui::Text("Right click: rotate gimmick");
 	ImGui::Text("Left click board: place gimmick");
 	ImGui::Text("X: remove gimmick");
@@ -187,24 +192,33 @@ void GameScene::UpdateGimmickPlacement() {
 	Input* input = Input::GetInstance();
 
 	if (input->IsTriggerMouse(0) && IsMouseOverPlacementPalette()) {
-		isGimmickSelected_ = true;
+		const float mouseX = input->GetMousePosition().x;
+		placementTool_ = mouseX < kPaletteLeft + kPaletteItemWidth ? PlacementTool::Place : PlacementTool::Remove;
+		isGimmickSelected_ = placementTool_ == PlacementTool::Place;
 		isPlacementCursorValid_ = false;
 		return;
 	}
 
-	if (!isGimmickSelected_) {
+	if (placementTool_ == PlacementTool::Place && !isGimmickSelected_) {
 		return;
 	}
 
 	isPlacementCursorValid_ = UpdatePlacementCursorFromMouse();
 
-	if (input->IsTriggerMouse(1)) {
+	if (placementTool_ == PlacementTool::Place && input->IsTriggerMouse(1)) {
 		selectedGimmickType_ = selectedGimmickType_ == Stage::GimmickType::ReflectSlash
 			? Stage::GimmickType::ReflectBackSlash
 			: Stage::GimmickType::ReflectSlash;
 	}
 
-	if (input->IsTriggerMouse(0) && isPlacementCursorValid_) {
+	if (placementTool_ == PlacementTool::Remove && input->IsTriggerMouse(0) && isPlacementCursorValid_) {
+		if (stage_.RemoveGimmick(placementCursor_)) {
+			stageRenderer_.RebuildGimmicks(stage_);
+		}
+		return;
+	}
+
+	if (placementTool_ == PlacementTool::Place && input->IsTriggerMouse(0) && isPlacementCursorValid_) {
 		const bool alreadyPlaced = stage_.GetGimmick(placementCursor_) != Stage::GimmickType::None;
 		if (alreadyPlaced || stage_.GetPlacedGimmickCount() < maxGimmickCount_) {
 			if (stage_.PlaceGimmick(placementCursor_, selectedGimmickType_)) {
@@ -231,6 +245,9 @@ bool GameScene::UpdatePlacementCursorFromMouse() {
 
 	const Stage::GridPosition hoveredGrid = stage_.WorldToGrid(MouseToWorldOnStage());
 	if (!stage_.CanPlaceGimmick(hoveredGrid)) {
+		return false;
+	}
+	if (placementTool_ == PlacementTool::Remove && stage_.GetGimmick(hoveredGrid) == Stage::GimmickType::None) {
 		return false;
 	}
 
@@ -264,19 +281,31 @@ void GameScene::InitializePlacementPalette() {
 	placementPaletteSprite_.reset(Sprite::Create(paletteTexture, {kPaletteLeft, kPaletteTop}));
 	placementIconSprite_.reset(Sprite::Create(iconTexture, {64.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.55f, 0.72f, 0.78f, 1.0f}, {0.5f, 0.5f}));
 	placementIconSprite_->SetSize({18.0f, 54.0f});
+	removeIconSpriteA_.reset(Sprite::Create(iconTexture, {192.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.85f, 0.18f, 0.18f, 1.0f}, {0.5f, 0.5f}));
+	removeIconSpriteB_.reset(Sprite::Create(iconTexture, {192.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.85f, 0.18f, 0.18f, 1.0f}, {0.5f, 0.5f}));
+	removeIconSpriteA_->SetSize({10.0f, 48.0f});
+	removeIconSpriteB_->SetSize({10.0f, 48.0f});
+	removeIconSpriteA_->SetRotation(0.78539816339f);
+	removeIconSpriteB_->SetRotation(-0.78539816339f);
 }
 
 void GameScene::DrawPlacementPalette() {
-	if (!placementPaletteSprite_ || !placementIconSprite_) {
+	if (!placementPaletteSprite_ || !placementIconSprite_ || !removeIconSpriteA_ || !removeIconSpriteB_) {
 		return;
 	}
 
 	Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
 	placementPaletteSprite_->Draw();
 	placementIconSprite_->SetRotation(selectedGimmickType_ == Stage::GimmickType::ReflectSlash ? -0.78539816339f : 0.78539816339f);
-	const bool isActive = interactionPhase_ == InteractionPhase::Placement && isGimmickSelected_;
+	const bool isActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Place && isGimmickSelected_;
 	placementIconSprite_->SetColor(isActive ? Vector4{1.0f, 0.72f, 0.2f, 1.0f} : Vector4{0.55f, 0.72f, 0.78f, 1.0f});
 	placementIconSprite_->Draw();
+	const bool isRemoveActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Remove;
+	const Vector4 removeColor = isRemoveActive ? Vector4{1.0f, 0.45f, 0.15f, 1.0f} : Vector4{0.85f, 0.18f, 0.18f, 1.0f};
+	removeIconSpriteA_->SetColor(removeColor);
+	removeIconSpriteB_->SetColor(removeColor);
+	removeIconSpriteA_->Draw();
+	removeIconSpriteB_->Draw();
 	Sprite::PostDraw();
 }
 
