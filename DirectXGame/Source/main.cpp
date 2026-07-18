@@ -11,6 +11,8 @@ using namespace KamataEngine;
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
     Initialize(L"4244_一手先"); {
+        // DebugText is not initialized by KamataEngine::Initialize().
+        DebugText::GetInstance()->Initialize();
         DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
         SceneManager sceneManager(std::make_unique<TitleScene>());

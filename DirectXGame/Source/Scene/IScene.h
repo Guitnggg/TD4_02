@@ -48,4 +48,7 @@ public:
     /// 現在のシーン名を取得する
     /// </summary>
     virtual SceneName GetSceneName() const = 0;
+
+    // Scenes can lower the BGM while foreground sounds need priority.
+    virtual float GetBgmVolumeScale() const { return 1.0f; }
 };

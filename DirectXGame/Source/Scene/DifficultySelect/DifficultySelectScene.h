@@ -3,6 +3,7 @@
 #include "../IScene.h"
 
 #include <array>
+#include <2d/Sprite.h>
 #include <memory>
 
 class DifficultySelectScene : public IScene {
@@ -34,4 +35,8 @@ private:
 
 	bool isEnd_ = false;
 	int selectedIndex_ = 0;
+	std::unique_ptr<KamataEngine::Sprite> backgroundSprite_;
+	std::unique_ptr<KamataEngine::Sprite> panelSprite_;
+	std::unique_ptr<KamataEngine::Sprite> cursorSprite_;
+	uint32_t decisionSoundHandle_ = 0;
 };

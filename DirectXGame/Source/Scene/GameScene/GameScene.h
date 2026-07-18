@@ -41,6 +41,7 @@ public:
 	bool IsEnd() const override;
 	std::unique_ptr<IScene> NextScene() const override;
 	SceneName GetSceneName() const override;
+	float GetBgmVolumeScale() const override { return ui_.IsPaused() ? 0.3f : 1.0f; }
 
 private:
 	/// <summary>

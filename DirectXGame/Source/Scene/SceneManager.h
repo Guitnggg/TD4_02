@@ -5,6 +5,8 @@
 
 #include <memory>
 
+namespace KamataEngine { class Audio; }
+
 /// <summary>
 /// 現在のシーンを所有し、更新、描画、シーン遷移を管理するクラス
 ///
@@ -29,7 +31,7 @@ public:
     /// <summary>
     /// 管理中のシーンを破棄する
     /// </summary>
-    ~SceneManager() = default;
+    ~SceneManager();
 
     /// <summary>
     /// シーンの二重所有を防ぐためコピーを禁止する
@@ -85,4 +87,16 @@ public:
 private:
     // 現在管理しているシーン
     std::unique_ptr<IScene> scene_;
+    KamataEngine::Audio* audio_ = nullptr;
+    uint32_t menuBgmHandle_ = 0;
+    uint32_t gameBgmHandle_ = 0;
+    uint32_t currentBgmHandle_ = 0;
+    uint32_t currentBgmVoiceHandle_ = 0;
+    bool bgmResourcesInitialized_ = false;
+    bool isBgmPlaying_ = false;
+    float currentBgmVolumeScale_ = 1.0f;
+
+    void InitializeBgmResources();
+    void SwitchBgm(SceneName sceneName);
+    void UpdateBgmVolume();
 };

@@ -2,6 +2,9 @@
 
 #include "../IScene.h"
 
+#include <2d/Sprite.h>
+#include <memory>
+
 class TitleScene : public IScene {
 public:
 	void Initialize() override;
@@ -18,4 +21,5 @@ public:
 
 private:
 	bool isEnd_ = false;
+	std::unique_ptr<KamataEngine::Sprite> backgroundSprite_;
 };

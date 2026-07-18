@@ -11,7 +11,12 @@
 
 using namespace KamataEngine;
 
-void TitleScene::Initialize() { isEnd_ = false; }
+void TitleScene::Initialize() {
+    isEnd_ = false;
+    const uint32_t textureHandle = TextureManager::Load("GameStart.png");
+    backgroundSprite_.reset(Sprite::Create(textureHandle, {0.0f, 0.0f}));
+
+}
 
 void TitleScene::Update() {
     if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
@@ -20,6 +25,9 @@ void TitleScene::Update() {
 }
 
 void TitleScene::Draw() {
+    Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
+    backgroundSprite_->Draw();
+    Sprite::PostDraw();
 #ifdef USE_IMGUI
     ImGui::SetNextWindowPos(ImVec2(520.0f, 280.0f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(240.0f, 120.0f), ImGuiCond_FirstUseEver);
