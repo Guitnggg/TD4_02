@@ -13,7 +13,7 @@ using namespace KamataEngine;
 
 void TitleScene::Initialize() {
     isEnd_ = false;
-    const uint32_t textureHandle = TextureManager::Load("GameStart.png");
+    const uint32_t textureHandle = TextureManager::Load("Title/GameStart.png");
     backgroundSprite_.reset(Sprite::Create(textureHandle, {0.0f, 0.0f}));
 
 }

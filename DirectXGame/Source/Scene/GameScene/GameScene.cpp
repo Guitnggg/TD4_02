@@ -183,7 +183,7 @@ std::unique_ptr<IScene> GameScene::NextScene() const {
         return std::make_unique<DifficultySelectScene>();
     }
 
-    return std::make_unique<ResultScene>();
+    return std::make_unique<ResultScene>(stage_.GetPlacedGimmickCount(), stageFilePath_);
 }
 
 SceneName GameScene::GetSceneName() const { return SceneName::InGame; }
