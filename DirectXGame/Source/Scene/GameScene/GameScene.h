@@ -90,6 +90,8 @@ private:
 	std::unique_ptr<KamataEngine::Sprite> placementIconSprite_;
 	std::unique_ptr<KamataEngine::Sprite> removeIconSpriteA_;
 	std::unique_ptr<KamataEngine::Sprite> removeIconSpriteB_;
+	uint32_t pullSoundHandle_ = 0;
+	uint32_t firingSoundHandle_ = 0;
 
 	// 1ステージで配置できるギミック数
 	int maxGimmickCount_ = 3;

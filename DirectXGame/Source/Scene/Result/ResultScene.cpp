@@ -51,7 +51,7 @@ void ResultScene::Initialize() {
 	resultSprite_.reset(Sprite::Create(resultTextureHandles_[selectedIndex_], {0.0f, 0.0f}));
 
 	Audio* audio = Audio::GetInstance();
-	const uint32_t fanfareHandle = audio->LoadWave("SE/GameClear.mp3");
+	const uint32_t fanfareHandle = audio->LoadWave("SE/Result/GameClear.mp3");
 	decisionSoundHandle_ = audio->LoadWave("SE/Dicision.mp3");
 	audio->PlayWave(fanfareHandle, false, 0.7f);
 }

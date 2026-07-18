@@ -40,6 +40,9 @@ void GameScene::Initialize() {
     player_.Initialize(stage_);
     dragInput_.Initialize();
     ui_.Initialize();
+	Audio* audio = Audio::GetInstance();
+	pullSoundHandle_ = audio->LoadWave("SE/InGame/Pull.mp3");
+	firingSoundHandle_ = audio->LoadWave("SE/InGame/Firing.mp3");
     dragInput_.Reset();
 
     camera_.Initialize();
@@ -100,14 +103,21 @@ void GameScene::Update() {
 			}
 			if (input->TriggerKey(DIK_SPACE)) {
 				player_.Fire();
+				Audio::GetInstance()->PlayWave(firingSoundHandle_, false, 0.9f);
 			}
 		}
 	}
 
+	const bool wasDragging = dragInput_.IsDragging();
     dragInput_.Update(input, camera_, player_.GetPosition(), player_.GetState() == Player::State::Aiming && interactionPhase_ == InteractionPhase::Launch && !ui_.IsPaused());
+	const bool isDragging = dragInput_.IsDragging();
+	if (!wasDragging && isDragging) {
+		Audio::GetInstance()->PlayWave(pullSoundHandle_, false, 0.75f);
+	}
     Vector3 dragLaunchVelocity{};
     if (dragInput_.ConsumeLaunchVelocity(dragLaunchVelocity)) {
         player_.Fire(dragLaunchVelocity);
+		Audio::GetInstance()->PlayWave(firingSoundHandle_, false, 0.9f);
     }
 
     ui_.Update();
