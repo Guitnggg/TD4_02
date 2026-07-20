@@ -122,8 +122,10 @@ std::unique_ptr<IScene> GameScene::NextScene() const {
         return std::make_unique<DifficultySelectScene>();
     }
 
+    // ステージに配置されているギミック数をカウントして ResultScene に渡す
     const int gimmickCount = static_cast<int>(stage_.GetReflectSlashTiles().size() + stage_.GetReflectBackSlashTiles().size());
-    return std::make_unique<ResultScene>(gimmickCount);
+    // 現在のステージファイルパスを渡すことで、ResultScene 側で次のステージを決定できるようにする
+    return std::make_unique<ResultScene>(stageFilePath_, gimmickCount);
 }
 
 SceneName GameScene::GetSceneName() const { return SceneName::InGame; }
