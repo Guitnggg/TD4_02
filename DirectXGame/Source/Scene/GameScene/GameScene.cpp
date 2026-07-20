@@ -6,6 +6,7 @@
 
 #include <KamataEngine.h>
 #include <algorithm>
+#include <cmath>
 #include <dinput.h>
 #ifdef USE_IMGUI
 #include <imgui.h>
@@ -18,13 +19,21 @@ using namespace KamataEngine;
 
 namespace {
     // 1マス単位のステージ全体が収まるように設定した真上視点カメラの値。
-    constexpr float kTopDownCameraHeight = 9.0f;
     constexpr float kTopDownCameraPitch = 1.57079632679f;
+	constexpr float kStageViewMargin = 1.1f;
 	constexpr float kPaletteLeft = 0.0f;
 	constexpr float kPaletteTop = 656.0f;
 	constexpr float kPaletteWidth = 256.0f;
 	constexpr float kPaletteHeight = 64.0f;
 	constexpr float kPaletteItemWidth = 128.0f;
+
+	float CalculateTopDownCameraHeight(const Stage& stage, const Camera& camera) {
+		const float halfFovTangent = std::tan(camera.fovAngleY * 0.5f);
+		const float heightForVerticalFit = static_cast<float>(stage.GetHeight()) / (2.0f * halfFovTangent);
+		const float heightForHorizontalFit =
+			static_cast<float>(stage.GetWidth()) / (2.0f * halfFovTangent * camera.aspectRatio);
+		return (std::max)(heightForVerticalFit, heightForHorizontalFit) * kStageViewMargin;
+	}
 } // namespace
 
 GameScene::GameScene(std::string stageFilePath) : stageFilePath_(std::move(stageFilePath)) {}
@@ -47,7 +56,7 @@ void GameScene::Initialize() {
     dragInput_.Reset();
 
     camera_.Initialize();
-    camera_.translation_ = { 0.0f, kTopDownCameraHeight, 0.0f };
+    camera_.translation_ = { 0.0f, CalculateTopDownCameraHeight(stage_, camera_), 0.0f };
     camera_.rotation_ = { kTopDownCameraPitch, 0.0f, 0.0f };
     camera_.UpdateMatrix();
 
