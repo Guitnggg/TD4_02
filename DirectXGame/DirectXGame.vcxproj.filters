@@ -67,7 +67,7 @@
     <Filter Include="Resources\Stages\Tutorial">
       <UniqueIdentifier>{442ae5bc-1096-4e3d-8892-a8ed37051664}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resources\Stages\Eazy">
+    <Filter Include="Resources\Stages\Easy">
       <UniqueIdentifier>{c3a0d4ec-2455-45a1-bcf1-12196a59f04d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resources\Stages\Normal">
@@ -239,20 +239,20 @@
     <None Include="Resources\Stages\Tutorial\Tutorial_03.csv">
       <Filter>Resources\Stages\Tutorial</Filter>
     </None>
-    <None Include="Resources\Stages\Eazy\Eazy_01.csv">
-      <Filter>Resources\Stages\Eazy</Filter>
+    <None Include="Resources\Stages\Easy\Easy_01.csv">
+      <Filter>Resources\Stages\Easy</Filter>
     </None>
-    <None Include="Resources\Stages\Eazy\Eazy_02.csv">
-      <Filter>Resources\Stages\Eazy</Filter>
+    <None Include="Resources\Stages\Easy\Easy_02.csv">
+      <Filter>Resources\Stages\Easy</Filter>
     </None>
-    <None Include="Resources\Stages\Eazy\Eazy_03.csv">
-      <Filter>Resources\Stages\Eazy</Filter>
+    <None Include="Resources\Stages\Easy\Easy_03.csv">
+      <Filter>Resources\Stages\Easy</Filter>
     </None>
-    <None Include="Resources\Stages\Eazy\Eazy_04.csv">
-      <Filter>Resources\Stages\Eazy</Filter>
+    <None Include="Resources\Stages\Easy\Easy_04.csv">
+      <Filter>Resources\Stages\Easy</Filter>
     </None>
-    <None Include="Resources\Stages\Eazy\Eazy_05.csv">
-      <Filter>Resources\Stages\Eazy</Filter>
+    <None Include="Resources\Stages\Easy\Easy_05.csv">
+      <Filter>Resources\Stages\Easy</Filter>
     </None>
     <None Include="Resources\Stages\Normal\Normal_01.csv">
       <Filter>Resources\Stages\Normal</Filter>

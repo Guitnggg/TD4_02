@@ -31,7 +31,7 @@ private:
 	// 配列の並び順をキーボード・マウスでの選択順として使用する。
 	static constexpr std::array<Difficulty, 4> kDifficulties{{
 	    {"TUTORIAL", "Resources\\Stages\\Tutorial\\Tutorial_01.csv"},
-	    {"EAZY", "Resources\\Stages\\Eazy\\Eazy_01.csv"},
+	    {"EASY", "Resources\\Stages\\Easy\\Easy_01.csv"},
 	    {"NORMAL", "Resources\\Stages\\Normal\\Normal_01.csv"},
 	    {"HARD", "Resources\\Stages\\Hard\\Hard_01.csv"},
 	}};

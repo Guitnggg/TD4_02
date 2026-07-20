@@ -2,11 +2,11 @@
 
 #include "../DifficultySelect/DifficultySelectScene.h"
 #include "../GameScene/GameScene.h"
+#include "../../Game/ResultRules.h"
 
 #include <KamataEngine.h>
 #include <algorithm>
 #include <dinput.h>
-#include <filesystem>
 #ifdef USE_IMGUI
 #include <imgui.h>
 #endif
@@ -23,39 +23,12 @@ constexpr float kResultItemWidth = 780.0f;
 constexpr float kResultItemTop = 385.0f;
 constexpr float kResultItemHeight = 125.0f;
 
-std::string FindNextStagePath(const std::string& currentPath) {
-	// ステージ名末尾の_NN.csvを1つ進め、実在する場合だけ次ステージとして採用する。
-	const size_t underscore = currentPath.find_last_of('_');
-	const size_t extension = currentPath.rfind(".csv");
-	if (underscore == std::string::npos || extension == std::string::npos || extension <= underscore + 1) { return {}; }
-
-	int stageNumber = 0;
-	try {
-		stageNumber = std::stoi(currentPath.substr(underscore + 1, extension - underscore - 1));
-	} catch (...) {
-		return {};
-	}
-
-	const int nextNumber = stageNumber + 1;
-	const std::string number = nextNumber < 10 ? "0" + std::to_string(nextNumber) : std::to_string(nextNumber);
-	const std::string candidate = currentPath.substr(0, underscore + 1) + number + ".csv";
-	return std::filesystem::exists(candidate) ? candidate : std::string{};
-}
-
-int GetStagePar(const std::string& stagePath) {
-	if (stagePath.find("Tutorial_01.csv") != std::string::npos) { return 0; }
-	if (stagePath.find("Tutorial") != std::string::npos || stagePath.find("Eazy") != std::string::npos) { return 1; }
-	if (stagePath.find("Normal") != std::string::npos) { return 2; }
-	if (stagePath.find("Hard") != std::string::npos) { return 3; }
-	return 3;
-}
 } // namespace
 
 ResultScene::ResultScene(int usedGimmickCount, std::string clearedStagePath)
     : usedGimmickCount_(usedGimmickCount < 0 ? 0 : usedGimmickCount), clearedStagePath_(std::move(clearedStagePath)),
-      nextStagePath_(FindNextStagePath(clearedStagePath_)) {
-	const int overPar = (std::max)(0, usedGimmickCount_ - GetStagePar(clearedStagePath_));
-	starCount_ = std::clamp(3 - overPar, 1, 3);
+      nextStagePath_(ResultRules::FindNextStagePath(clearedStagePath_)) {
+	starCount_ = ResultRules::CalculateStarCount(usedGimmickCount_, clearedStagePath_);
 }
 
 void ResultScene::Initialize() {

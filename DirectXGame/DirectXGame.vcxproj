@@ -160,6 +160,7 @@
     <ClCompile Include="Source\Core\Math\MathUtility.cpp" />
     <ClCompile Include="Source\Core\Math\WorldTransformEx.cpp" />
     <ClCompile Include="Source\Game\Stage.cpp" />
+    <ClCompile Include="Source\Game\ResultRules.cpp" />
     <ClCompile Include="Source\Gameplay\Player\Player.cpp" />
     <ClCompile Include="Source\Input\DragInput.cpp" />
     <ClCompile Include="Source\main.cpp" />
@@ -266,11 +267,11 @@
     <None Include="Resources\shaders\Terrain.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Stages\Eazy\Eazy_01.csv" />
-    <None Include="Resources\Stages\Eazy\Eazy_02.csv" />
-    <None Include="Resources\Stages\Eazy\Eazy_03.csv" />
-    <None Include="Resources\Stages\Eazy\Eazy_04.csv" />
-    <None Include="Resources\Stages\Eazy\Eazy_05.csv" />
+    <None Include="Resources\Stages\Easy\Easy_01.csv" />
+    <None Include="Resources\Stages\Easy\Easy_02.csv" />
+    <None Include="Resources\Stages\Easy\Easy_03.csv" />
+    <None Include="Resources\Stages\Easy\Easy_04.csv" />
+    <None Include="Resources\Stages\Easy\Easy_05.csv" />
     <None Include="Resources\Stages\Hard\Hard_01.csv" />
     <None Include="Resources\Stages\Hard\Hard_02.csv" />
     <None Include="Resources\Stages\Hard\Hard_03.csv" />

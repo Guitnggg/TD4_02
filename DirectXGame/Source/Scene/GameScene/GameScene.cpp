@@ -44,7 +44,7 @@ void GameScene::Initialize() {
     returnStageSelect_ = false;
 
     if (!stage_.LoadFromCsv(stageFilePath_)) {
-        stage_.LoadFromCsv("Resources\\Stages\\Eazy\\Eazy_01.csv");
+        stage_.LoadFromCsv("Resources\\Stages\\Easy\\Easy_01.csv");
     }
 
     player_.Initialize(stage_);
@@ -131,13 +131,13 @@ void GameScene::Update() {
     player_.Update(stage_);
     stageRenderer_.UpdatePlayer(player_.GetPosition());
 
-    if (ui_.IsStageselect()) {
+    if (ui_.ShouldReturnToStageSelect()) {
         returnStageSelect_ = true;
         isEnd_ = true;
         return;
     }
 
-    if (ui_.IsProgress()) {
+    if (ui_.ShouldReturnToTitle()) {
         returnTitle_ = true;
         isEnd_ = true;
         return;

@@ -50,7 +50,14 @@ bool ParseCsvTileMap(const std::string& csv, std::vector<std::vector<int>>& rows
 			if (cell.empty()) {
 				return false;
 			}
-			row.push_back(std::stoi(cell));
+			try {
+				size_t parsedLength = 0;
+				const int tile = std::stoi(cell, &parsedLength);
+				if (parsedLength != cell.size() || tile < 0 || tile > 7) { return false; }
+				row.push_back(tile);
+			} catch (...) {
+				return false;
+			}
 		}
 
 		if (row.empty()) {

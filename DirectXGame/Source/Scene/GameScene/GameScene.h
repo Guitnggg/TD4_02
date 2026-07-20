@@ -67,7 +67,7 @@ private:
 
 	// シーン終了済みフラグ
 	bool isEnd_ = false;
-	std::string stageFilePath_ = "Resources\\Stages\\Eazy\\Eazy_01.csv";
+	std::string stageFilePath_ = "Resources\\Stages\\Easy\\Easy_01.csv";
 	bool returnTitle_ = false;
 	bool returnStageSelect_ = false;
 

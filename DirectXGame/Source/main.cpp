@@ -11,7 +11,7 @@ using namespace KamataEngine;
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	// すべてのシーンと描画リソースをエンジンの初期化・終了処理内で管理する。
 
-    Initialize(L"4244_一手先"); {
+    Initialize(L"一手先"); {
         // DebugTextはKamataEngine::Initialize()では初期化されないため、個別に初期化する。
         DebugText::GetInstance()->Initialize();
         DirectXCommon* dxCommon = DirectXCommon::GetInstance();
