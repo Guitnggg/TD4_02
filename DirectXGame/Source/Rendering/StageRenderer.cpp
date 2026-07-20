@@ -1,6 +1,7 @@
 #include "StageRenderer.h"
 
 #include <3d/PrimitiveDrawer.h>
+#include <3d/ObjectColor.h>
 
 #include <numbers>
 
@@ -16,6 +17,31 @@ constexpr float kGoalScale = 0.275f;
 constexpr float kGimmickScale = 0.21f;
 constexpr float kWallScale = 0.41f;
 constexpr float kCursorHeight = 0.25f;
+
+// 視認性確認用の仮配色。正式なアートへ差し替えるときは、この定数群だけを変更する。
+constexpr Vector4 kFloorColor = {0.10f, 0.14f, 0.22f, 1.0f};
+constexpr Vector4 kPlaceableColor = {0.10f, 0.65f, 0.85f, 1.0f};
+constexpr Vector4 kWallColor = {0.38f, 0.43f, 0.52f, 1.0f};
+constexpr Vector4 kPlayerColor = {0.15f, 0.45f, 1.0f, 1.0f};
+constexpr Vector4 kGoalColor = {1.0f, 0.85f, 0.08f, 1.0f};
+constexpr Vector4 kReflectSlashColor = {1.0f, 0.32f, 0.08f, 1.0f};
+constexpr Vector4 kReflectBackSlashColor = {0.92f, 0.12f, 0.78f, 1.0f};
+constexpr Vector4 kAccelerationColor = {0.15f, 1.0f, 0.25f, 1.0f};
+constexpr Vector4 kPlacementCursorColor = {1.0f, 1.0f, 0.15f, 1.0f};
+
+class ColoredObject3d final : public Object3d {
+public:
+	void Initialize(Model* model, const Vector4& color) {
+		Object3d::Initialize(model);
+		objectColor_.Initialize();
+		objectColor_.SetColor(color);
+	}
+
+	void Draw(const Camera& camera) override { model_->Draw(worldTransform_, camera, &objectColor_); }
+
+private:
+	ObjectColor objectColor_;
+};
 } // namespace
 
 void StageRenderer::Initialize(const Stage& stage, const Vector3& playerPosition) {
@@ -109,9 +135,9 @@ void StageRenderer::UpdatePlacementCursor(const Stage& stage, const Stage::GridP
 	placementCursorObject_->Update();
 }
 
-std::unique_ptr<Object3d> StageRenderer::CreateCube(const Vector3& translation, const Vector3& scale) {
-	std::unique_ptr<Object3d> object = std::make_unique<Object3d>();
-	object->Initialize(cubeModel_.get());
+std::unique_ptr<Object3d> StageRenderer::CreateCube(const Vector3& translation, const Vector3& scale, const Vector4& color) {
+	std::unique_ptr<ColoredObject3d> object = std::make_unique<ColoredObject3d>();
+	object->Initialize(cubeModel_.get(), color);
 	object->SetTranslation(translation);
 	object->SetScale(scale);
 	object->Update();
@@ -133,31 +159,31 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 		for (int x = 0; x < stage.GetWidth(); ++x) {
 			Vector3 position = stage.GridToWorld({x, z});
 			position.y = kFloorHeight;
-			floorObjects_.push_back(CreateCube(position, floorScale));
+			floorObjects_.push_back(CreateCube(position, floorScale, kFloorColor));
 		}
 	}
 
 	for (const Stage::GridPosition& grid : stage.GetPlaceableTiles()) {
 		Vector3 position = stage.GridToWorld(grid);
 		position.y = 0.01f;
-		placeableObjects_.push_back(CreateCube(position, {cellSize * 0.36f, 0.04f, cellSize * 0.36f}));
+		placeableObjects_.push_back(CreateCube(position, {cellSize * 0.36f, 0.04f, cellSize * 0.36f}, kPlaceableColor));
 	}
 
 	for (const Stage::GridPosition& grid : stage.GetWalls()) {
 		Vector3 position = stage.GridToWorld(grid);
 		position.y = kObjectHeight;
-		wallObjects_.push_back(CreateCube(position, {kWallScale, kObjectHeight, kWallScale}));
+		wallObjects_.push_back(CreateCube(position, {kWallScale, kObjectHeight, kWallScale}, kWallColor));
 	}
 
 	BuildGimmickObjects(stage);
 
 	Vector3 goalPosition = stage.GridToWorld(stage.GetGoalGrid());
 	goalPosition.y = 0.225f;
-	goalObject_ = CreateCube(goalPosition, {kGoalScale, kGoalScale, kGoalScale});
+	goalObject_ = CreateCube(goalPosition, {kGoalScale, kGoalScale, kGoalScale}, kGoalColor);
 
-	playerObject_ = CreateCube(playerPosition, {kPlayerScale, kPlayerScale, kPlayerScale});
+	playerObject_ = CreateCube(playerPosition, {kPlayerScale, kPlayerScale, kPlayerScale}, kPlayerColor);
 
-	placementCursorObject_ = CreateCube(stage.GridToWorld({0, 0}), {kGimmickScale, 0.06f, cellSize * 0.62f});
+	placementCursorObject_ = CreateCube(stage.GridToWorld({0, 0}), {kGimmickScale, 0.06f, cellSize * 0.62f}, kPlacementCursorColor);
 	isPlacementCursorVisible_ = false;
 }
 
@@ -169,7 +195,7 @@ void StageRenderer::BuildGimmickObjects(const Stage& stage) {
 	for (const Stage::GridPosition& grid : stage.GetReflectSlashTiles()) {
 		Vector3 position = stage.GridToWorld(grid);
 		position.y = 0.175f;
-		std::unique_ptr<Object3d> object = CreateCube(position, {kGimmickScale, 0.07f, cellSize * 0.58f});
+		std::unique_ptr<Object3d> object = CreateCube(position, {kGimmickScale, 0.07f, cellSize * 0.58f}, kReflectSlashColor);
 		object->SetRotation({0.0f, -std::numbers::pi_v<float> * 0.25f, 0.0f});
 		object->Update();
 		gimmickObjects_.push_back(std::move(object));
@@ -178,7 +204,7 @@ void StageRenderer::BuildGimmickObjects(const Stage& stage) {
 	for (const Stage::GridPosition& grid : stage.GetReflectBackSlashTiles()) {
 		Vector3 position = stage.GridToWorld(grid);
 		position.y = 0.175f;
-		std::unique_ptr<Object3d> object = CreateCube(position, {kGimmickScale, 0.07f, cellSize * 0.58f});
+		std::unique_ptr<Object3d> object = CreateCube(position, {kGimmickScale, 0.07f, cellSize * 0.58f}, kReflectBackSlashColor);
 		object->SetRotation({0.0f, std::numbers::pi_v<float> * 0.25f, 0.0f});
 		object->Update();
 		gimmickObjects_.push_back(std::move(object));
@@ -188,6 +214,6 @@ void StageRenderer::BuildGimmickObjects(const Stage& stage) {
 		// 斜めの反射ギミックと見分けられるよう、低い正方形の床として描画する。
 		Vector3 position = stage.GridToWorld({panel.GetGridX(), panel.GetGridZ()});
 		position.y = 0.08f;
-		gimmickObjects_.push_back(CreateCube(position, {cellSize * 0.40f, 0.035f, cellSize * 0.40f}));
+		gimmickObjects_.push_back(CreateCube(position, {cellSize * 0.40f, 0.035f, cellSize * 0.40f}, kAccelerationColor));
 	}
 }

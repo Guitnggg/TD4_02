@@ -6,6 +6,7 @@
 #include <3d/Model.h>
 #include <3d/Object3d.h>
 #include <math/Vector3.h>
+#include <math/Vector4.h>
 
 #include <memory>
 #include <vector>
@@ -63,7 +64,8 @@ private:
 	/// <param name="translation">生成するワールド座標</param>
 	/// <param name="scale">生成するキューブの拡大率</param>
 	/// <returns>初期化済みのキューブオブジェクト</returns>
-	std::unique_ptr<KamataEngine::Object3d> CreateCube(const KamataEngine::Vector3& translation, const KamataEngine::Vector3& scale);
+	std::unique_ptr<KamataEngine::Object3d> CreateCube(
+		const KamataEngine::Vector3& translation, const KamataEngine::Vector3& scale, const KamataEngine::Vector4& color);
 
 	/// <summary>
 	/// ステージ情報から床、壁、ギミック、ゴール、プレイヤーの描画オブジェクトを構築する
