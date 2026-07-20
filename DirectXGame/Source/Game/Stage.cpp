@@ -103,6 +103,10 @@ bool Stage::LoadFromCsv(const std::string& stageFilePath) {
 		for (int x = 0; x < loadedWidth; ++x) {
 			const GridPosition grid{x, z};
 			switch (rows[z][x]) {
+			case 0:
+				// 通常床もギミック配置可能にし、ステージ攻略の自由度を確保する。
+				loadedPlaceableTiles.push_back(grid);
+				break;
 			case 1:
 				loadedWalls.push_back(grid);
 				break;
@@ -144,8 +148,9 @@ bool Stage::LoadFromCsv(const std::string& stageFilePath) {
 	cellSize_ = 1.0f;
 	playerStartGrid_ = loadedPlayerStart;
 	goalGrid_ = loadedGoal;
-	playerMinX_ = 0;
-	playerMaxX_ = width_ - 1;
+	// 発射位置はステージで指定された開始位置を中心に、左右1マスだけ調整できる。
+	playerMinX_ = (std::max)(0, playerStartGrid_.x - 1);
+	playerMaxX_ = (std::min)(width_ - 1, playerStartGrid_.x + 1);
 
 	walls_ = std::move(loadedWalls);
 	placeableTiles_ = std::move(loadedPlaceableTiles);

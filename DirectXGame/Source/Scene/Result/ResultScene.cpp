@@ -41,11 +41,22 @@ std::string FindNextStagePath(const std::string& currentPath) {
 	const std::string candidate = currentPath.substr(0, underscore + 1) + number + ".csv";
 	return std::filesystem::exists(candidate) ? candidate : std::string{};
 }
+
+int GetStagePar(const std::string& stagePath) {
+	if (stagePath.find("Tutorial_01.csv") != std::string::npos) { return 0; }
+	if (stagePath.find("Tutorial") != std::string::npos || stagePath.find("Eazy") != std::string::npos) { return 1; }
+	if (stagePath.find("Normal") != std::string::npos) { return 2; }
+	if (stagePath.find("Hard") != std::string::npos) { return 3; }
+	return 3;
+}
 } // namespace
 
 ResultScene::ResultScene(int usedGimmickCount, std::string clearedStagePath)
-    : usedGimmickCount_(usedGimmickCount < 0 ? 0 : usedGimmickCount), starCount_(std::clamp(3 - usedGimmickCount_, 0, 3)),
-      clearedStagePath_(std::move(clearedStagePath)), nextStagePath_(FindNextStagePath(clearedStagePath_)) {}
+    : usedGimmickCount_(usedGimmickCount < 0 ? 0 : usedGimmickCount), clearedStagePath_(std::move(clearedStagePath)),
+      nextStagePath_(FindNextStagePath(clearedStagePath_)) {
+	const int overPar = (std::max)(0, usedGimmickCount_ - GetStagePar(clearedStagePath_));
+	starCount_ = std::clamp(3 - overPar, 1, 3);
+}
 
 void ResultScene::Initialize() {
 	isEnd_ = false;

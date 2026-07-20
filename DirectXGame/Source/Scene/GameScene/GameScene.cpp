@@ -100,10 +100,10 @@ void GameScene::Update() {
 		}
 		if (!ui_.IsPaused() && interactionPhase_ == InteractionPhase::Launch) {
 			if (input->TriggerKey(DIK_A)) {
-				player_.MoveAimRight(stage_);
+				player_.MoveAimLeft(stage_);
 			}
 			if (input->TriggerKey(DIK_D)) {
-				player_.MoveAimLeft(stage_);
+				player_.MoveAimRight(stage_);
 			}
 			if (input->TriggerKey(DIK_SPACE)) {
 				player_.Fire();

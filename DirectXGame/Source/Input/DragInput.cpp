@@ -17,6 +17,7 @@ constexpr float kMaxDragDistance = 2.0f;
 constexpr float kMinLaunchDistance = 0.06f;
 constexpr float kMinLaunchSpeed = 1.25f;
 constexpr float kMaxLaunchSpeed = 5.0f;
+constexpr float kMaxLaunchAngle = 0.26179938780f;
 
 // ドラッグ中の表示調整値
 constexpr float kGuideY = 0.04f;
@@ -191,12 +192,17 @@ void DragInput::UpdateDragVector(const Vector3& playerPosition, const Vector3& c
 		drag = MyMath::Multiply(NormalizeXZ(drag), kMaxDragDistance);
 	}
 
-	dragCurrentWorld_ = MyMath::Add(dragStartWorld_, drag);
 	const float clampedDistance = LengthXZ(drag);
 	powerRate_ = MyMath::Clamp(clampedDistance / kMaxDragDistance, 0.0f, 1.0f);
 
 	// 仕様通り、ドラッグした方向とは逆向きへ発射する。
-	const Vector3 direction = NormalizeXZ(MyMath::Subtract(dragStartWorld_, dragCurrentWorld_));
+	// 発射方向をステージ上方向から左右45度以内に制限する。
+	// ドラッグ表示も制限後の方向へ合わせ、実際の発射方向と見た目を一致させる。
+	const Vector3 requestedDirection = NormalizeXZ(MyMath::Multiply(drag, -1.0f));
+	const float requestedAngle = std::atan2(requestedDirection.x, -requestedDirection.z);
+	const float launchAngle = MyMath::Clamp(requestedAngle, -kMaxLaunchAngle, kMaxLaunchAngle);
+	const Vector3 direction = {std::sin(launchAngle), 0.0f, -std::cos(launchAngle)};
+	dragCurrentWorld_ = MyMath::Add(dragStartWorld_, MyMath::Multiply(direction, -clampedDistance));
 	const float speed = MyMath::CalcLaunchSpeed(clampedDistance, kMaxDragDistance, kMinLaunchSpeed, kMaxLaunchSpeed);
 	launchVelocity_ = MyMath::Multiply(direction, speed);
 }
