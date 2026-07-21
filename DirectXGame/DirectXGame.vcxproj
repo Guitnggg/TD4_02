@@ -306,13 +306,6 @@
     <ClInclude Include="Source\Scene\Title\TitleScene.h" />
     <ClInclude Include="Source\UI\UI.h" />
   </ItemGroup>
-  <Target Name="SyncGimmickModels" BeforeTargets="PrepareForBuild">
-    <MakeDir Directories="$(ProjectDir)Resources\ReflectGimmick;$(ProjectDir)Resources\AccelerationPanel" />
-    <Copy SourceFiles="$(ProjectDir)Resources\Gimmicks\ReflectiveBlock\ReflectGimmick.obj;$(ProjectDir)Resources\Gimmicks\ReflectiveBlock\ReflectGimmick.mtl"
-          DestinationFolder="$(ProjectDir)Resources\ReflectGimmick" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(ProjectDir)Resources\Gimmicks\AccelerationPanel\AccelerationPanel.obj;$(ProjectDir)Resources\Gimmicks\AccelerationPanel\AccelerationPanel.mtl"
-          DestinationFolder="$(ProjectDir)Resources\AccelerationPanel" SkipUnchangedFiles="true" />
-  </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
