@@ -83,12 +83,15 @@ private:
 
 	// 現在選択しているギミックの種類
 	Stage::GimmickType selectedGimmickType_ = Stage::GimmickType::ReflectSlash;
+	AccelerationPanel::Direction selectedPanelDirection_ = AccelerationPanel::Direction::PositiveZ;
 	bool isGimmickSelected_ = false;
 	bool isPlacementCursorValid_ = false;
 	InteractionPhase interactionPhase_ = InteractionPhase::Placement;
 	PlacementTool placementTool_ = PlacementTool::Place;
 	std::unique_ptr<KamataEngine::Sprite> placementPaletteSprite_;
 	std::unique_ptr<KamataEngine::Sprite> placementIconSprite_;
+	std::unique_ptr<KamataEngine::Sprite> accelerationIconShaftSprite_;
+	std::unique_ptr<KamataEngine::Sprite> accelerationIconHeadSprite_;
 	std::unique_ptr<KamataEngine::Sprite> removeIconSpriteA_;
 	std::unique_ptr<KamataEngine::Sprite> removeIconSpriteB_;
 	uint32_t pullSoundHandle_ = 0;

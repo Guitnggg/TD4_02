@@ -113,7 +113,20 @@ void StageRenderer::UpdatePlayer(const Vector3& playerPosition) {
 
 void StageRenderer::RebuildGimmicks(const Stage& stage) { BuildGimmickObjects(stage); }
 
-void StageRenderer::UpdatePlacementCursor(const Stage& stage, const Stage::GridPosition& grid, Stage::GimmickType selectedType, bool isVisible) {
+namespace {
+float AccelerationPanelRotation(AccelerationPanel::Direction direction) {
+	switch (direction) {
+	case AccelerationPanel::Direction::PositiveZ: return 0.0f;
+	case AccelerationPanel::Direction::PositiveX: return std::numbers::pi_v<float> * 0.5f;
+	case AccelerationPanel::Direction::NegativeZ: return std::numbers::pi_v<float>;
+	case AccelerationPanel::Direction::NegativeX: return -std::numbers::pi_v<float> * 0.5f;
+	}
+	return 0.0f;
+}
+} // namespace
+
+void StageRenderer::UpdatePlacementCursor(const Stage& stage, const Stage::GridPosition& grid, Stage::GimmickType selectedType, bool isVisible,
+                                          AccelerationPanel::Direction panelDirection) {
 	isPlacementCursorVisible_ = isVisible;
 	if (!isVisible || !placementCursorObject_) {
 		return;
@@ -130,7 +143,7 @@ void StageRenderer::UpdatePlacementCursor(const Stage& stage, const Stage::GridP
 	if (selectedType == Stage::GimmickType::ReflectBackSlash) {
 		placementCursorObject_->SetRotation({0.0f, -std::numbers::pi_v<float> * 0.25f, 0.0f});
 	} else if (selectedType == Stage::GimmickType::AccelerationPanel) {
-		placementCursorObject_->SetRotation({0.0f, 0.0f, 0.0f});
+		placementCursorObject_->SetRotation({0.0f, AccelerationPanelRotation(panelDirection), 0.0f});
 	} else {
 		placementCursorObject_->SetRotation({0.0f, std::numbers::pi_v<float> * 0.25f, 0.0f});
 	}
@@ -229,6 +242,7 @@ void StageRenderer::BuildGimmickObjects(const Stage& stage) {
 		object->Initialize(accelerationPanelModel_.get());
 		object->SetTranslation(position);
 		object->SetScale({kAccelerationPanelScale, kAccelerationPanelScale, kAccelerationPanelScale});
+		object->SetRotation({0.0f, AccelerationPanelRotation(panel.GetDirection()), 0.0f});
 		object->Update();
 		gimmickObjects_.push_back(std::move(object));
 	}

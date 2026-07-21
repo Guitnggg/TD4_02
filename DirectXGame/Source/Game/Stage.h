@@ -95,7 +95,8 @@ public:
 	/// 指定したグリッド座標にギミックを配置する
 	/// 既にギミックがある場合は向きを上書きする
 	/// </summary>
-	bool PlaceGimmick(const GridPosition& grid, GimmickType type);
+	bool PlaceGimmick(const GridPosition& grid, GimmickType type,
+	                  AccelerationPanel::Direction panelDirection = AccelerationPanel::Direction::PositiveZ);
 
 	/// <summary>
 	/// 指定したグリッド座標のギミックを削除する

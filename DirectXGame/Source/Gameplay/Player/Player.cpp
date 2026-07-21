@@ -276,7 +276,8 @@ void Player::AccelerateOnPanel(const Stage& stage) {
 	}
 
 	if (!IsSameGrid(lastAccelerationPanelGrid_, currentGrid)) {
-		panel->Apply(velocity_);
-		lastAccelerationPanelGrid_ = currentGrid;
+		if (panel->Apply(velocity_)) {
+			lastAccelerationPanelGrid_ = currentGrid;
+		}
 	}
 }

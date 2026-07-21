@@ -215,7 +215,7 @@ bool Stage::CanPlaceGimmick(const GridPosition& grid) const {
 	return IsInsideGrid(grid) && IsPlaceable(grid) && !IsWall(grid) && !IsGoal(grid);
 }
 
-bool Stage::PlaceGimmick(const GridPosition& grid, GimmickType type) {
+bool Stage::PlaceGimmick(const GridPosition& grid, GimmickType type, AccelerationPanel::Direction panelDirection) {
 	if (type == GimmickType::None) {
 		return RemoveGimmick(grid);
 	}
@@ -235,7 +235,7 @@ bool Stage::PlaceGimmick(const GridPosition& grid, GimmickType type) {
 		return true;
 	}
 	if (type == GimmickType::AccelerationPanel) {
-		accelerationPanels_.emplace_back(grid.x, grid.z);
+		accelerationPanels_.emplace_back(grid.x, grid.z, panelDirection);
 		return true;
 	}
 

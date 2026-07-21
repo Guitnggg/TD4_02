@@ -23,7 +23,7 @@ namespace {
 	constexpr float kStageViewMargin = 1.1f;
 	constexpr float kPaletteLeft = 0.0f;
 	constexpr float kPaletteTop = 656.0f;
-	constexpr float kPaletteWidth = 256.0f;
+	constexpr float kPaletteWidth = 384.0f;
 	constexpr float kPaletteHeight = 64.0f;
 	constexpr float kPaletteItemWidth = 128.0f;
 
@@ -126,7 +126,7 @@ void GameScene::Update() {
     }
 
 	const bool hasActivePlacementTool = placementTool_ == PlacementTool::Remove || isGimmickSelected_;
-	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, player_.GetState() == Player::State::Aiming && interactionPhase_ == InteractionPhase::Placement && hasActivePlacementTool && isPlacementCursorValid_ && !ui_.IsPaused());
+	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, player_.GetState() == Player::State::Aiming && interactionPhase_ == InteractionPhase::Placement && hasActivePlacementTool && isPlacementCursorValid_ && !ui_.IsPaused(), selectedPanelDirection_);
 
     player_.Update(stage_);
     stageRenderer_.UpdatePlayer(player_.GetPosition());
@@ -251,8 +251,13 @@ void GameScene::UpdateGimmickPlacement() {
 #endif
 
 	if (input->IsTriggerMouse(0) && IsMouseOverPlacementPalette()) {
-		const float mouseX = input->GetMousePosition().x;
-		placementTool_ = mouseX < kPaletteLeft + kPaletteItemWidth ? PlacementTool::Place : PlacementTool::Remove;
+		const int item = static_cast<int>((input->GetMousePosition().x - kPaletteLeft) / kPaletteItemWidth);
+		placementTool_ = item == 2 ? PlacementTool::Remove : PlacementTool::Place;
+		if (item == 0 && selectedGimmickType_ == Stage::GimmickType::AccelerationPanel) {
+			selectedGimmickType_ = Stage::GimmickType::ReflectSlash;
+		} else if (item == 1) {
+			selectedGimmickType_ = Stage::GimmickType::AccelerationPanel;
+		}
 		isGimmickSelected_ = placementTool_ == PlacementTool::Place;
 		isPlacementCursorValid_ = false;
 		return;
@@ -269,9 +274,9 @@ void GameScene::UpdateGimmickPlacement() {
 		if (selectedGimmickType_ == Stage::GimmickType::ReflectSlash) {
 			selectedGimmickType_ = Stage::GimmickType::ReflectBackSlash;
 		} else if (selectedGimmickType_ == Stage::GimmickType::ReflectBackSlash) {
-			selectedGimmickType_ = Stage::GimmickType::AccelerationPanel;
-		} else {
 			selectedGimmickType_ = Stage::GimmickType::ReflectSlash;
+		} else {
+			selectedPanelDirection_ = static_cast<AccelerationPanel::Direction>((static_cast<int>(selectedPanelDirection_) + 1) % 4);
 		}
 	}
 
@@ -286,7 +291,7 @@ void GameScene::UpdateGimmickPlacement() {
 		// 共通の配置上限に達していても、配置済みマスの置き換えは許可する。
 		const bool alreadyPlaced = stage_.GetGimmick(placementCursor_) != Stage::GimmickType::None;
 		if (alreadyPlaced || stage_.GetPlacedGimmickCount() < maxGimmickCount_) {
-			if (stage_.PlaceGimmick(placementCursor_, selectedGimmickType_)) {
+			if (stage_.PlaceGimmick(placementCursor_, selectedGimmickType_, selectedPanelDirection_)) {
 				stageRenderer_.RebuildGimmicks(stage_);
 			}
 		}
@@ -344,10 +349,15 @@ void GameScene::InitializePlacementPalette() {
 	const uint32_t paletteTexture = TextureManager::Load("Placement.png");
 	const uint32_t iconTexture = TextureManager::Load("white1x1.png");
 	placementPaletteSprite_.reset(Sprite::Create(paletteTexture, {kPaletteLeft, kPaletteTop}));
+	placementPaletteSprite_->SetSize({kPaletteWidth, kPaletteHeight});
 	placementIconSprite_.reset(Sprite::Create(iconTexture, {64.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.55f, 0.72f, 0.78f, 1.0f}, {0.5f, 0.5f}));
 	placementIconSprite_->SetSize({18.0f, 54.0f});
-	removeIconSpriteA_.reset(Sprite::Create(iconTexture, {192.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.85f, 0.18f, 0.18f, 1.0f}, {0.5f, 0.5f}));
-	removeIconSpriteB_.reset(Sprite::Create(iconTexture, {192.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.85f, 0.18f, 0.18f, 1.0f}, {0.5f, 0.5f}));
+	accelerationIconShaftSprite_.reset(Sprite::Create(iconTexture, {192.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.2f, 1.0f, 0.35f, 1.0f}, {0.5f, 0.5f}));
+	accelerationIconHeadSprite_.reset(Sprite::Create(iconTexture, {192.0f, kPaletteTop + 14.0f}, {0.2f, 1.0f, 0.35f, 1.0f}, {0.5f, 0.5f}));
+	accelerationIconShaftSprite_->SetSize({10.0f, 42.0f});
+	accelerationIconHeadSprite_->SetSize({26.0f, 10.0f});
+	removeIconSpriteA_.reset(Sprite::Create(iconTexture, {320.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.85f, 0.18f, 0.18f, 1.0f}, {0.5f, 0.5f}));
+	removeIconSpriteB_.reset(Sprite::Create(iconTexture, {320.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.85f, 0.18f, 0.18f, 1.0f}, {0.5f, 0.5f}));
 	removeIconSpriteA_->SetSize({10.0f, 48.0f});
 	removeIconSpriteB_->SetSize({10.0f, 48.0f});
 	removeIconSpriteA_->SetRotation(0.78539816339f);
@@ -355,7 +365,7 @@ void GameScene::InitializePlacementPalette() {
 }
 
 void GameScene::DrawPlacementPalette() {
-	if (!placementPaletteSprite_ || !placementIconSprite_ || !removeIconSpriteA_ || !removeIconSpriteB_) {
+	if (!placementPaletteSprite_ || !placementIconSprite_ || !accelerationIconShaftSprite_ || !accelerationIconHeadSprite_ || !removeIconSpriteA_ || !removeIconSpriteB_) {
 		return;
 	}
 
@@ -363,11 +373,20 @@ void GameScene::DrawPlacementPalette() {
 	placementPaletteSprite_->Draw();
 	placementIconSprite_->SetRotation(selectedGimmickType_ == Stage::GimmickType::ReflectSlash ? -0.78539816339f :
 		selectedGimmickType_ == Stage::GimmickType::ReflectBackSlash ? 0.78539816339f : 0.0f);
-	const bool isActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Place && isGimmickSelected_;
-	const Vector4 selectedColor = selectedGimmickType_ == Stage::GimmickType::AccelerationPanel
-		? Vector4{0.2f, 1.0f, 0.35f, 1.0f} : Vector4{1.0f, 0.72f, 0.2f, 1.0f};
-	placementIconSprite_->SetColor(isActive ? selectedColor : Vector4{0.55f, 0.72f, 0.78f, 1.0f});
+	const bool reflectActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Place && isGimmickSelected_ && selectedGimmickType_ != Stage::GimmickType::AccelerationPanel;
+	placementIconSprite_->SetColor(reflectActive ? Vector4{1.0f, 0.72f, 0.2f, 1.0f} : Vector4{0.55f, 0.72f, 0.78f, 1.0f});
 	placementIconSprite_->Draw();
+	const bool accelerationActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Place && isGimmickSelected_ && selectedGimmickType_ == Stage::GimmickType::AccelerationPanel;
+	const Vector4 accelerationColor = accelerationActive ? Vector4{0.2f, 1.0f, 0.35f, 1.0f} : Vector4{0.3f, 0.65f, 0.4f, 1.0f};
+	accelerationIconShaftSprite_->SetColor(accelerationColor);
+	accelerationIconHeadSprite_->SetColor(accelerationColor);
+	const float arrowRotation = static_cast<float>(static_cast<int>(selectedPanelDirection_)) * 1.57079632679f;
+	accelerationIconShaftSprite_->SetRotation(arrowRotation);
+	accelerationIconHeadSprite_->SetRotation(arrowRotation);
+	accelerationIconHeadSprite_->SetPosition({192.0f + std::sin(arrowRotation) * 18.0f,
+	                                         kPaletteTop + kPaletteHeight * 0.5f - std::cos(arrowRotation) * 18.0f});
+	accelerationIconShaftSprite_->Draw();
+	accelerationIconHeadSprite_->Draw();
 	const bool isRemoveActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Remove;
 	const Vector4 removeColor = isRemoveActive ? Vector4{1.0f, 0.45f, 0.15f, 1.0f} : Vector4{0.85f, 0.18f, 0.18f, 1.0f};
 	removeIconSpriteA_->SetColor(removeColor);

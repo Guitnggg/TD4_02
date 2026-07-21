@@ -55,7 +55,8 @@ public:
 	/// <summary>
 	/// ギミック配置カーソルの表示位置と向きを更新する
 	/// </summary>
-	void UpdatePlacementCursor(const Stage& stage, const Stage::GridPosition& grid, Stage::GimmickType selectedType, bool isVisible);
+	void UpdatePlacementCursor(const Stage& stage, const Stage::GridPosition& grid, Stage::GimmickType selectedType, bool isVisible,
+	                           AccelerationPanel::Direction panelDirection = AccelerationPanel::Direction::PositiveZ);
 
 private:
 	/// <summary>
