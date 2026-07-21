@@ -1,5 +1,6 @@
 #pragma once
 #include"KamataEngine.h"
+#include <memory>
 class ReflectiveBlock {
 public:
 	~ReflectiveBlock();
@@ -8,10 +9,10 @@ public:
 	void initialize();
 
 	//更新
-	void Update();
+	void Update(KamataEngine::Camera&camera);
 
 	//描画
-	void Draw();
+	void Draw(KamataEngine::Camera& camera);
 
 	//位置設定
 	void SetBlockPos(KamataEngine::Vector3 pos) { blockPosition_.translation_ = pos; }
@@ -27,6 +28,9 @@ public:
 	bool IsReleaseLeft(KamataEngine::Input* input) const;
 
 private:
+
+	KamataEngine::Vector3 MouseToWorldOnPlane(const KamataEngine::Camera& camera, float planeY) const;
+
 	/*ブロックの位置*/
 	KamataEngine::WorldTransform blockPosition_;
 
@@ -44,6 +48,7 @@ private:
 
 	/*input*/
 	KamataEngine::Input* input_;
+
 
 	
 };
