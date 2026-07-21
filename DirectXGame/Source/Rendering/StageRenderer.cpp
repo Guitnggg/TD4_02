@@ -15,8 +15,10 @@ constexpr float kObjectHeight = 0.375f;
 constexpr float kPlayerScale = 0.225f;
 constexpr float kGoalScale = 0.275f;
 constexpr float kGimmickScale = 0.21f;
+constexpr float kReflectGimmickHeight = 0.42f;
+constexpr float kAccelerationPanelScale = 0.21f;
+constexpr float kAccelerationPanelHeight = 0.105f;
 constexpr float kWallScale = 0.41f;
-constexpr float kCursorHeight = 0.25f;
 
 // 視認性確認用の仮配色。正式なアートへ差し替えるときは、この定数群だけを変更する。
 constexpr Vector4 kFloorColor = {0.10f, 0.14f, 0.22f, 1.0f};
@@ -46,6 +48,8 @@ private:
 
 void StageRenderer::Initialize(const Stage& stage, const Vector3& playerPosition) {
 	cubeModel_.reset(Model::CreateFromOBJ("cube"));
+	reflectGimmickModel_.reset(Model::CreateFromOBJ("ReflectGimmick"));
+	accelerationPanelModel_.reset(Model::CreateFromOBJ("AccelerationPanel"));
 	BuildStageObjects(stage, playerPosition);
 }
 
@@ -120,16 +124,19 @@ void StageRenderer::UpdatePlacementCursor(const Stage& stage, const Stage::GridP
 	}
 
 	Vector3 position = stage.GridToWorld(grid);
-	position.y = kCursorHeight;
+	position.y = selectedType == Stage::GimmickType::AccelerationPanel ? kAccelerationPanelHeight : kReflectGimmickHeight;
 	placementCursorObject_->SetTranslation(position);
-	placementCursorObject_->SetScale({kGimmickScale * 1.15f, 0.06f, stage.GetCellSize() * 0.62f});
+	placementCursorObject_->SetModel(selectedType == Stage::GimmickType::AccelerationPanel ? accelerationPanelModel_.get() : reflectGimmickModel_.get());
+	placementCursorObject_->SetScale(selectedType == Stage::GimmickType::AccelerationPanel
+	                                    ? Vector3{kAccelerationPanelScale, kAccelerationPanelScale, kAccelerationPanelScale}
+	                                    : Vector3{kGimmickScale, kGimmickScale, kGimmickScale});
 
 	if (selectedType == Stage::GimmickType::ReflectBackSlash) {
-		placementCursorObject_->SetRotation({0.0f, std::numbers::pi_v<float> * 0.25f, 0.0f});
+		placementCursorObject_->SetRotation({0.0f, -std::numbers::pi_v<float> * 0.25f, 0.0f});
 	} else if (selectedType == Stage::GimmickType::AccelerationPanel) {
 		placementCursorObject_->SetRotation({0.0f, 0.0f, 0.0f});
 	} else {
-		placementCursorObject_->SetRotation({0.0f, -std::numbers::pi_v<float> * 0.25f, 0.0f});
+		placementCursorObject_->SetRotation({0.0f, std::numbers::pi_v<float> * 0.25f, 0.0f});
 	}
 
 	placementCursorObject_->Update();
@@ -190,22 +197,26 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 void StageRenderer::BuildGimmickObjects(const Stage& stage) {
 	gimmickObjects_.clear();
 
-	const float cellSize = stage.GetCellSize();
-
 	for (const Stage::GridPosition& grid : stage.GetReflectSlashTiles()) {
 		Vector3 position = stage.GridToWorld(grid);
-		position.y = 0.175f;
-		std::unique_ptr<Object3d> object = CreateCube(position, {kGimmickScale, 0.07f, cellSize * 0.58f}, kReflectSlashColor);
-		object->SetRotation({0.0f, -std::numbers::pi_v<float> * 0.25f, 0.0f});
+		position.y = kReflectGimmickHeight;
+		std::unique_ptr<ColoredObject3d> object = std::make_unique<ColoredObject3d>();
+		object->Initialize(reflectGimmickModel_.get(), kReflectSlashColor);
+		object->SetTranslation(position);
+		object->SetScale({kGimmickScale, kGimmickScale, kGimmickScale});
+		object->SetRotation({0.0f, std::numbers::pi_v<float> * 0.25f, 0.0f});
 		object->Update();
 		gimmickObjects_.push_back(std::move(object));
 	}
 
 	for (const Stage::GridPosition& grid : stage.GetReflectBackSlashTiles()) {
 		Vector3 position = stage.GridToWorld(grid);
-		position.y = 0.175f;
-		std::unique_ptr<Object3d> object = CreateCube(position, {kGimmickScale, 0.07f, cellSize * 0.58f}, kReflectBackSlashColor);
-		object->SetRotation({0.0f, std::numbers::pi_v<float> * 0.25f, 0.0f});
+		position.y = kReflectGimmickHeight;
+		std::unique_ptr<ColoredObject3d> object = std::make_unique<ColoredObject3d>();
+		object->Initialize(reflectGimmickModel_.get(), kReflectBackSlashColor);
+		object->SetTranslation(position);
+		object->SetScale({kGimmickScale, kGimmickScale, kGimmickScale});
+		object->SetRotation({0.0f, -std::numbers::pi_v<float> * 0.25f, 0.0f});
 		object->Update();
 		gimmickObjects_.push_back(std::move(object));
 	}
@@ -213,7 +224,12 @@ void StageRenderer::BuildGimmickObjects(const Stage& stage) {
 	for (const AccelerationPanel& panel : stage.GetAccelerationPanels()) {
 		// 斜めの反射ギミックと見分けられるよう、低い正方形の床として描画する。
 		Vector3 position = stage.GridToWorld({panel.GetGridX(), panel.GetGridZ()});
-		position.y = 0.08f;
-		gimmickObjects_.push_back(CreateCube(position, {cellSize * 0.40f, 0.035f, cellSize * 0.40f}, kAccelerationColor));
+		position.y = kAccelerationPanelHeight;
+		std::unique_ptr<ColoredObject3d> object = std::make_unique<ColoredObject3d>();
+		object->Initialize(accelerationPanelModel_.get(), kAccelerationColor);
+		object->SetTranslation(position);
+		object->SetScale({kAccelerationPanelScale, kAccelerationPanelScale, kAccelerationPanelScale});
+		object->Update();
+		gimmickObjects_.push_back(std::move(object));
 	}
 }

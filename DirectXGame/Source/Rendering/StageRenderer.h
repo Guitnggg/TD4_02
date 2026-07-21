@@ -82,6 +82,10 @@ private:
 	// ステージ描画に共通して使用するキューブモデル
 	std::unique_ptr<KamataEngine::Model> cubeModel_;
 
+	// 配置ギミック用モデル
+	std::unique_ptr<KamataEngine::Model> reflectGimmickModel_;
+	std::unique_ptr<KamataEngine::Model> accelerationPanelModel_;
+
 	// 床マスの描画オブジェクト一覧
 	std::vector<std::unique_ptr<KamataEngine::Object3d>> floorObjects_;
 
