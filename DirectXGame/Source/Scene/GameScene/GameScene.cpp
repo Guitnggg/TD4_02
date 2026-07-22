@@ -13,6 +13,7 @@
 #endif
 
 #include <memory>
+#include <array>
 #include <utility>
 
 using namespace KamataEngine;
@@ -26,7 +27,10 @@ namespace {
 	constexpr float kPaletteWidth = 384.0f;
 	constexpr float kPaletteHeight = 64.0f;
 	constexpr float kPaletteItemWidth = 128.0f;
-
+	constexpr float kPhaseChangeLeft = 1088.0f;
+	constexpr float kPhaseChangeTop = 656.0f;
+	constexpr float kPhaseChangeWidth = 192.0f;
+	constexpr float kPhaseChangeHeight = 64.0f;
 	float CalculateTopDownCameraHeight(const Stage& stage, const Camera& camera) {
 		const float halfFovTangent = std::tan(camera.fovAngleY * 0.5f);
 		const float heightForVerticalFit = static_cast<float>(stage.GetHeight()) / (2.0f * halfFovTangent);
@@ -55,8 +59,8 @@ void GameScene::Initialize() {
 	firingSoundHandle_ = audio->LoadWave("SE/InGame/Firing.mp3");
     dragInput_.Reset();
 
-    camera_.Initialize();
-    camera_.translation_ = { 0.0f, CalculateTopDownCameraHeight(stage_, camera_), 0.0f };
+	camera_.Initialize();
+	camera_.translation_ = { 0.0f, CalculateTopDownCameraHeight(stage_, camera_), 0.0f };
     camera_.rotation_ = { kTopDownCameraPitch, 0.0f, 0.0f };
     camera_.UpdateMatrix();
 
@@ -69,6 +73,7 @@ void GameScene::Initialize() {
 	placementTool_ = PlacementTool::Place;
 	maxGimmickCount_ = 3;
 	InitializePlacementPalette();
+	InitializeInstructionUI();
 
 	stageRenderer_.Initialize(stage_, player_.GetPosition());
 	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, false);
@@ -86,7 +91,9 @@ void GameScene::Update() {
 	ui_.Update();
 
 	// 発射前のみ、プレイヤーの開始位置調整とギミック配置が可能
-	if (player_.GetState() == Player::State::Aiming && !ui_.IsPaused() && input->TriggerKey(DIK_TAB)) {
+	const bool phaseChangeClicked = !ui_.IsPaused() && input->IsTriggerMouse(0) && IsMouseOverPhaseChangeButton();
+	if (player_.GetState() == Player::State::Aiming && !ui_.IsPaused() &&
+	    (input->TriggerKey(DIK_TAB) || phaseChangeClicked)) {
 		// 配置操作と発射操作を同時に受け付けないよう、フェーズを明確に分ける。
 		interactionPhase_ = interactionPhase_ == InteractionPhase::Placement ? InteractionPhase::Launch : InteractionPhase::Placement;
 		isPlacementCursorValid_ = false;
@@ -113,7 +120,7 @@ void GameScene::Update() {
 	}
 
 	const bool wasDragging = dragInput_.IsDragging();
-    dragInput_.Update(input, camera_, player_.GetPosition(), player_.GetState() == Player::State::Aiming && interactionPhase_ == InteractionPhase::Launch && !ui_.IsPaused());
+    dragInput_.Update(input, camera_, player_.GetPosition(), player_.GetState() == Player::State::Aiming && interactionPhase_ == InteractionPhase::Launch && !ui_.IsPaused() && !IsMouseOverPhaseChangeButton());
 	const bool isDragging = dragInput_.IsDragging();
 	if (!wasDragging && isDragging) {
 		// ボタンを押している間の連続再生を避け、ドラッグ開始時に一度だけ再生する。
@@ -155,6 +162,7 @@ void GameScene::Draw() {
     stageRenderer_.DrawGuide(stage_, camera_);
     dragInput_.Draw(camera_);
 	DrawPlacementPalette();
+	DrawInstructionUI();
     ui_.Draw();
 
 #ifdef USE_IMGUI
@@ -345,6 +353,20 @@ bool GameScene::IsMouseOverPlacementPalette() const {
 	       mouse.y >= kPaletteTop && mouse.y <= kPaletteTop + kPaletteHeight;
 }
 
+bool GameScene::IsMouseOverPhaseChangeButton() const {
+	const Vector2& mouse = Input::GetInstance()->GetMousePosition();
+	return mouse.x >= kPhaseChangeLeft && mouse.x <= kPhaseChangeLeft + kPhaseChangeWidth &&
+	       mouse.y >= kPhaseChangeTop && mouse.y <= kPhaseChangeTop + kPhaseChangeHeight;
+}
+
+int GameScene::GetHoveredPaletteItem() const {
+	if (!IsMouseOverPlacementPalette()) {
+		return -1;
+	}
+	const float localX = Input::GetInstance()->GetMousePosition().x - kPaletteLeft;
+	return std::clamp(static_cast<int>(localX / kPaletteItemWidth), 0, 2);
+}
+
 void GameScene::InitializePlacementPalette() {
 	const uint32_t paletteTexture = TextureManager::Load("Placement.png");
 	const uint32_t iconTexture = TextureManager::Load("white1x1.png");
@@ -362,6 +384,13 @@ void GameScene::InitializePlacementPalette() {
 	removeIconSpriteB_->SetSize({10.0f, 48.0f});
 	removeIconSpriteA_->SetRotation(0.78539816339f);
 	removeIconSpriteB_->SetRotation(-0.78539816339f);
+
+	const std::array<const char*, 3> textTextures = {
+		"UI/Reflect.png", "UI/Acceleration.png", "UI/Delete.png"};
+	for (size_t i = 0; i < paletteTextSprites_.size(); ++i) {
+		paletteTextSprites_[i].reset(Sprite::Create(TextureManager::Load(textTextures[i]), {0.0f, 0.0f}));
+		paletteTextSprites_[i]->SetSize({120.0f, 34.0f});
+	}
 }
 
 void GameScene::DrawPlacementPalette() {
@@ -393,6 +422,59 @@ void GameScene::DrawPlacementPalette() {
 	removeIconSpriteB_->SetColor(removeColor);
 	removeIconSpriteA_->Draw();
 	removeIconSpriteB_->Draw();
+
+	const int hoveredItem = GetHoveredPaletteItem();
+	if (hoveredItem >= 0) {
+		Sprite* hoveredText = paletteTextSprites_[hoveredItem].get();
+		hoveredText->SetPosition({
+			kPaletteLeft + kPaletteItemWidth * static_cast<float>(hoveredItem) + kPaletteItemWidth * 0.5f - 60.0f,
+			kPaletteTop - 38.0f});
+		hoveredText->Draw();
+	}
+	Sprite::PostDraw();
+}
+
+void GameScene::InitializeInstructionUI() {
+	changePlantSprite_.reset(Sprite::Create(TextureManager::Load("UI/Change_plant.png"), {kPhaseChangeLeft, kPhaseChangeTop}));
+	changeShootSprite_.reset(Sprite::Create(TextureManager::Load("UI/Change_shoot.png"), {kPhaseChangeLeft, kPhaseChangeTop}));
+	changePlantSprite_->SetSize({kPhaseChangeWidth, kPhaseChangeHeight});
+	changeShootSprite_->SetSize({kPhaseChangeWidth, kPhaseChangeHeight});
+
+	const std::array<const char*, 3> tutorialFiles = {
+		"Tutorial_01.csv", "Tutorial_02.csv", "Tutorial_03.csv"};
+	int tutorialIndex = -1;
+	for (size_t i = 0; i < tutorialFiles.size(); ++i) {
+		if (stageFilePath_.find(tutorialFiles[i]) != std::string::npos) {
+			tutorialIndex = static_cast<int>(i);
+			break;
+		}
+	}
+	if (tutorialIndex < 0) {
+		return;
+	}
+
+	// Tutorial boards are narrow, so the readable help panel fits beside them.
+	tutorialMarkSprite_.reset(Sprite::Create(TextureManager::Load("UI/!.png"), {896.0f, 80.0f}));
+	tutorialMarkSprite_->SetSize({40.0f, 40.0f});
+	const std::string textPath = "UI/Tutorial_0" + std::to_string(tutorialIndex + 1) + ".png";
+	const float tutorialTextHeight = tutorialIndex == 2 ? 26.4f : 33.0f;
+	tutorialTextSprite_.reset(Sprite::Create(TextureManager::Load(textPath), {952.0f, 84.0f}));
+	tutorialTextSprite_->SetSize({264.0f, tutorialTextHeight});
+}
+
+void GameScene::DrawInstructionUI() {
+	Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
+	if (player_.GetState() == Player::State::Aiming) {
+		if (interactionPhase_ == InteractionPhase::Placement && changePlantSprite_) {
+			changePlantSprite_->Draw();
+		} else if (interactionPhase_ == InteractionPhase::Launch && changeShootSprite_) {
+			changeShootSprite_->Draw();
+		}
+	}
+	if (tutorialMarkSprite_ && tutorialTextSprite_) {
+		tutorialMarkSprite_->Draw();
+		tutorialTextSprite_->Draw();
+	}
 	Sprite::PostDraw();
 }
 

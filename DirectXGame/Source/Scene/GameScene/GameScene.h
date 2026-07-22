@@ -10,6 +10,7 @@
 #include <3d/Camera.h>
 #include <2d/Sprite.h>
 
+#include <array>
 #include <memory>
 #include <string>
 
@@ -51,8 +52,12 @@ private:
 	bool UpdatePlacementCursorFromMouse();
 	KamataEngine::Vector3 MouseToWorldOnStage() const;
 	bool IsMouseOverPlacementPalette() const;
+	bool IsMouseOverPhaseChangeButton() const;
 	void InitializePlacementPalette();
 	void DrawPlacementPalette();
+	void InitializeInstructionUI();
+	void DrawInstructionUI();
+	int GetHoveredPaletteItem() const;
 	void ResetGame();
 
 	/// <summary>
@@ -94,6 +99,11 @@ private:
 	std::unique_ptr<KamataEngine::Sprite> accelerationIconHeadSprite_;
 	std::unique_ptr<KamataEngine::Sprite> removeIconSpriteA_;
 	std::unique_ptr<KamataEngine::Sprite> removeIconSpriteB_;
+	std::array<std::unique_ptr<KamataEngine::Sprite>, 3> paletteTextSprites_;
+	std::unique_ptr<KamataEngine::Sprite> tutorialMarkSprite_;
+	std::unique_ptr<KamataEngine::Sprite> tutorialTextSprite_;
+	std::unique_ptr<KamataEngine::Sprite> changePlantSprite_;
+	std::unique_ptr<KamataEngine::Sprite> changeShootSprite_;
 	uint32_t pullSoundHandle_ = 0;
 	uint32_t firingSoundHandle_ = 0;
 
