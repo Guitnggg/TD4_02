@@ -114,6 +114,7 @@ void MakeGimmickSegment(const Stage& stage, const Stage::GridPosition& grid, Sta
 void Player::Initialize(const Stage& stage) { Reset(stage); }
 
 void Player::Update(const Stage& stage) {
+	reflectionEvent_ = false;
 	// 移動中以外は物理更新を行わない
 	if (state_ != State::Moving) {
 		return;
@@ -165,6 +166,7 @@ void Player::Reset(const Stage& stage) {
 	state_ = State::Aiming;
 	isClear_ = false;
 	isFailed_ = false;
+	reflectionEvent_ = false;
 }
 
 void Player::MoveAimLeft(const Stage& stage) {
@@ -218,6 +220,7 @@ void Player::ReflectByWallOrBounds(const Stage& stage, const Vector3& previousPo
 
 	// X/Z のどちらへ進んで衝突したかに応じて速度を反転する
 	MyMath::ReflectGridBounceXZ(velocity_, currentGrid.x != previousGrid.x, currentGrid.z != previousGrid.z);
+	reflectionEvent_ = true;
 }
 
 bool Player::ReflectByGimmick(const Stage& stage, const Vector3& previousPosition) {
@@ -264,6 +267,7 @@ bool Player::ReflectByGimmick(const Stage& stage, const Vector3& previousPositio
 	}
 
 	lastGimmickGrid_ = hitGrid;
+	reflectionEvent_ = true;
 	return true;
 }
 

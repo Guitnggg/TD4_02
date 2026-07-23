@@ -80,6 +80,12 @@ public:
 	/// </summary>
 	bool IsFailed() const { return isFailed_; }
 
+	bool ConsumeReflectionEvent() {
+		const bool occurred = reflectionEvent_;
+		reflectionEvent_ = false;
+		return occurred;
+	}
+
 private:
 	/// <summary>
 	/// 壁またはステージ外へ進んだ場合に直前位置へ戻して反射する
@@ -117,4 +123,5 @@ private:
 
 	// 失敗済みフラグ
 	bool isFailed_ = false;
+	bool reflectionEvent_ = false;
 };

@@ -66,6 +66,8 @@ void GameScene::Initialize() {
 	pullSoundHandle_ = audio->LoadWave("SE/InGame/Pull.mp3");
 	firingSoundHandle_ = audio->LoadWave("SE/InGame/Firing.mp3");
 	phaseChangeSoundHandle_ = audio->LoadWave("SE/Dicision.mp3");
+	reflectionSoundHandle_ = audio->LoadWave("SE/InGame/ReflectSE.mp3");
+	rotationSoundHandle_ = audio->LoadWave("SE/InGame/rotateSE.mp3");
     dragInput_.Reset();
 
 	camera_.Initialize();
@@ -162,6 +164,9 @@ void GameScene::Update() {
 	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, player_.GetState() == Player::State::Aiming && interactionPhase_ == InteractionPhase::Placement && hasActivePlacementTool && isPlacementCursorValid_ && !ui_.IsPaused(), selectedPanelDirection_);
 
     player_.Update(stage_);
+	if (player_.ConsumeReflectionEvent()) {
+		Audio::GetInstance()->PlayWave(reflectionSoundHandle_, false, 0.85f);
+	}
     stageRenderer_.UpdatePlayer(player_.GetPosition());
 
 	const bool isPlayerFailed = player_.IsFailed();
@@ -347,6 +352,7 @@ void GameScene::UpdateGimmickPlacement() {
 		} else {
 			selectedPanelDirection_ = static_cast<AccelerationPanel::Direction>((static_cast<int>(selectedPanelDirection_) + 1) % 4);
 		}
+		Audio::GetInstance()->PlayWave(rotationSoundHandle_, false, 0.8f);
 	}
 
 	if (placementTool_ == PlacementTool::Remove && input->IsTriggerMouse(0) && isPlacementCursorValid_) {
