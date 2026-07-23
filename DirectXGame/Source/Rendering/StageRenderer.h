@@ -82,6 +82,8 @@ private:
 
 	// ステージ描画に共通して使用するキューブモデル
 	std::unique_ptr<KamataEngine::Model> cubeModel_;
+	std::unique_ptr<KamataEngine::Model> floorModel_;
+	std::unique_ptr<KamataEngine::Model> wallModel_;
 
 	// 配置ギミック用モデル
 	std::unique_ptr<KamataEngine::Model> reflectGimmickModel_;
@@ -96,7 +98,6 @@ private:
 	std::vector<std::unique_ptr<KamataEngine::Object3d>> wallObjects_;
 
 	// ギミック設置可能マスの描画オブジェクト一覧
-	std::vector<std::unique_ptr<KamataEngine::Object3d>> placeableObjects_;
 
 	// 反射ギミックの描画オブジェクト一覧
 	std::vector<std::unique_ptr<KamataEngine::Object3d>> gimmickObjects_;

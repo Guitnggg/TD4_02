@@ -22,7 +22,6 @@ constexpr float kWallScale = 0.41f;
 
 // 視認性確認用の仮配色。正式なアートへ差し替えるときは、この定数群だけを変更する。
 constexpr Vector4 kFloorColor = {0.10f, 0.14f, 0.22f, 1.0f};
-constexpr Vector4 kPlaceableColor = {0.10f, 0.65f, 0.85f, 1.0f};
 constexpr Vector4 kWallColor = {0.38f, 0.43f, 0.52f, 1.0f};
 constexpr Vector4 kPlayerColor = {0.15f, 0.45f, 1.0f, 1.0f};
 constexpr Vector4 kGoalColor = {1.0f, 0.85f, 0.08f, 1.0f};
@@ -48,6 +47,8 @@ private:
 
 void StageRenderer::Initialize(const Stage& stage, const Vector3& playerPosition) {
 	cubeModel_.reset(Model::CreateFromOBJ("cube"));
+	floorModel_.reset(Model::CreateFromOBJ("Floar"));
+	wallModel_.reset(Model::CreateFromOBJ("Wall"));
 	reflectGimmickModel_.reset(Model::CreateFromOBJ("ReflectGimmick"));
 	reflectGimmickCenterModel_.reset(Model::CreateFromOBJ("ReflectGimmickCenter"));
 	accelerationPanelModel_.reset(Model::CreateFromOBJ("AccelerationPanel"));
@@ -60,9 +61,6 @@ void StageRenderer::Draw(Camera& camera) {
 	Object3d::PreDraw(&camera);
 
 	for (const std::unique_ptr<Object3d>& object : floorObjects_) {
-		object->Draw(camera);
-	}
-	for (const std::unique_ptr<Object3d>& object : placeableObjects_) {
 		object->Draw(camera);
 	}
 	for (const std::unique_ptr<Object3d>& object : wallObjects_) {
@@ -202,7 +200,6 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 	// 新しいマップを構築する前に、以前のObject3dをすべて破棄する。
 	floorObjects_.clear();
 	wallObjects_.clear();
-	placeableObjects_.clear();
 	gimmickObjects_.clear();
 	placementCursorObject_.reset();
 	placementCursorReflectCenterObject_.reset();
@@ -216,20 +213,24 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 		for (int x = 0; x < stage.GetWidth(); ++x) {
 			Vector3 position = stage.GridToWorld({x, z});
 			position.y = kFloorHeight;
-			floorObjects_.push_back(CreateCube(position, floorScale, kFloorColor));
+			std::unique_ptr<Object3d> floor = std::make_unique<Object3d>();
+			floor->Initialize(floorModel_.get());
+			floor->SetTranslation(position);
+			floor->SetScale(floorScale);
+			floor->Update();
+			floorObjects_.push_back(std::move(floor));
 		}
-	}
-
-	for (const Stage::GridPosition& grid : stage.GetPlaceableTiles()) {
-		Vector3 position = stage.GridToWorld(grid);
-		position.y = 0.01f;
-		placeableObjects_.push_back(CreateCube(position, {cellSize * 0.36f, 0.04f, cellSize * 0.36f}, kPlaceableColor));
 	}
 
 	for (const Stage::GridPosition& grid : stage.GetWalls()) {
 		Vector3 position = stage.GridToWorld(grid);
 		position.y = kObjectHeight;
-		wallObjects_.push_back(CreateCube(position, {kWallScale, kObjectHeight, kWallScale}, kWallColor));
+		std::unique_ptr<Object3d> wall = std::make_unique<Object3d>();
+		wall->Initialize(wallModel_.get());
+		wall->SetTranslation(position);
+		wall->SetScale({kWallScale, kObjectHeight, kWallScale});
+		wall->Update();
+		wallObjects_.push_back(std::move(wall));
 	}
 
 	BuildGimmickObjects(stage);
