@@ -86,6 +86,12 @@ public:
 		return occurred;
 	}
 
+	bool ConsumeAccelerationEvent() {
+		const bool occurred = accelerationEvent_;
+		accelerationEvent_ = false;
+		return occurred;
+	}
+
 private:
 	/// <summary>
 	/// 壁またはステージ外へ進んだ場合に直前位置へ戻して反射する
@@ -124,4 +130,5 @@ private:
 	// 失敗済みフラグ
 	bool isFailed_ = false;
 	bool reflectionEvent_ = false;
+	bool accelerationEvent_ = false;
 };

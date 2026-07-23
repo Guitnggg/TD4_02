@@ -118,6 +118,7 @@ private:
 	uint32_t rotationSoundHandle_ = 0;
 	uint32_t placementSoundHandle_ = 0;
 	uint32_t deletionSoundHandle_ = 0;
+	uint32_t accelerationSoundHandle_ = 0;
 
 	// 1ステージで配置できるギミック数
 	int maxGimmickCount_ = 3;

@@ -115,6 +115,7 @@ void Player::Initialize(const Stage& stage) { Reset(stage); }
 
 void Player::Update(const Stage& stage) {
 	reflectionEvent_ = false;
+	accelerationEvent_ = false;
 	// 移動中以外は物理更新を行わない
 	if (state_ != State::Moving) {
 		return;
@@ -167,6 +168,7 @@ void Player::Reset(const Stage& stage) {
 	isClear_ = false;
 	isFailed_ = false;
 	reflectionEvent_ = false;
+	accelerationEvent_ = false;
 }
 
 void Player::MoveAimLeft(const Stage& stage) {
@@ -282,6 +284,7 @@ void Player::AccelerateOnPanel(const Stage& stage) {
 	if (!IsSameGrid(lastAccelerationPanelGrid_, currentGrid)) {
 		if (panel->Apply(velocity_)) {
 			lastAccelerationPanelGrid_ = currentGrid;
+			accelerationEvent_ = true;
 		}
 	}
 }

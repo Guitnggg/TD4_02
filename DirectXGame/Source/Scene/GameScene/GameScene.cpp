@@ -70,6 +70,7 @@ void GameScene::Initialize() {
 	rotationSoundHandle_ = audio->LoadWave("SE/InGame/rotateSE.mp3");
 	placementSoundHandle_ = audio->LoadWave("SE/InGame/placeSE.mp3");
 	deletionSoundHandle_ = audio->LoadWave("SE/InGame/deleteSE.mp3");
+	accelerationSoundHandle_ = audio->LoadWave("SE/InGame/accelerationSE.mp3");
     dragInput_.Reset();
 
 	camera_.Initialize();
@@ -168,6 +169,9 @@ void GameScene::Update() {
     player_.Update(stage_);
 	if (player_.ConsumeReflectionEvent()) {
 		Audio::GetInstance()->PlayWave(reflectionSoundHandle_, false, 0.85f);
+	}
+	if (player_.ConsumeAccelerationEvent()) {
+		Audio::GetInstance()->PlayWave(accelerationSoundHandle_, false, 0.85f);
 	}
     stageRenderer_.UpdatePlayer(player_.GetPosition());
 
