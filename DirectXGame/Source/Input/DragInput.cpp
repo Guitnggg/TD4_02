@@ -3,8 +3,8 @@
 #include "../Core/Math/MathUtility.h"
 
 #include <3d/PrimitiveDrawer.h>
-#include <base/WinApp.h>
 #include <base/TextureManager.h>
+#include <base/WinApp.h>
 
 #include <cmath>
 
@@ -12,14 +12,15 @@ using namespace KamataEngine;
 
 namespace {
 // ドラッグ入力の調整値
-constexpr float kPlayerPickRadius = 0.85f;
-constexpr float kMaxDragDistance = 4.0f;
-constexpr float kMinLaunchDistance = 0.12f;
-constexpr float kMinLaunchSpeed = 2.5f;
-constexpr float kMaxLaunchSpeed = 10.0f;
+constexpr float kPlayerPickRadius = 0.425f;
+constexpr float kMaxDragDistance = 2.0f;
+constexpr float kMinLaunchDistance = 0.06f;
+constexpr float kMinLaunchSpeed = 1.25f;
+constexpr float kMaxLaunchSpeed = 5.0f;
+constexpr float kMaxLaunchAngle = 0.26179938780f;
 
 // ドラッグ中の表示調整値
-constexpr float kGuideY = 0.08f;
+constexpr float kGuideY = 0.04f;
 constexpr float kArrowBaseSize = 70.0f;
 constexpr float kArrowPowerSize = 70.0f;
 
@@ -28,9 +29,7 @@ constexpr float kTrajectoryStepTime = 1.0f / 12.0f;
 constexpr int kTrajectorySegmentCount = 18;
 constexpr float kPreviewFrictionPerFrame = 0.992f;
 
-float LengthXZ(const Vector3& v) {
-	return std::sqrt(v.x * v.x + v.z * v.z);
-}
+float LengthXZ(const Vector3& v) { return std::sqrt(v.x * v.x + v.z * v.z); }
 
 Vector3 NormalizeXZ(const Vector3& v) {
 	const float length = LengthXZ(v);
@@ -112,7 +111,7 @@ void DragInput::Draw(const Camera& camera) {
 	const Vector3 current = WithGuideY(dragCurrentWorld_);
 	const Vector3 launchDirection = NormalizeXZ(MyMath::Subtract(dragStartWorld_, dragCurrentWorld_));
 	const float previewSpeed = MyMath::Length(launchVelocity_);
-	const Vector3 arrowEnd = WithGuideY(MyMath::Add(dragStartWorld_, MyMath::Multiply(launchDirection, 1.2f + powerRate_ * 1.6f)));
+	const Vector3 arrowEnd = WithGuideY(MyMath::Add(dragStartWorld_, MyMath::Multiply(launchDirection, 0.6f + powerRate_ * 0.8f)));
 
 	// ドラッグした方向を示すライン。
 	primitiveDrawer->DrawLine3d(start, current, {0.95f, 0.30f, 0.20f, 1.0f});
@@ -129,9 +128,9 @@ void DragInput::Draw(const Camera& camera) {
 	}
 
 	// ドラッグ距離に応じた発射速度ゲージ。
-	const Vector3 gaugeStart = WithGuideY(MyMath::Add(dragStartWorld_, {-2.0f, 0.0f, -1.4f}));
-	const Vector3 gaugeEnd = MyMath::Add(gaugeStart, {4.0f, 0.0f, 0.0f});
-	const Vector3 gaugeValueEnd = MyMath::Add(gaugeStart, {4.0f * powerRate_, 0.0f, 0.0f});
+	const Vector3 gaugeStart = WithGuideY(MyMath::Add(dragStartWorld_, {-1.0f, 0.0f, -0.7f}));
+	const Vector3 gaugeEnd = MyMath::Add(gaugeStart, {2.0f, 0.0f, 0.0f});
+	const Vector3 gaugeValueEnd = MyMath::Add(gaugeStart, {2.0f * powerRate_, 0.0f, 0.0f});
 	primitiveDrawer->DrawLine3d(gaugeStart, gaugeEnd, {0.20f, 0.20f, 0.20f, 1.0f});
 	primitiveDrawer->DrawLine3d(gaugeStart, gaugeValueEnd, {1.0f, 0.85f, 0.15f, 1.0f});
 
@@ -173,17 +172,11 @@ Vector3 DragInput::MouseToWorldOnPlane(const Camera& camera, float planeY) const
 	return MyMath::Add(nearPoint, MyMath::Multiply(ray, t));
 }
 
-bool DragInput::IsPressingLeft(Input* input) const {
-	return input != nullptr && input->IsPressMouse(0);
-}
+bool DragInput::IsPressingLeft(Input* input) const { return input != nullptr && input->IsPressMouse(0); }
 
-bool DragInput::IsTriggerLeft(Input* input) const {
-	return input != nullptr && input->IsTriggerMouse(0);
-}
+bool DragInput::IsTriggerLeft(Input* input) const { return input != nullptr && input->IsTriggerMouse(0); }
 
-bool DragInput::IsReleaseLeft(Input* input) const {
-	return wasPressingLeft_ && !IsPressingLeft(input);
-}
+bool DragInput::IsReleaseLeft(Input* input) const { return wasPressingLeft_ && !IsPressingLeft(input); }
 
 void DragInput::UpdateDragVector(const Vector3& playerPosition, const Vector3& currentWorld) {
 	dragStartWorld_ = playerPosition;
@@ -196,12 +189,17 @@ void DragInput::UpdateDragVector(const Vector3& playerPosition, const Vector3& c
 		drag = MyMath::Multiply(NormalizeXZ(drag), kMaxDragDistance);
 	}
 
-	dragCurrentWorld_ = MyMath::Add(dragStartWorld_, drag);
 	const float clampedDistance = LengthXZ(drag);
 	powerRate_ = MyMath::Clamp(clampedDistance / kMaxDragDistance, 0.0f, 1.0f);
 
 	// 仕様通り、ドラッグした方向とは逆向きへ発射する。
-	const Vector3 direction = NormalizeXZ(MyMath::Subtract(dragStartWorld_, dragCurrentWorld_));
+	// 発射方向をステージ上方向から左右45度以内に制限する。
+	// ドラッグ表示も制限後の方向へ合わせ、実際の発射方向と見た目を一致させる。
+	const Vector3 requestedDirection = NormalizeXZ(MyMath::Multiply(drag, -1.0f));
+	const float requestedAngle = std::atan2(requestedDirection.x, -requestedDirection.z);
+	const float launchAngle = MyMath::Clamp(requestedAngle, -kMaxLaunchAngle, kMaxLaunchAngle);
+	const Vector3 direction = {std::sin(launchAngle), 0.0f, -std::cos(launchAngle)};
+	dragCurrentWorld_ = MyMath::Add(dragStartWorld_, MyMath::Multiply(direction, -clampedDistance));
 	const float speed = MyMath::CalcLaunchSpeed(clampedDistance, kMaxDragDistance, kMinLaunchSpeed, kMaxLaunchSpeed);
 	launchVelocity_ = MyMath::Multiply(direction, speed);
 }
@@ -210,8 +208,8 @@ Vector2 DragInput::WorldToScreen(const Vector3& worldPosition, const Camera& cam
 	const Matrix4x4 viewProjection = MyMath::Multiply(camera.matView, camera.matProjection);
 	const Vector3 ndc = MyMath::Transform(worldPosition, viewProjection);
 	return {
-		(ndc.x + 1.0f) * 0.5f * static_cast<float>(WinApp::kWindowWidth),
-		(1.0f - ndc.y) * 0.5f * static_cast<float>(WinApp::kWindowHeight),
+	    (ndc.x + 1.0f) * 0.5f * static_cast<float>(WinApp::kWindowWidth),
+	    (1.0f - ndc.y) * 0.5f * static_cast<float>(WinApp::kWindowHeight),
 	};
 }
 
@@ -231,8 +229,8 @@ void DragInput::DrawArrowSprite(const Vector3& from, const Vector3& to, const Ca
 
 	const float size = kArrowBaseSize + kArrowPowerSize * powerRate_;
 	const Vector2 center = {
-		fromScreen.x + direction.x * 0.65f,
-		fromScreen.y + direction.y * 0.65f,
+	    fromScreen.x + direction.x * 0.65f,
+	    fromScreen.y + direction.y * 0.65f,
 	};
 
 	// Arrow.png は上向き画像なので、画面上の方向へ合うように 90 度補正する。

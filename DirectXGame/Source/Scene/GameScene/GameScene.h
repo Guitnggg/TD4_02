@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../Effect/GpuParticle.h"
 #include "../../Game/Stage.h"
 #include "../../Gameplay/Player/Player.h"
 #include "../../Input/DragInput.h"
@@ -7,9 +8,12 @@
 #include "../../UI/UI.h"
 #include "../IScene.h"
 
+#include <2d/Sprite.h>
 #include <3d/Camera.h>
 
+#include <array>
 #include <memory>
+#include <string>
 
 /// <summary>
 /// ゲーム本編シーンの進行、入力、描画を管理するクラス
@@ -22,10 +26,12 @@
 /// </summary>
 class GameScene : public IScene {
 public:
-	/// <summary>
-	/// ゲーム本編シーンを初期化する
-	/// ステージ、プレイヤー、入力、カメラ、描画オブジェクトを開始状態にする
-	/// </summary>
+	enum class InteractionPhase { Placement, Launch };
+	enum class PlacementTool { Place, Remove };
+
+	GameScene() = default;
+	explicit GameScene(std::string stageFilePath);
+
 	void Initialize() override;
 
 	/// <summary>
@@ -33,33 +39,31 @@ public:
 	/// キーボード入力、ドラッグ入力、ギミック配置、プレイヤー、ステージ描画、終了判定を更新する
 	/// </summary>
 	void Update() override;
-
-	/// <summary>
-	/// ゲーム本編シーンを描画する
-	/// ステージ、ガイド、ドラッグ入力、デバッグ表示を描画する
-	/// </summary>
 	void Draw() override;
-
-	/// <summary>
-	/// シーン終了済みか取得する
-	/// </summary>
 	bool IsEnd() const override;
-
-	/// <summary>
-	/// 次に遷移するシーンを生成する
-	/// </summary>
 	std::unique_ptr<IScene> NextScene() const override;
-
-	/// <summary>
-	/// 現在のシーン名を取得する
-	/// </summary>
 	SceneName GetSceneName() const override;
+	float GetBgmVolumeScale() const override { return ui_.IsPaused() ? 0.3f : 1.0f; }
 
 private:
 	/// <summary>
 	/// 発射前のギミック配置入力を更新する
 	/// </summary>
 	void UpdateGimmickPlacement();
+	bool UpdatePlacementCursorFromMouse();
+	KamataEngine::Vector3 MouseToWorldOnStage() const;
+	bool IsMouseOverPlacementPalette() const;
+	bool IsMouseOverPhaseChangeButton() const;
+	bool IsMouseOverResetButton() const;
+	void InitializePlacementPalette();
+	void DrawPlacementPalette();
+	void InitializeInstructionUI();
+	void DrawInstructionUI();
+	int GetHoveredPaletteItem() const;
+	void ResetGame();
+	void EmitReflectionParticles();
+	void EmitDustTrail();
+	void EmitAccelerationParticles();
 
 	/// <summary>
 	/// ギミック配置カーソルをステージ範囲内に収める
@@ -71,23 +75,59 @@ private:
 	/// </summary>
 	void ClearPlacedGimmicks();
 
-private:
 	// シーン終了済みフラグ
 	bool isEnd_ = false;
-
-	// 現在プレイ中のステージ情報
+	std::string stageFilePath_ = "Resources\\Stages\\Easy\\Easy_01.csv";
 	bool returnTitle_ = false;
+	bool returnStageSelect_ = false;
+
 	Stage stage_;
-
-	// ステージ上で操作するプレイヤー
 	Player player_;
-
-	// マウスドラッグによる発射入力
 	DragInput dragInput_;
-
-	// ステージとプレイヤーの描画管理
 	StageRenderer stageRenderer_;
-
-	// ゲーム本編を上から見下ろすカメラ
+	GpuParticle reflectionParticles_;
+	GpuParticle movementParticles_;
+	float dustEmissionTimer_ = 0.0f;
+	uint32_t dustEmissionPhase_ = 0;
 	KamataEngine::Camera camera_;
+	UI ui_;
+	std::unique_ptr<KamataEngine::Sprite> backgroundSprite_;
+	std::unique_ptr<KamataEngine::Sprite> failedSprite_;
+	std::unique_ptr<KamataEngine::Sprite> failedBackdropSprite_;
+	std::unique_ptr<KamataEngine::Sprite> resetSprite_;
+	float failedAnimationTimer_ = 0.0f;
+	bool isFailedSpriteVisible_ = false;
+	bool wasPlayerFailed_ = false;
+
+	// ギミック配置カーソルのグリッド座標
+	Stage::GridPosition placementCursor_{};
+
+	// 現在選択しているギミックの種類
+	Stage::GimmickType selectedGimmickType_ = Stage::GimmickType::ReflectSlash;
+	AccelerationPanel::Direction selectedPanelDirection_ = AccelerationPanel::Direction::PositiveZ;
+	bool isGimmickSelected_ = false;
+	bool isPlacementCursorValid_ = false;
+	InteractionPhase interactionPhase_ = InteractionPhase::Placement;
+	PlacementTool placementTool_ = PlacementTool::Place;
+	std::unique_ptr<KamataEngine::Sprite> placementPaletteSprite_;
+	std::unique_ptr<KamataEngine::Sprite> placementIconSprite_;
+	std::unique_ptr<KamataEngine::Sprite> accelerationIconShaftSprite_;
+	std::unique_ptr<KamataEngine::Sprite> removeIconSpriteA_;
+	std::unique_ptr<KamataEngine::Sprite> removeIconSpriteB_;
+	std::array<std::unique_ptr<KamataEngine::Sprite>, 3> paletteTextSprites_;
+	std::unique_ptr<KamataEngine::Sprite> tutorialMarkSprite_;
+	std::unique_ptr<KamataEngine::Sprite> tutorialTextSprite_;
+	std::unique_ptr<KamataEngine::Sprite> changePlantSprite_;
+	std::unique_ptr<KamataEngine::Sprite> changeShootSprite_;
+	uint32_t pullSoundHandle_ = 0;
+	uint32_t firingSoundHandle_ = 0;
+	uint32_t phaseChangeSoundHandle_ = 0;
+	uint32_t reflectionSoundHandle_ = 0;
+	uint32_t rotationSoundHandle_ = 0;
+	uint32_t placementSoundHandle_ = 0;
+	uint32_t deletionSoundHandle_ = 0;
+	uint32_t accelerationSoundHandle_ = 0;
+
+	// 1ステージで配置できるギミック数
+	int maxGimmickCount_ = 3;
 };

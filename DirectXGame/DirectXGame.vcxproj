@@ -154,16 +154,19 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Gameplay\Gauge\Gauge.cpp" />
-    <ClCompile Include="ReflectiveBlock.cpp" />
+    <ClCompile Include="Source\Effect\GpuParticle.cpp" />
+    <ClCompile Include="Source\Gameplay\Gimmick\ReflectiveBlock\ReflectiveBlock.cpp" />
+    <ClCompile Include="Source\Gameplay\Gimmick\AccelerationPanel\AccelerationPanel.cpp" />
     <ClCompile Include="Source\Core\Collision\CollisionManager.cpp" />
     <ClCompile Include="Source\Core\Math\MathUtility.cpp" />
     <ClCompile Include="Source\Core\Math\WorldTransformEx.cpp" />
     <ClCompile Include="Source\Game\Stage.cpp" />
+    <ClCompile Include="Source\Game\ResultRules.cpp" />
     <ClCompile Include="Source\Gameplay\Player\Player.cpp" />
     <ClCompile Include="Source\Input\DragInput.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Rendering\StageRenderer.cpp" />
+    <ClCompile Include="Source\Scene\DifficultySelect\DifficultySelectScene.cpp" />
     <ClCompile Include="Source\Scene\GameScene\GameScene.cpp" />
     <ClCompile Include="Source\Scene\Result\ResultScene.cpp" />
     <ClCompile Include="Source\Scene\SceneManager.cpp" />
@@ -171,6 +174,8 @@
     <ClCompile Include="Source\UI\UI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Resources\shaders\GpuParticlePS.hlsl"><ExcludedFromBuild>true</ExcludedFromBuild></FxCompile>
+    <FxCompile Include="Resources\shaders\GpuParticleVS.hlsl"><ExcludedFromBuild>true</ExcludedFromBuild></FxCompile>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
@@ -265,13 +270,30 @@
     <None Include="Resources\shaders\Terrain.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Maps\TileMap_5x5.json" />
-    <None Include="Resources\Maps\TileMap_6x6.json" />
-    <None Include="Resources\Maps\TileMap_7x7.json" />
-    <None Include="Resources\Stages\Tutorial\Tutorial.json" />
+    <ClInclude Include="Source\Effect\GpuParticle.h" />
+    <None Include="Resources\Stages\Easy\Easy_01.csv" />
+    <None Include="Resources\Stages\Easy\Easy_02.csv" />
+    <None Include="Resources\Stages\Easy\Easy_03.csv" />
+    <None Include="Resources\Stages\Easy\Easy_04.csv" />
+    <None Include="Resources\Stages\Easy\Easy_05.csv" />
+    <None Include="Resources\Stages\Hard\Hard_01.csv" />
+    <None Include="Resources\Stages\Hard\Hard_02.csv" />
+    <None Include="Resources\Stages\Hard\Hard_03.csv" />
+    <None Include="Resources\Stages\Hard\Hard_04.csv" />
+    <None Include="Resources\Stages\Hard\Hard_05.csv" />
+    <None Include="Resources\Stages\Normal\Normal_01.csv" />
+    <None Include="Resources\Stages\Normal\Normal_02.csv" />
+    <None Include="Resources\Stages\Normal\Normal_03.csv" />
+    <None Include="Resources\Stages\Normal\Normal_04.csv" />
+    <None Include="Resources\Stages\Normal\Normal_05.csv" />
+    <None Include="Resources\Stages\Tutorial\Tutorial_01.csv" />
+    <None Include="Resources\Stages\Tutorial\Tutorial_02.csv" />
+    <None Include="Resources\Stages\Tutorial\Tutorial_03.csv" />
     <None Include="Resources\shaders\Sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Gameplay\Gimmick\ReflectiveBlock\ReflectiveBlock.h" />
+    <ClInclude Include="Source\Gameplay\Gimmick\AccelerationPanel\AccelerationPanel.h" />
     <ClInclude Include="Source\Core\Collision\Collider.h" />
     <ClInclude Include="Source\Core\Collision\CollisionManager.h" />
     <ClInclude Include="Source\Core\Math\MathUtility.h" />
@@ -279,6 +301,7 @@
     <ClInclude Include="Source\Gameplay\Player\Player.h" />
     <ClInclude Include="Source\Input\DragInput.h" />
     <ClInclude Include="Source\Rendering\StageRenderer.h" />
+    <ClInclude Include="Source\Scene\DifficultySelect\DifficultySelectScene.h" />
     <ClInclude Include="Source\Scene\GameScene\GameScene.h" />
     <ClInclude Include="Source\Scene\IScene.h" />
     <ClInclude Include="Source\Scene\Result\ResultScene.h" />

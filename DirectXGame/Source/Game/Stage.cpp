@@ -3,12 +3,12 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
-#include <regex>
 #include <sstream>
 
 using namespace KamataEngine;
 
 namespace {
+// 読み込み途中でStageを書き換えないよう、CSV全体を取得してから解析する。
 std::string ReadTextFile(const std::string& filePath) {
 	std::ifstream file(filePath);
 	if (!file.is_open()) {
@@ -20,125 +20,68 @@ std::string ReadTextFile(const std::string& filePath) {
 	return stream.str();
 }
 
-std::string DecodeJsonString(const std::string& value) {
-	std::string decoded;
-	decoded.reserve(value.size());
+std::string Trim(const std::string& text) {
+	const size_t first = text.find_first_not_of(" \t\r\n");
+	if (first == std::string::npos) {
+		return {};
+	}
 
-	for (size_t i = 0; i < value.size(); ++i) {
-		if (value[i] != '\\' || i + 1 >= value.size()) {
-			decoded.push_back(value[i]);
+	const size_t last = text.find_last_not_of(" \t\r\n");
+	return text.substr(first, last - first + 1);
+}
+
+bool ParseCsvTileMap(const std::string& csv, std::vector<std::vector<int>>& rows) {
+	// 不正な行を含むマップを部分的に読み込まず、全体をエラーとして扱う。
+	rows.clear();
+
+	std::istringstream csvStream(csv);
+	std::string line;
+	while (std::getline(csvStream, line)) {
+		line = Trim(line);
+		if (line.empty()) {
 			continue;
 		}
 
-		++i;
-		switch (value[i]) {
-		case '\\':
-		case '"':
-		case '/':
-			decoded.push_back(value[i]);
-			break;
-		case 'n':
-			decoded.push_back('\n');
-			break;
-		default:
-			decoded.push_back(value[i]);
-			break;
+		std::vector<int> row;
+		std::istringstream lineStream(line);
+		std::string cell;
+		while (std::getline(lineStream, cell, ',')) {
+			cell = Trim(cell);
+			if (cell.empty()) {
+				return false;
+			}
+			try {
+				size_t parsedLength = 0;
+				const int tile = std::stoi(cell, &parsedLength);
+				if (parsedLength != cell.size() || tile < 0 || tile > 7) {
+					return false;
+				}
+				row.push_back(tile);
+			} catch (...) {
+				return false;
+			}
 		}
+
+		if (row.empty()) {
+			return false;
+		}
+		rows.push_back(std::move(row));
 	}
 
-	return decoded;
+	return !rows.empty();
 }
 
-bool ExtractStringValue(const std::string& json, const std::string& key, std::string& value) {
-	const std::regex pattern("\"" + key + "\"\\s*:\\s*\"((?:\\\\.|[^\"])*)\"");
-	std::smatch match;
-	if (!std::regex_search(json, match, pattern)) {
-		return false;
-	}
-
-	value = DecodeJsonString(match[1].str());
-	return true;
-}
-
-bool ExtractIntValue(const std::string& json, const std::string& key, int& value) {
-	const std::regex pattern("\"" + key + "\"\\s*:\\s*(-?\\d+)");
-	std::smatch match;
-	if (!std::regex_search(json, match, pattern)) {
-		return false;
-	}
-
-	value = std::stoi(match[1].str());
-	return true;
-}
-
-bool ExtractFloatValue(const std::string& json, const std::string& key, float& value) {
-	const std::regex pattern("\"" + key + "\"\\s*:\\s*(-?\\d+(?:\\.\\d+)?)");
-	std::smatch match;
-	if (!std::regex_search(json, match, pattern)) {
-		return false;
-	}
-
-	value = std::stof(match[1].str());
-	return true;
-}
-
-bool ExtractStringArray(const std::string& json, const std::string& key, std::vector<std::string>& values) {
-	const std::regex arrayPattern("\"" + key + "\"\\s*:\\s*\\[([\\s\\S]*?)\\]");
-	std::smatch arrayMatch;
-	if (!std::regex_search(json, arrayMatch, arrayPattern)) {
-		return false;
-	}
-
-	values.clear();
-	const std::string arrayBody = arrayMatch[1].str();
-	const std::regex stringPattern("\"((?:\\\\.|[^\"])*)\"");
-	for (std::sregex_iterator iterator(arrayBody.begin(), arrayBody.end(), stringPattern), end; iterator != end; ++iterator) {
-		values.push_back(DecodeJsonString((*iterator)[1].str()));
-	}
-
-	return !values.empty();
-}
-
-std::string ResolveResourcePath(const std::string& stageFilePath, const std::string& resourcePath) {
-	if (resourcePath.find(':') != std::string::npos || resourcePath.starts_with("./") || resourcePath.starts_with("../")) {
-		return resourcePath;
-	}
-
-	std::string normalizedPath = resourcePath;
-	std::replace(normalizedPath.begin(), normalizedPath.end(), '/', '\\');
-
-	const std::string resourcesMarker = "Resources\\";
-	if (normalizedPath.starts_with(resourcesMarker)) {
-		return normalizedPath;
-	}
-
-	const size_t resourcesPos = stageFilePath.find(resourcesMarker);
-	if (resourcesPos == std::string::npos) {
-		return normalizedPath;
-	}
-
-	return stageFilePath.substr(0, resourcesPos) + "Resources\\" + normalizedPath;
-}
 } // namespace
 
-bool Stage::LoadFromJson(const std::string& stageFilePath) {
-	const std::string stageJson = ReadTextFile(stageFilePath);
-	if (stageJson.empty()) {
+bool Stage::LoadFromCsv(const std::string& stageFilePath) {
+	// 一時コンテナへ解析し、検証が完了してからメンバーへ反映する。
+	const std::string mapText = ReadTextFile(stageFilePath);
+	if (mapText.empty()) {
 		return false;
 	}
 
-	std::string mapPath;
-	if (!ExtractStringValue(stageJson, "map", mapPath)) {
-		return false;
-	}
-
-	const std::string mapJson = ReadTextFile(ResolveResourcePath(stageFilePath, mapPath));
-	if (mapJson.empty()) {
-		return false;
-	}
-
-	std::vector<std::string> rows;
-	if (!ExtractStringArray(mapJson, "tiles", rows)) {
+	std::vector<std::vector<int>> rows;
+	if (!ParseCsvTileMap(mapText, rows)) {
 		return false;
 	}
 
@@ -148,7 +91,7 @@ bool Stage::LoadFromJson(const std::string& stageFilePath) {
 		return false;
 	}
 
-	for (const std::string& row : rows) {
+	for (const std::vector<int>& row : rows) {
 		if (static_cast<int>(row.size()) != loadedWidth) {
 			return false;
 		}
@@ -158,36 +101,46 @@ bool Stage::LoadFromJson(const std::string& stageFilePath) {
 	std::vector<GridPosition> loadedPlaceableTiles;
 	std::vector<GridPosition> loadedReflectSlashTiles;
 	std::vector<GridPosition> loadedReflectBackSlashTiles;
+	std::vector<AccelerationPanel> loadedAccelerationPanels;
 	GridPosition loadedPlayerStart{};
 	GridPosition loadedGoal{};
 	bool hasPlayerStart = false;
 	bool hasGoal = false;
 
 	for (int z = 0; z < loadedHeight; ++z) {
+		// CSVの数値から、固定マップ要素と初期ギミックを判別する。
 		for (int x = 0; x < loadedWidth; ++x) {
 			const GridPosition grid{x, z};
 			switch (rows[z][x]) {
-			case '#':
+			case 0:
+				// 通常床もギミック配置可能にし、ステージ攻略の自由度を確保する。
+				loadedPlaceableTiles.push_back(grid);
+				break;
+			case 1:
 				loadedWalls.push_back(grid);
 				break;
-			case '*':
-				loadedPlaceableTiles.push_back(grid);
-				break;
-			case '/':
-				loadedPlaceableTiles.push_back(grid);
-				loadedReflectSlashTiles.push_back(grid);
-				break;
-			case '\\':
-				loadedPlaceableTiles.push_back(grid);
-				loadedReflectBackSlashTiles.push_back(grid);
-				break;
-			case 'P':
+			case 2:
 				loadedPlayerStart = grid;
 				hasPlayerStart = true;
 				break;
-			case 'G':
+			case 3:
 				loadedGoal = grid;
 				hasGoal = true;
+				break;
+			case 4:
+				loadedPlaceableTiles.push_back(grid);
+				break;
+			case 5:
+				loadedPlaceableTiles.push_back(grid);
+				loadedReflectSlashTiles.push_back(grid);
+				break;
+			case 6:
+				loadedPlaceableTiles.push_back(grid);
+				loadedReflectBackSlashTiles.push_back(grid);
+				break;
+			case 7:
+				loadedPlaceableTiles.push_back(grid);
+				loadedAccelerationPanels.emplace_back(grid.x, grid.z);
 				break;
 			default:
 				break;
@@ -201,27 +154,25 @@ bool Stage::LoadFromJson(const std::string& stageFilePath) {
 
 	width_ = loadedWidth;
 	height_ = loadedHeight;
-	cellSize_ = 2.0f;
+	cellSize_ = 1.0f;
 	playerStartGrid_ = loadedPlayerStart;
 	goalGrid_ = loadedGoal;
-	playerMinX_ = 0;
-	playerMaxX_ = width_ - 1;
-
-	ExtractFloatValue(stageJson, "cellSize", cellSize_);
-	ExtractIntValue(stageJson, "playerMinX", playerMinX_);
-	ExtractIntValue(stageJson, "playerMaxX", playerMaxX_);
-
-	playerMinX_ = std::clamp(playerMinX_, 0, width_ - 1);
-	playerMaxX_ = std::clamp(playerMaxX_, playerMinX_, width_ - 1);
+	// 発射位置はステージで指定された開始位置を中心に、左右1マスだけ調整できる。
+	playerMinX_ = (std::max)(0, playerStartGrid_.x - 1);
+	playerMaxX_ = (std::min)(width_ - 1, playerStartGrid_.x + 1);
 
 	walls_ = std::move(loadedWalls);
 	placeableTiles_ = std::move(loadedPlaceableTiles);
 	reflectSlashTiles_ = std::move(loadedReflectSlashTiles);
 	reflectBackSlashTiles_ = std::move(loadedReflectBackSlashTiles);
+	accelerationPanels_ = std::move(loadedAccelerationPanels);
 
 	// ギミックはプレイヤーが発射前に配置するため、初期状態では空にする
 	reflectSlashTiles_.clear();
 	reflectBackSlashTiles_.clear();
+	accelerationPanels_.clear();
+
+	return true;
 }
 
 Vector3 Stage::GridToWorld(const GridPosition& grid) const {
@@ -239,9 +190,7 @@ Stage::GridPosition Stage::WorldToGrid(const Vector3& position) const {
 	};
 }
 
-bool Stage::IsInsideGrid(const GridPosition& grid) const {
-	return 0 <= grid.x && grid.x < width_ && 0 <= grid.z && grid.z < height_;
-}
+bool Stage::IsInsideGrid(const GridPosition& grid) const { return 0 <= grid.x && grid.x < width_ && 0 <= grid.z && grid.z < height_; }
 
 bool Stage::IsWall(const GridPosition& grid) const { return Contains(walls_, grid); }
 
@@ -252,6 +201,9 @@ Stage::GimmickType Stage::GetGimmick(const GridPosition& grid) const {
 	if (Contains(reflectBackSlashTiles_, grid)) {
 		return GimmickType::ReflectBackSlash;
 	}
+	if (FindAccelerationPanel(grid) != nullptr) {
+		return GimmickType::AccelerationPanel;
+	}
 	return GimmickType::None;
 }
 
@@ -259,11 +211,9 @@ bool Stage::IsGoal(const GridPosition& grid) const { return goalGrid_.x == grid.
 
 bool Stage::IsPlaceable(const GridPosition& grid) const { return Contains(placeableTiles_, grid); }
 
-bool Stage::CanPlaceGimmick(const GridPosition& grid) const {
-	return IsInsideGrid(grid) && IsPlaceable(grid) && !IsWall(grid) && !IsGoal(grid);
-}
+bool Stage::CanPlaceGimmick(const GridPosition& grid) const { return IsInsideGrid(grid) && IsPlaceable(grid) && !IsWall(grid) && !IsGoal(grid); }
 
-bool Stage::PlaceGimmick(const GridPosition& grid, GimmickType type) {
+bool Stage::PlaceGimmick(const GridPosition& grid, GimmickType type, AccelerationPanel::Direction panelDirection) {
 	if (type == GimmickType::None) {
 		return RemoveGimmick(grid);
 	}
@@ -282,6 +232,10 @@ bool Stage::PlaceGimmick(const GridPosition& grid, GimmickType type) {
 		reflectBackSlashTiles_.push_back(grid);
 		return true;
 	}
+	if (type == GimmickType::AccelerationPanel) {
+		accelerationPanels_.emplace_back(grid.x, grid.z, panelDirection);
+		return true;
+	}
 
 	return false;
 }
@@ -289,16 +243,25 @@ bool Stage::PlaceGimmick(const GridPosition& grid, GimmickType type) {
 bool Stage::RemoveGimmick(const GridPosition& grid) {
 	const bool removedSlash = RemoveFromList(reflectSlashTiles_, grid);
 	const bool removedBackSlash = RemoveFromList(reflectBackSlashTiles_, grid);
-	return removedSlash || removedBackSlash;
+	const auto oldPanelEnd = accelerationPanels_.end();
+	const auto newPanelEnd = std::remove_if(accelerationPanels_.begin(), accelerationPanels_.end(), [grid](const AccelerationPanel& panel) { return panel.IsAt(grid.x, grid.z); });
+	const bool removedPanel = newPanelEnd != oldPanelEnd;
+	accelerationPanels_.erase(newPanelEnd, oldPanelEnd);
+	return removedSlash || removedBackSlash || removedPanel;
 }
 
 void Stage::ClearGimmicks() {
 	reflectSlashTiles_.clear();
 	reflectBackSlashTiles_.clear();
+	accelerationPanels_.clear();
 }
 
-int Stage::GetPlacedGimmickCount() const {
-	return static_cast<int>(reflectSlashTiles_.size() + reflectBackSlashTiles_.size());
+int Stage::GetPlacedGimmickCount() const { return static_cast<int>(reflectSlashTiles_.size() + reflectBackSlashTiles_.size() + accelerationPanels_.size()); }
+
+const AccelerationPanel* Stage::FindAccelerationPanel(const GridPosition& grid) const {
+	// コピーを避け、Playerから床の処理を直接呼べるようポインターを返す。
+	const auto it = std::find_if(accelerationPanels_.begin(), accelerationPanels_.end(), [grid](const AccelerationPanel& panel) { return panel.IsAt(grid.x, grid.z); });
+	return it == accelerationPanels_.end() ? nullptr : &(*it);
 }
 
 bool Stage::Contains(const std::vector<GridPosition>& grids, const GridPosition& target) const {

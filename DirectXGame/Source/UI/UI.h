@@ -1,58 +1,32 @@
 #pragma once
 #include "KamataEngine.h"
+#include <array>
+#include <memory>
 
-// UIクラスを処理するクラス
+/// ゲーム中のポーズボタンとポーズメニューを管理する。
 class UI {
 public:
-	~UI();
-
 	void Initialize();
-
 	void Update();
-
 	void Draw();
+	bool ShouldReturnToStageSelect() const { return shouldReturnToStageSelect_; }
+	bool ShouldReturnToTitle() const { return shouldReturnToTitle_; }
+	bool IsPaused() const { return isPaused_; }
 
-	// 一時停止の判定
-	void Pause();
-
-	// カーソル移動
-	void MoveC();
-
-	// UI起動のgetter
-	bool IsStageselect() const { return Stageselect; }
-
-	// ゲーム進行のgetter
-	bool IsProgress() const { return Progress; }
-	
 private:
+	void UpdatePauseMenu();
+	void UpdateKeyboardSelection();
+	void ExecuteSelectedItem();
+	int GetMenuItemIndex(const KamataEngine::Vector2& mousePosition) const;
+	bool IsPauseButton(const KamataEngine::Vector2& mousePosition) const;
 	KamataEngine::DirectXCommon* dxCommon_ = nullptr;
 	KamataEngine::Input* input_ = nullptr;
 	KamataEngine::Audio* audio_ = nullptr;
-
-	// ワールドトランスフォーム
-	KamataEngine::WorldTransform worldTransfrom_;
-
-	// テクスチャハンドル
-	uint32_t textureHandle_[4];
-
-	// 一時停止ボタン用スプライト
-	KamataEngine::Sprite* spritePause_[4];
-
-	// サウンドデータハンドル
-	uint32_t Click = 0;
-
-	// 音声再生ハンドル
-	uint32_t voiceHandle_ = 0u;
-
-	// カーソル
-	int moveC = 0;
-
-	// UI起動フラグ
-	bool Uiflag = false;
-
-	// ステージセレクトフラグ
-	bool Stageselect = false;
-
-	// ゲーム進行フラグ
-	bool Progress = false;
+	std::array<uint32_t, 4> textureHandles_{};
+	std::array<std::unique_ptr<KamataEngine::Sprite>, 4> pauseSprites_{};
+	uint32_t decisionSoundHandle_ = 0;
+	int selectedMenuItem_ = 0;
+	bool isPaused_ = false;
+	bool shouldReturnToStageSelect_ = false;
+	bool shouldReturnToTitle_ = false;
 };

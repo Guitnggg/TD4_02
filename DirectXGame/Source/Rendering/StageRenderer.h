@@ -6,6 +6,7 @@
 #include <3d/Model.h>
 #include <3d/Object3d.h>
 #include <math/Vector3.h>
+#include <math/Vector4.h>
 
 #include <memory>
 #include <vector>
@@ -54,7 +55,8 @@ public:
 	/// <summary>
 	/// ギミック配置カーソルの表示位置と向きを更新する
 	/// </summary>
-	void UpdatePlacementCursor(const Stage& stage, const Stage::GridPosition& grid, Stage::GimmickType selectedType, bool isVisible);
+	void UpdatePlacementCursor(
+	    const Stage& stage, const Stage::GridPosition& grid, Stage::GimmickType selectedType, bool isVisible, AccelerationPanel::Direction panelDirection = AccelerationPanel::Direction::PositiveZ);
 
 private:
 	/// <summary>
@@ -63,7 +65,7 @@ private:
 	/// <param name="translation">生成するワールド座標</param>
 	/// <param name="scale">生成するキューブの拡大率</param>
 	/// <returns>初期化済みのキューブオブジェクト</returns>
-	std::unique_ptr<KamataEngine::Object3d> CreateCube(const KamataEngine::Vector3& translation, const KamataEngine::Vector3& scale);
+	std::unique_ptr<KamataEngine::Object3d> CreateCube(const KamataEngine::Vector3& translation, const KamataEngine::Vector3& scale, const KamataEngine::Vector4& color);
 
 	/// <summary>
 	/// ステージ情報から床、壁、ギミック、ゴール、プレイヤーの描画オブジェクトを構築する
@@ -77,30 +79,37 @@ private:
 	/// </summary>
 	void BuildGimmickObjects(const Stage& stage);
 
-	// ステージ描画に共通して使用するキューブモデル
+	// ステージとキャラクターのモデル
 	std::unique_ptr<KamataEngine::Model> cubeModel_;
+	std::unique_ptr<KamataEngine::Model> floorModel_;
+	std::unique_ptr<KamataEngine::Model> wallModel_;
+	std::unique_ptr<KamataEngine::Model> playerModel_;
+	std::unique_ptr<KamataEngine::Model> goalModel_;
 
-	// 床マスの描画オブジェクト一覧
+	// 配置ギミック用モデル
+	std::unique_ptr<KamataEngine::Model> reflectGimmickModel_;
+	std::unique_ptr<KamataEngine::Model> reflectGimmickCenterModel_;
+	std::unique_ptr<KamataEngine::Model> accelerationPanelModel_;
+	std::unique_ptr<KamataEngine::Model> accelerationPanelBaseModel_;
+
+	// ステージを構成する描画オブジェクト
 	std::vector<std::unique_ptr<KamataEngine::Object3d>> floorObjects_;
-
-	// 壁の描画オブジェクト一覧
 	std::vector<std::unique_ptr<KamataEngine::Object3d>> wallObjects_;
-
-	// ギミック設置可能マスの描画オブジェクト一覧
-	std::vector<std::unique_ptr<KamataEngine::Object3d>> placeableObjects_;
-
-	// 反射ギミックの描画オブジェクト一覧
 	std::vector<std::unique_ptr<KamataEngine::Object3d>> gimmickObjects_;
 
 	// 配置予定ギミックのプレビュー表示
 	std::unique_ptr<KamataEngine::Object3d> placementCursorObject_;
+	std::unique_ptr<KamataEngine::Object3d> placementCursorReflectCenterObject_;
+	std::unique_ptr<KamataEngine::Object3d> placementCursorBaseObject_;
+	std::unique_ptr<KamataEngine::Object3d> placementCursorArrowObject_;
 
-	// 配置カーソルを表示するかどうか
+	// カーソルを構成する各モデルの表示状態
 	bool isPlacementCursorVisible_ = false;
+	bool isPlacementCursorReflectCenterVisible_ = false;
+	bool isPlacementCursorBaseVisible_ = false;
+	bool isPlacementCursorArrowVisible_ = false;
 
-	// ゴールの描画オブジェクト
+	// 動的に位置を更新する描画オブジェクト
 	std::unique_ptr<KamataEngine::Object3d> goalObject_;
-
-	// プレイヤーの描画オブジェクト
 	std::unique_ptr<KamataEngine::Object3d> playerObject_;
 };

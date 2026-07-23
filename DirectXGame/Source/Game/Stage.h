@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Gameplay/Gimmick/AccelerationPanel/AccelerationPanel.h"
 #include <math/Vector3.h>
 
 #include <string>
@@ -19,23 +20,24 @@ public:
 	/// グリッド上に配置されているギミックの種類
 	/// </summary>
 	enum class GimmickType {
-		None,              // ギミックなし
-		ReflectSlash,      // 「／」方向の反射ギミック
-		ReflectBackSlash,  // 「＼」方向の反射ギミック
+		AccelerationPanel = -1,
+		None,             // ギミックなし
+		ReflectSlash,     // 「／」方向の反射ギミック
+		ReflectBackSlash, // 「＼」方向の反射ギミック
 	};
 
 	/// <summary>
 	/// ステージ上のマスを表すグリッド座標
 	/// </summary>
 	struct GridPosition {
-		int x = 0;  // 横方向のマス位置
-		int z = 0;  // 縦方向のマス位置
+		int x = 0; // 横方向のマス位置
+		int z = 0; // 縦方向のマス位置
 	};
 
 	/// <summary>
 	/// チュートリアル用ステージの配置で初期化する
 	/// </summary>
-	bool LoadFromJson(const std::string& stageFilePath);
+	bool LoadFromCsv(const std::string& stageFilePath);
 
 	/// <summary>
 	/// グリッド座標をワールド座標へ変換する
@@ -93,7 +95,7 @@ public:
 	/// 指定したグリッド座標にギミックを配置する
 	/// 既にギミックがある場合は向きを上書きする
 	/// </summary>
-	bool PlaceGimmick(const GridPosition& grid, GimmickType type);
+	bool PlaceGimmick(const GridPosition& grid, GimmickType type, AccelerationPanel::Direction panelDirection = AccelerationPanel::Direction::PositiveZ);
 
 	/// <summary>
 	/// 指定したグリッド座標のギミックを削除する
@@ -144,6 +146,9 @@ public:
 	/// ReflectBackSlash ギミックのグリッド座標一覧を取得する
 	/// </summary>
 	const std::vector<GridPosition>& GetReflectBackSlashTiles() const { return reflectBackSlashTiles_; }
+	const std::vector<AccelerationPanel>& GetAccelerationPanels() const { return accelerationPanels_; }
+	const AccelerationPanel* FindAccelerationPanel(const GridPosition& grid) const;
+	int GetAccelerationPanelCount() const { return static_cast<int>(accelerationPanels_.size()); }
 
 	/// <summary>
 	/// プレイヤー開始位置のグリッド座標を取得する
@@ -186,7 +191,7 @@ private:
 	int height_ = 0;
 
 	// 1マスあたりのワールド座標上の大きさ
-	float cellSize_ = 2.0f;
+	float cellSize_ = 1.0f;
 
 	// プレイヤー開始位置のグリッド座標
 	GridPosition playerStartGrid_{};
@@ -211,4 +216,5 @@ private:
 
 	// ReflectBackSlash ギミックのグリッド座標一覧
 	std::vector<GridPosition> reflectBackSlashTiles_;
+	std::vector<AccelerationPanel> accelerationPanels_;
 };

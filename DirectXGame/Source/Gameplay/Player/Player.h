@@ -17,10 +17,10 @@ public:
 	/// <summary>
 	/// プレイヤーの現在状態
 	/// </summary>
-	enum class State {		
-		Aiming,  // 発射前。位置調整と発射が可能		
-		Moving,  // 発射後。物理演算で移動中		
-		Stopped,  // クリアまたは失敗で停止
+	enum class State {
+		Aiming,  // 発射前。位置調整と発射が可能
+		Moving,  // 発射後。物理演算で移動中
+		Stopped, // クリアまたは失敗で停止
 	};
 
 	/// <summary>
@@ -64,6 +64,7 @@ public:
 	/// 現在のワールド座標を取得する
 	/// </summary>
 	const KamataEngine::Vector3& GetPosition() const { return position_; }
+	const KamataEngine::Vector3& GetVelocity() const { return velocity_; }
 
 	/// <summary>
 	/// 現在の状態を取得する
@@ -80,6 +81,18 @@ public:
 	/// </summary>
 	bool IsFailed() const { return isFailed_; }
 
+	bool ConsumeReflectionEvent() {
+		const bool occurred = reflectionEvent_;
+		reflectionEvent_ = false;
+		return occurred;
+	}
+
+	bool ConsumeAccelerationEvent() {
+		const bool occurred = accelerationEvent_;
+		accelerationEvent_ = false;
+		return occurred;
+	}
+
 private:
 	/// <summary>
 	/// 壁またはステージ外へ進んだ場合に直前位置へ戻して反射する
@@ -94,6 +107,7 @@ private:
 	/// 配置済み反射ギミックに当たった場合、見た目の斜め板に合わせて反射する
 	/// </summary>
 	bool ReflectByGimmick(const Stage& stage, const KamataEngine::Vector3& previousPosition);
+	void AccelerateOnPanel(const Stage& stage);
 
 	// 現在のワールド座標
 	KamataEngine::Vector3 position_{};
@@ -106,6 +120,7 @@ private:
 
 	// 同じ反射ギミックで連続反射しないための直前接触グリッド
 	Stage::GridPosition lastGimmickGrid_{-1, -1};
+	Stage::GridPosition lastAccelerationPanelGrid_{-1, -1};
 
 	// 現在のプレイヤー状態
 	State state_ = State::Aiming;
@@ -115,4 +130,6 @@ private:
 
 	// 失敗済みフラグ
 	bool isFailed_ = false;
+	bool reflectionEvent_ = false;
+	bool accelerationEvent_ = false;
 };
