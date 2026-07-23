@@ -85,7 +85,9 @@ private:
 
 	// 配置ギミック用モデル
 	std::unique_ptr<KamataEngine::Model> reflectGimmickModel_;
+	std::unique_ptr<KamataEngine::Model> reflectGimmickCenterModel_;
 	std::unique_ptr<KamataEngine::Model> accelerationPanelModel_;
+	std::unique_ptr<KamataEngine::Model> accelerationPanelBaseModel_;
 
 	// 床マスの描画オブジェクト一覧
 	std::vector<std::unique_ptr<KamataEngine::Object3d>> floorObjects_;
@@ -101,9 +103,15 @@ private:
 
 	// 配置予定ギミックのプレビュー表示
 	std::unique_ptr<KamataEngine::Object3d> placementCursorObject_;
+	std::unique_ptr<KamataEngine::Object3d> placementCursorReflectCenterObject_;
+	std::unique_ptr<KamataEngine::Object3d> placementCursorBaseObject_;
+	std::unique_ptr<KamataEngine::Object3d> placementCursorArrowObject_;
 
 	// 配置カーソルを表示するかどうか
 	bool isPlacementCursorVisible_ = false;
+	bool isPlacementCursorReflectCenterVisible_ = false;
+	bool isPlacementCursorBaseVisible_ = false;
+	bool isPlacementCursorArrowVisible_ = false;
 
 	// ゴールの描画オブジェクト
 	std::unique_ptr<KamataEngine::Object3d> goalObject_;

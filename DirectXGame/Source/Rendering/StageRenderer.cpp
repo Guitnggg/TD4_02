@@ -26,6 +26,10 @@ constexpr Vector4 kPlaceableColor = {0.10f, 0.65f, 0.85f, 1.0f};
 constexpr Vector4 kWallColor = {0.38f, 0.43f, 0.52f, 1.0f};
 constexpr Vector4 kPlayerColor = {0.15f, 0.45f, 1.0f, 1.0f};
 constexpr Vector4 kGoalColor = {1.0f, 0.85f, 0.08f, 1.0f};
+constexpr Vector4 kReflectFrameColor = {0.015f, 0.015f, 0.02f, 1.0f};
+constexpr Vector4 kReflectCenterColor = {0.95f, 0.97f, 1.0f, 1.0f};
+constexpr Vector4 kAccelerationPanelBaseColor = {0.62f, 0.68f, 0.76f, 1.0f};
+constexpr Vector4 kAccelerationPanelArrowColor = {0.10f, 0.28f, 1.0f, 1.0f};
 
 class ColoredObject3d final : public Object3d {
 public:
@@ -45,7 +49,9 @@ private:
 void StageRenderer::Initialize(const Stage& stage, const Vector3& playerPosition) {
 	cubeModel_.reset(Model::CreateFromOBJ("cube"));
 	reflectGimmickModel_.reset(Model::CreateFromOBJ("ReflectGimmick"));
+	reflectGimmickCenterModel_.reset(Model::CreateFromOBJ("ReflectGimmickCenter"));
 	accelerationPanelModel_.reset(Model::CreateFromOBJ("AccelerationPanel"));
+	accelerationPanelBaseModel_.reset(Model::CreateFromOBJ("AccelerationPanelBase"));
 	BuildStageObjects(stage, playerPosition);
 }
 
@@ -65,8 +71,17 @@ void StageRenderer::Draw(Camera& camera) {
 	for (const std::unique_ptr<Object3d>& object : gimmickObjects_) {
 		object->Draw(camera);
 	}
+	if (isPlacementCursorBaseVisible_ && placementCursorBaseObject_) {
+		placementCursorBaseObject_->Draw(camera);
+	}
+	if (isPlacementCursorArrowVisible_ && placementCursorArrowObject_) {
+		placementCursorArrowObject_->Draw(camera);
+	}
 	if (isPlacementCursorVisible_ && placementCursorObject_) {
 		placementCursorObject_->Draw(camera);
+	}
+	if (isPlacementCursorReflectCenterVisible_ && placementCursorReflectCenterObject_) {
+		placementCursorReflectCenterObject_->Draw(camera);
 	}
 	if (goalObject_) {
 		goalObject_->Draw(camera);
@@ -127,7 +142,10 @@ float AccelerationPanelRotation(AccelerationPanel::Direction direction) {
 
 void StageRenderer::UpdatePlacementCursor(const Stage& stage, const Stage::GridPosition& grid, Stage::GimmickType selectedType, bool isVisible,
                                           AccelerationPanel::Direction panelDirection) {
-	isPlacementCursorVisible_ = isVisible;
+	isPlacementCursorVisible_ = isVisible && selectedType != Stage::GimmickType::AccelerationPanel;
+	isPlacementCursorReflectCenterVisible_ = isVisible && selectedType != Stage::GimmickType::AccelerationPanel;
+	isPlacementCursorBaseVisible_ = isVisible && selectedType == Stage::GimmickType::AccelerationPanel;
+	isPlacementCursorArrowVisible_ = isVisible && selectedType == Stage::GimmickType::AccelerationPanel;
 	if (!isVisible || !placementCursorObject_) {
 		return;
 	}
@@ -149,6 +167,26 @@ void StageRenderer::UpdatePlacementCursor(const Stage& stage, const Stage::GridP
 	}
 
 	placementCursorObject_->Update();
+	if (isPlacementCursorReflectCenterVisible_ && placementCursorReflectCenterObject_) {
+		Vector3 centerPosition = position;
+		centerPosition.y += 0.002f;
+		placementCursorReflectCenterObject_->SetTranslation(centerPosition);
+		placementCursorReflectCenterObject_->SetScale({kGimmickScale, kGimmickScale, kGimmickScale});
+		placementCursorReflectCenterObject_->SetRotation(placementCursorObject_->GetRotation());
+		placementCursorReflectCenterObject_->Update();
+	}
+	if (isPlacementCursorBaseVisible_ && placementCursorBaseObject_) {
+		placementCursorBaseObject_->SetTranslation(position);
+		placementCursorBaseObject_->SetScale({kAccelerationPanelScale, kAccelerationPanelScale, kAccelerationPanelScale});
+		placementCursorBaseObject_->SetRotation({0.0f, AccelerationPanelRotation(panelDirection), 0.0f});
+		placementCursorBaseObject_->Update();
+	}
+	if (isPlacementCursorArrowVisible_ && placementCursorArrowObject_) {
+		placementCursorArrowObject_->SetTranslation(position);
+		placementCursorArrowObject_->SetScale({kAccelerationPanelScale, kAccelerationPanelScale, kAccelerationPanelScale});
+		placementCursorArrowObject_->SetRotation({0.0f, AccelerationPanelRotation(panelDirection), 0.0f});
+		placementCursorArrowObject_->Update();
+	}
 }
 
 std::unique_ptr<Object3d> StageRenderer::CreateCube(const Vector3& translation, const Vector3& scale, const Vector4& color) {
@@ -167,6 +205,9 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 	placeableObjects_.clear();
 	gimmickObjects_.clear();
 	placementCursorObject_.reset();
+	placementCursorReflectCenterObject_.reset();
+	placementCursorBaseObject_.reset();
+	placementCursorArrowObject_.reset();
 
 	const float cellSize = stage.GetCellSize();
 	const Vector3 floorScale = {cellSize * 0.47f, kTileHalfHeight, cellSize * 0.47f};
@@ -199,51 +240,84 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 
 	playerObject_ = CreateCube(playerPosition, {kPlayerScale, kPlayerScale, kPlayerScale}, kPlayerColor);
 
-	placementCursorObject_ = std::make_unique<Object3d>();
-	placementCursorObject_->Initialize(reflectGimmickModel_.get());
+	std::unique_ptr<ColoredObject3d> reflectCursor = std::make_unique<ColoredObject3d>();
+	reflectCursor->Initialize(reflectGimmickModel_.get(), kReflectFrameColor);
+	placementCursorObject_ = std::move(reflectCursor);
 	placementCursorObject_->SetTranslation(stage.GridToWorld({0, 0}));
 	placementCursorObject_->SetScale({kGimmickScale, kGimmickScale, kGimmickScale});
 	placementCursorObject_->Update();
+	std::unique_ptr<ColoredObject3d> reflectCenterCursor = std::make_unique<ColoredObject3d>();
+	reflectCenterCursor->Initialize(reflectGimmickCenterModel_.get(), kReflectCenterColor);
+	reflectCenterCursor->SetTranslation(stage.GridToWorld({0, 0}));
+	reflectCenterCursor->SetScale({kGimmickScale, kGimmickScale, kGimmickScale});
+	reflectCenterCursor->Update();
+	placementCursorReflectCenterObject_ = std::move(reflectCenterCursor);
+	std::unique_ptr<ColoredObject3d> baseCursor = std::make_unique<ColoredObject3d>();
+	baseCursor->Initialize(accelerationPanelBaseModel_.get(), kAccelerationPanelBaseColor);
+	baseCursor->SetTranslation(stage.GridToWorld({0, 0}));
+	baseCursor->SetScale({kAccelerationPanelScale, kAccelerationPanelScale, kAccelerationPanelScale});
+	baseCursor->Update();
+	placementCursorBaseObject_ = std::move(baseCursor);
+	std::unique_ptr<ColoredObject3d> arrowCursor = std::make_unique<ColoredObject3d>();
+	arrowCursor->Initialize(accelerationPanelModel_.get(), kAccelerationPanelArrowColor);
+	arrowCursor->SetTranslation(stage.GridToWorld({0, 0}));
+	arrowCursor->SetScale({kAccelerationPanelScale, kAccelerationPanelScale, kAccelerationPanelScale});
+	arrowCursor->Update();
+	placementCursorArrowObject_ = std::move(arrowCursor);
 	isPlacementCursorVisible_ = false;
+	isPlacementCursorReflectCenterVisible_ = false;
+	isPlacementCursorBaseVisible_ = false;
+	isPlacementCursorArrowVisible_ = false;
 }
 
 void StageRenderer::BuildGimmickObjects(const Stage& stage) {
 	gimmickObjects_.clear();
-
-	for (const Stage::GridPosition& grid : stage.GetReflectSlashTiles()) {
+	auto addReflectGimmick = [this, &stage](const Stage::GridPosition& grid, float rotation) {
 		Vector3 position = stage.GridToWorld(grid);
 		position.y = kReflectGimmickHeight;
-		std::unique_ptr<Object3d> object = std::make_unique<Object3d>();
-		object->Initialize(reflectGimmickModel_.get());
-		object->SetTranslation(position);
-		object->SetScale({kGimmickScale, kGimmickScale, kGimmickScale});
-		object->SetRotation({0.0f, std::numbers::pi_v<float> * 0.25f, 0.0f});
-		object->Update();
-		gimmickObjects_.push_back(std::move(object));
+		std::unique_ptr<ColoredObject3d> frame = std::make_unique<ColoredObject3d>();
+		frame->Initialize(reflectGimmickModel_.get(), kReflectFrameColor);
+		std::unique_ptr<ColoredObject3d> center = std::make_unique<ColoredObject3d>();
+		center->Initialize(reflectGimmickCenterModel_.get(), kReflectCenterColor);
+		Object3d* objects[] = {frame.get(), center.get()};
+		for (Object3d* object : objects) {
+			object->SetTranslation(position);
+			object->SetScale({kGimmickScale, kGimmickScale, kGimmickScale});
+			object->SetRotation({0.0f, rotation, 0.0f});
+			object->Update();
+		}
+		Vector3 centerPosition = position;
+		centerPosition.y += 0.002f;
+		center->SetTranslation(centerPosition);
+		center->Update();
+		gimmickObjects_.push_back(std::move(frame));
+		gimmickObjects_.push_back(std::move(center));
+	};
+
+	for (const Stage::GridPosition& grid : stage.GetReflectSlashTiles()) {
+		addReflectGimmick(grid, std::numbers::pi_v<float> * 0.25f);
 	}
 
 	for (const Stage::GridPosition& grid : stage.GetReflectBackSlashTiles()) {
-		Vector3 position = stage.GridToWorld(grid);
-		position.y = kReflectGimmickHeight;
-		std::unique_ptr<Object3d> object = std::make_unique<Object3d>();
-		object->Initialize(reflectGimmickModel_.get());
-		object->SetTranslation(position);
-		object->SetScale({kGimmickScale, kGimmickScale, kGimmickScale});
-		object->SetRotation({0.0f, -std::numbers::pi_v<float> * 0.25f, 0.0f});
-		object->Update();
-		gimmickObjects_.push_back(std::move(object));
+		addReflectGimmick(grid, -std::numbers::pi_v<float> * 0.25f);
 	}
 
 	for (const AccelerationPanel& panel : stage.GetAccelerationPanels()) {
 		// 斜めの反射ギミックと見分けられるよう、低い正方形の床として描画する。
 		Vector3 position = stage.GridToWorld({panel.GetGridX(), panel.GetGridZ()});
 		position.y = kAccelerationPanelHeight;
-		std::unique_ptr<Object3d> object = std::make_unique<Object3d>();
-		object->Initialize(accelerationPanelModel_.get());
-		object->SetTranslation(position);
-		object->SetScale({kAccelerationPanelScale, kAccelerationPanelScale, kAccelerationPanelScale});
-		object->SetRotation({0.0f, AccelerationPanelRotation(panel.GetDirection()), 0.0f});
-		object->Update();
-		gimmickObjects_.push_back(std::move(object));
+		std::unique_ptr<ColoredObject3d> baseObject = std::make_unique<ColoredObject3d>();
+		baseObject->Initialize(accelerationPanelBaseModel_.get(), kAccelerationPanelBaseColor);
+		std::unique_ptr<ColoredObject3d> arrowObject = std::make_unique<ColoredObject3d>();
+		arrowObject->Initialize(accelerationPanelModel_.get(), kAccelerationPanelArrowColor);
+		Object3d* panelObjects[] = {baseObject.get(), arrowObject.get()};
+		for (Object3d* object : panelObjects) {
+			object->SetTranslation(position);
+			object->SetScale({kAccelerationPanelScale, kAccelerationPanelScale, kAccelerationPanelScale});
+			object->SetRotation({0.0f, AccelerationPanelRotation(panel.GetDirection()), 0.0f});
+			object->Update();
+		}
+		gimmickObjects_.push_back(std::move(baseObject));
+		gimmickObjects_.push_back(std::move(arrowObject));
 	}
 }
