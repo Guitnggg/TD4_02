@@ -86,6 +86,9 @@ public:
 	// start から end へ t の割合で線形補間する
 	static KamataEngine::Vector3 Lerp(const KamataEngine::Vector3& start, const KamataEngine::Vector3& end, float t);
 
+	// 0～1の範囲で、終点付近に複数回のバウンドを付けるイージング
+	static float EaseOutBounce(float t);
+
 	// 度数法からラジアンへ変換する
 	static float ToRadian(float degree);
 

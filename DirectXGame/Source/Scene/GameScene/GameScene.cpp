@@ -27,10 +27,13 @@ namespace {
 	constexpr float kPaletteWidth = 384.0f;
 	constexpr float kPaletteHeight = 64.0f;
 	constexpr float kPaletteItemWidth = 128.0f;
-	constexpr float kPhaseChangeLeft = 1088.0f;
-	constexpr float kPhaseChangeTop = 656.0f;
-	constexpr float kPhaseChangeWidth = 192.0f;
-	constexpr float kPhaseChangeHeight = 64.0f;
+	constexpr float kPhaseChangeLeft = 896.0f;
+	constexpr float kPhaseChangeTop = 616.0f;
+	constexpr float kPhaseChangeWidth = 288.0f;
+	constexpr float kPhaseChangeHeight = 96.0f;
+	constexpr float kPhaseChangeHoverScale = 1.06f;
+	constexpr float kFailedAnimationDuration = 1.5f;
+	constexpr float kFixedDeltaTime = 1.0f / 60.0f;
 	float CalculateTopDownCameraHeight(const Stage& stage, const Camera& camera) {
 		const float halfFovTangent = std::tan(camera.fovAngleY * 0.5f);
 		const float heightForVerticalFit = static_cast<float>(stage.GetHeight()) / (2.0f * halfFovTangent);
@@ -57,6 +60,7 @@ void GameScene::Initialize() {
 	Audio* audio = Audio::GetInstance();
 	pullSoundHandle_ = audio->LoadWave("SE/InGame/Pull.mp3");
 	firingSoundHandle_ = audio->LoadWave("SE/InGame/Firing.mp3");
+	phaseChangeSoundHandle_ = audio->LoadWave("SE/Dicision.mp3");
     dragInput_.Reset();
 
 	camera_.Initialize();
@@ -76,6 +80,13 @@ void GameScene::Initialize() {
 	InitializeInstructionUI();
 	backgroundSprite_.reset(Sprite::Create(TextureManager::Load("UI/GameBackground.png"), {0.0f, 0.0f}));
 	backgroundSprite_->SetSize({static_cast<float>(WinApp::kWindowWidth), static_cast<float>(WinApp::kWindowHeight)});
+	failedSprite_.reset(Sprite::Create(TextureManager::Load("UI/Failed.png"), {0.0f, -static_cast<float>(WinApp::kWindowHeight)}));
+	failedSprite_->SetSize({static_cast<float>(WinApp::kWindowWidth), static_cast<float>(WinApp::kWindowHeight)});
+	failedBackdropSprite_.reset(Sprite::Create(TextureManager::Load("white1x1.png"), {0.0f, 0.0f}, Vector4{0.0f, 0.0f, 0.0f, 0.68f}));
+	failedBackdropSprite_->SetSize({static_cast<float>(WinApp::kWindowWidth), static_cast<float>(WinApp::kWindowHeight)});
+	failedAnimationTimer_ = 0.0f;
+	isFailedSpriteVisible_ = false;
+	wasPlayerFailed_ = false;
 
 	stageRenderer_.Initialize(stage_, player_.GetPosition());
 	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, false);
@@ -98,6 +109,7 @@ void GameScene::Update() {
 	    (input->TriggerKey(DIK_TAB) || phaseChangeClicked)) {
 		// 配置操作と発射操作を同時に受け付けないよう、フェーズを明確に分ける。
 		interactionPhase_ = interactionPhase_ == InteractionPhase::Placement ? InteractionPhase::Launch : InteractionPhase::Placement;
+		Audio::GetInstance()->PlayWave(phaseChangeSoundHandle_, false, 0.7f);
 		isPlacementCursorValid_ = false;
 		dragInput_.Reset();
 	}
@@ -140,6 +152,19 @@ void GameScene::Update() {
     player_.Update(stage_);
     stageRenderer_.UpdatePlayer(player_.GetPosition());
 
+	const bool isPlayerFailed = player_.IsFailed();
+	if (isPlayerFailed && !wasPlayerFailed_) {
+		failedAnimationTimer_ = 0.0f;
+		isFailedSpriteVisible_ = true;
+	}
+	if (isFailedSpriteVisible_ && failedSprite_ && !ui_.IsPaused()) {
+		failedAnimationTimer_ = (std::min)(failedAnimationTimer_ + kFixedDeltaTime, kFailedAnimationDuration);
+		const float progress = failedAnimationTimer_ / kFailedAnimationDuration;
+		const float easedProgress = MyMath::EaseOutBounce(progress);
+		failedSprite_->SetPosition({0.0f, MyMath::Lerp(-static_cast<float>(WinApp::kWindowHeight), 0.0f, easedProgress)});
+	}
+	wasPlayerFailed_ = isPlayerFailed;
+
     if (ui_.ShouldReturnToStageSelect()) {
         returnStageSelect_ = true;
         isEnd_ = true;
@@ -171,6 +196,14 @@ void GameScene::Draw() {
     dragInput_.Draw(camera_);
 	DrawPlacementPalette();
 	DrawInstructionUI();
+	if (isFailedSpriteVisible_ && failedSprite_) {
+		Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
+		if (failedBackdropSprite_) {
+			failedBackdropSprite_->Draw();
+		}
+		failedSprite_->Draw();
+		Sprite::PostDraw();
+	}
     ui_.Draw();
 
 #ifdef USE_IMGUI
@@ -408,21 +441,29 @@ void GameScene::DrawPlacementPalette() {
 
 	Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
 	placementPaletteSprite_->Draw();
+	const int hoveredItem = GetHoveredPaletteItem();
 	const bool reflectActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Place && isGimmickSelected_ && selectedGimmickType_ != Stage::GimmickType::AccelerationPanel;
-	placementIconSprite_->SetColor(reflectActive ? Vector4{1.0f, 1.0f, 1.0f, 1.0f} : Vector4{0.65f, 0.65f, 0.65f, 1.0f});
+	placementIconSprite_->SetSize(hoveredItem == 0 ? Vector2{64.0f, 64.0f} : Vector2{58.0f, 58.0f});
+	placementIconSprite_->SetColor(hoveredItem == 0 ? Vector4{1.0f, 0.9f, 0.45f, 1.0f} :
+		reflectActive ? Vector4{1.0f, 1.0f, 1.0f, 1.0f} : Vector4{0.65f, 0.65f, 0.65f, 1.0f});
 	placementIconSprite_->Draw();
 	const bool accelerationActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Place && isGimmickSelected_ && selectedGimmickType_ == Stage::GimmickType::AccelerationPanel;
-	const Vector4 accelerationColor = accelerationActive ? Vector4{1.0f, 1.0f, 1.0f, 1.0f} : Vector4{0.65f, 0.65f, 0.65f, 1.0f};
+	accelerationIconShaftSprite_->SetSize(hoveredItem == 1 ? Vector2{64.0f, 64.0f} : Vector2{58.0f, 58.0f});
+	const Vector4 accelerationColor = hoveredItem == 1 ? Vector4{1.0f, 0.9f, 0.45f, 1.0f} :
+		accelerationActive ? Vector4{1.0f, 1.0f, 1.0f, 1.0f} : Vector4{0.65f, 0.65f, 0.65f, 1.0f};
 	accelerationIconShaftSprite_->SetColor(accelerationColor);
 	accelerationIconShaftSprite_->Draw();
 	const bool isRemoveActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Remove;
-	const Vector4 removeColor = isRemoveActive ? Vector4{1.0f, 0.45f, 0.15f, 1.0f} : Vector4{0.85f, 0.18f, 0.18f, 1.0f};
+	const bool isRemoveHovered = hoveredItem == 2;
+	removeIconSpriteA_->SetSize(isRemoveHovered ? Vector2{12.0f, 54.0f} : Vector2{10.0f, 48.0f});
+	removeIconSpriteB_->SetSize(isRemoveHovered ? Vector2{12.0f, 54.0f} : Vector2{10.0f, 48.0f});
+	const Vector4 removeColor = isRemoveHovered ? Vector4{1.0f, 0.8f, 0.25f, 1.0f} :
+		isRemoveActive ? Vector4{1.0f, 0.45f, 0.15f, 1.0f} : Vector4{0.85f, 0.18f, 0.18f, 1.0f};
 	removeIconSpriteA_->SetColor(removeColor);
 	removeIconSpriteB_->SetColor(removeColor);
 	removeIconSpriteA_->Draw();
 	removeIconSpriteB_->Draw();
 
-	const int hoveredItem = GetHoveredPaletteItem();
 	if (hoveredItem >= 0) {
 		Sprite* hoveredText = paletteTextSprites_[hoveredItem].get();
 		hoveredText->SetPosition({
@@ -434,8 +475,11 @@ void GameScene::DrawPlacementPalette() {
 }
 
 void GameScene::InitializeInstructionUI() {
-	changePlantSprite_.reset(Sprite::Create(TextureManager::Load("UI/Change_plant.png"), {kPhaseChangeLeft, kPhaseChangeTop}));
-	changeShootSprite_.reset(Sprite::Create(TextureManager::Load("UI/Change_shoot.png"), {kPhaseChangeLeft, kPhaseChangeTop}));
+	const Vector2 phaseChangeCenter = {
+		kPhaseChangeLeft + kPhaseChangeWidth * 0.5f,
+		kPhaseChangeTop + kPhaseChangeHeight * 0.5f};
+	changePlantSprite_.reset(Sprite::Create(TextureManager::Load("UI/Change_plant.png"), phaseChangeCenter, Vector4{1.0f, 1.0f, 1.0f, 1.0f}, {0.5f, 0.5f}));
+	changeShootSprite_.reset(Sprite::Create(TextureManager::Load("UI/Change_shoot.png"), phaseChangeCenter, Vector4{1.0f, 1.0f, 1.0f, 1.0f}, {0.5f, 0.5f}));
 	changePlantSprite_->SetSize({kPhaseChangeWidth, kPhaseChangeHeight});
 	changeShootSprite_->SetSize({kPhaseChangeWidth, kPhaseChangeHeight});
 
@@ -464,10 +508,16 @@ void GameScene::InitializeInstructionUI() {
 void GameScene::DrawInstructionUI() {
 	Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
 	if (player_.GetState() == Player::State::Aiming) {
-		if (interactionPhase_ == InteractionPhase::Placement && changePlantSprite_) {
-			changePlantSprite_->Draw();
-		} else if (interactionPhase_ == InteractionPhase::Launch && changeShootSprite_) {
-			changeShootSprite_->Draw();
+		Sprite* phaseChangeSprite = interactionPhase_ == InteractionPhase::Placement
+			? changePlantSprite_.get() : changeShootSprite_.get();
+		if (phaseChangeSprite) {
+			const bool isHovered = !ui_.IsPaused() && IsMouseOverPhaseChangeButton();
+			const float scale = isHovered ? kPhaseChangeHoverScale : 1.0f;
+			phaseChangeSprite->SetSize({kPhaseChangeWidth * scale, kPhaseChangeHeight * scale});
+			phaseChangeSprite->SetColor(isHovered
+				? Vector4{1.0f, 0.9f, 0.45f, 1.0f}
+				: Vector4{1.0f, 1.0f, 1.0f, 1.0f});
+			phaseChangeSprite->Draw();
 		}
 	}
 	if (tutorialMarkSprite_ && tutorialTextSprite_) {
@@ -498,5 +548,11 @@ void GameScene::ResetGame() {
 	isPlacementCursorValid_ = false;
 	interactionPhase_ = InteractionPhase::Placement;
 	placementTool_ = PlacementTool::Place;
+	failedAnimationTimer_ = 0.0f;
+	isFailedSpriteVisible_ = false;
+	wasPlayerFailed_ = false;
+	if (failedSprite_) {
+		failedSprite_->SetPosition({0.0f, -static_cast<float>(WinApp::kWindowHeight)});
+	}
 	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, false);
 }

@@ -27,7 +27,8 @@ void UI::Initialize() {
 	textureHandles_[2] = TextureManager::Load("UI/Pose2.png");
 	textureHandles_[3] = TextureManager::Load("UI/Pose3.png");
 	decisionSoundHandle_ = audio_->LoadWave("SE/Dicision.mp3");
-	pauseSprites_[0].reset(Sprite::Create(textureHandles_[0], {1216, 0}));
+	pauseSprites_[0].reset(Sprite::Create(textureHandles_[0], {1248.0f, 32.0f}, Vector4{1.0f, 1.0f, 1.0f, 1.0f}, {0.5f, 0.5f}));
+	pauseSprites_[0]->SetSize({64.0f, 64.0f});
 	pauseSprites_[1].reset(Sprite::Create(textureHandles_[1], {320, 180}));
 	pauseSprites_[2].reset(Sprite::Create(textureHandles_[2], {320, 180}));
 	pauseSprites_[3].reset(Sprite::Create(textureHandles_[3], {320, 180}));
@@ -44,6 +45,9 @@ void UI::Update() {
 
 void UI::Draw() {
 	Sprite::PreDraw(dxCommon_->GetCommandList());
+	const bool pauseHovered = IsPauseButton(input_->GetMousePosition());
+	pauseSprites_[0]->SetSize(pauseHovered ? Vector2{70.0f, 70.0f} : Vector2{64.0f, 64.0f});
+	pauseSprites_[0]->SetColor(pauseHovered ? Vector4{1.0f, 0.9f, 0.45f, 1.0f} : Vector4{1.0f, 1.0f, 1.0f, 1.0f});
 	pauseSprites_[0]->Draw();
 	if (isPaused_) { pauseSprites_[selectedMenuItem_ + 1]->Draw(); }
 	Sprite::PostDraw();

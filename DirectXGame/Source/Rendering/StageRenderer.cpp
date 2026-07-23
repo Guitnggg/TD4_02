@@ -12,7 +12,7 @@ namespace {
 constexpr float kFloorHeight = -0.06f;
 constexpr float kTileHalfHeight = 0.03f;
 constexpr float kObjectHeight = 0.375f;
-constexpr float kPlayerScale = 0.225f;
+constexpr float kPlayerScale = 0.30f;
 constexpr float kGoalScale = 0.275f;
 constexpr float kGimmickScale = 0.21f;
 constexpr float kReflectGimmickHeight = 0.42f;
@@ -49,6 +49,7 @@ void StageRenderer::Initialize(const Stage& stage, const Vector3& playerPosition
 	cubeModel_.reset(Model::CreateFromOBJ("cube"));
 	floorModel_.reset(Model::CreateFromOBJ("Floar"));
 	wallModel_.reset(Model::CreateFromOBJ("Wall"));
+	playerModel_.reset(Model::CreateFromOBJ("Player"));
 	reflectGimmickModel_.reset(Model::CreateFromOBJ("ReflectGimmick"));
 	reflectGimmickCenterModel_.reset(Model::CreateFromOBJ("ReflectGimmickCenter"));
 	accelerationPanelModel_.reset(Model::CreateFromOBJ("AccelerationPanel"));
@@ -239,7 +240,14 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 	goalPosition.y = 0.225f;
 	goalObject_ = CreateCube(goalPosition, {kGoalScale, kGoalScale, kGoalScale}, kGoalColor);
 
-	playerObject_ = CreateCube(playerPosition, {kPlayerScale, kPlayerScale, kPlayerScale}, kPlayerColor);
+	std::unique_ptr<ColoredObject3d> player = std::make_unique<ColoredObject3d>();
+	player->Initialize(playerModel_.get(), kPlayerColor);
+	playerObject_ = std::move(player);
+	playerObject_->SetTranslation(playerPosition);
+	playerObject_->SetScale({kPlayerScale, kPlayerScale, kPlayerScale});
+	// Blender側のモデルはZ方向に厚みがあるため、寝かせて上面から見える向きにする。
+	playerObject_->SetRotation({-std::numbers::pi_v<float> * 0.5f, 0.0f, 0.0f});
+	playerObject_->Update();
 
 	std::unique_ptr<ColoredObject3d> reflectCursor = std::make_unique<ColoredObject3d>();
 	reflectCursor->Initialize(reflectGimmickModel_.get(), kReflectFrameColor);

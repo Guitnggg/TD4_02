@@ -71,6 +71,25 @@ Vector3 MyMath::Lerp(const Vector3& start, const Vector3& end, float t) {
 	return {Lerp(start.x, end.x, t), Lerp(start.y, end.y, t), Lerp(start.z, end.z, t)};
 }
 
+float MyMath::EaseOutBounce(float t) {
+	t = Clamp(t, 0.0f, 1.0f);
+	constexpr float kBounceScale = 7.5625f;
+	constexpr float kBounceStep = 2.75f;
+	if (t < 1.0f / kBounceStep) {
+		return kBounceScale * t * t;
+	}
+	if (t < 2.0f / kBounceStep) {
+		t -= 1.5f / kBounceStep;
+		return kBounceScale * t * t + 0.75f;
+	}
+	if (t < 2.5f / kBounceStep) {
+		t -= 2.25f / kBounceStep;
+		return kBounceScale * t * t + 0.9375f;
+	}
+	t -= 2.625f / kBounceStep;
+	return kBounceScale * t * t + 0.984375f;
+}
+
 float MyMath::ToRadian(float degree) {
 	constexpr float kPi = 3.14159265358979323846f;
 	return degree * kPi / 180.0f;

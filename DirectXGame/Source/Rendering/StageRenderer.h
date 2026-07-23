@@ -84,6 +84,7 @@ private:
 	std::unique_ptr<KamataEngine::Model> cubeModel_;
 	std::unique_ptr<KamataEngine::Model> floorModel_;
 	std::unique_ptr<KamataEngine::Model> wallModel_;
+	std::unique_ptr<KamataEngine::Model> playerModel_;
 
 	// 配置ギミック用モデル
 	std::unique_ptr<KamataEngine::Model> reflectGimmickModel_;

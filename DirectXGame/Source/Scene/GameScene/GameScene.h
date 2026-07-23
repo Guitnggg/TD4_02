@@ -83,6 +83,11 @@ private:
 	KamataEngine::Camera camera_;
 	UI ui_;
 	std::unique_ptr<KamataEngine::Sprite> backgroundSprite_;
+	std::unique_ptr<KamataEngine::Sprite> failedSprite_;
+	std::unique_ptr<KamataEngine::Sprite> failedBackdropSprite_;
+	float failedAnimationTimer_ = 0.0f;
+	bool isFailedSpriteVisible_ = false;
+	bool wasPlayerFailed_ = false;
 
 	// ギミック配置カーソルのグリッド座標
 	Stage::GridPosition placementCursor_{};
@@ -106,6 +111,7 @@ private:
 	std::unique_ptr<KamataEngine::Sprite> changeShootSprite_;
 	uint32_t pullSoundHandle_ = 0;
 	uint32_t firingSoundHandle_ = 0;
+	uint32_t phaseChangeSoundHandle_ = 0;
 
 	// 1ステージで配置できるギミック数
 	int maxGimmickCount_ = 3;
