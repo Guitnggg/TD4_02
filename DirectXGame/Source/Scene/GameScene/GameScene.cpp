@@ -151,15 +151,11 @@ void GameScene::Update() {
 			UpdateGimmickPlacement();
 		}
 		if (!ui_.IsPaused() && interactionPhase_ == InteractionPhase::Launch) {
-			if (input->TriggerKey(DIK_A)) {
+			if (input->TriggerKey(DIK_D)) {
 				player_.MoveAimLeft(stage_);
 			}
-			if (input->TriggerKey(DIK_D)) {
+			if (input->TriggerKey(DIK_A)) {
 				player_.MoveAimRight(stage_);
-			}
-			if (input->TriggerKey(DIK_SPACE)) {
-				player_.Fire();
-				Audio::GetInstance()->PlayWave(firingSoundHandle_, false, 0.9f);
 			}
 		}
 	}
