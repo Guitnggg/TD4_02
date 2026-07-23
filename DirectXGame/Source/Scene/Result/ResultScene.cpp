@@ -75,7 +75,8 @@ void ResultScene::Update() {
 		}
 	}
 	if (input->TriggerKey(DIK_W) || input->TriggerKey(DIK_UP) || input->TriggerKey(DIK_S) || input->TriggerKey(DIK_DOWN)) {
-		selectedIndex_ = 1 - selectedIndex_;
+		// 最終ステージでは「次のステージ」へカーソルを移動させない。
+		selectedIndex_ = nextStagePath_.empty() ? 1 : 1 - selectedIndex_;
 		if (resultSprite_) {
 			resultSprite_->SetTextureHandle(resultTextureHandles_[selectedIndex_]);
 		}

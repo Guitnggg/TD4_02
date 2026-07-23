@@ -122,7 +122,7 @@ void GameScene::Update() {
 	Input* input = Input::GetInstance();
 
 	// リセット操作は以降の更新より優先する。
-	if (input->TriggerKey(DIK_R)) {
+	if (!ui_.IsPaused() && input->TriggerKey(DIK_R)) {
 		ResetGame();
 		return;
 	}
