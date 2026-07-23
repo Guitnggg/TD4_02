@@ -5,7 +5,10 @@
 
 #include <memory>
 
-namespace KamataEngine { class Audio; }
+namespace KamataEngine {
+class Audio;
+class Sprite;
+}
 
 /// <summary>
 /// 現在のシーンを所有し、更新、描画、シーン遷移を管理するクラス
@@ -85,6 +88,15 @@ public:
     IScene* GetScene() const;
 
 private:
+	enum class FadeState { None, FadeOut, FadeIn };
+
+	std::unique_ptr<IScene> pendingScene_;
+	std::unique_ptr<KamataEngine::Sprite> fadeSprite_;
+	FadeState fadeState_ = FadeState::None;
+	float fadeTimer_ = 0.0f;
+	bool hasPendingScene_ = false;
+	bool isFadeWhite_ = false;
+
     // 現在管理しているシーン
     std::unique_ptr<IScene> scene_;
     KamataEngine::Audio* audio_ = nullptr;
@@ -97,6 +109,11 @@ private:
     float currentBgmVolumeScale_ = 1.0f;
 
     void InitializeBgmResources();
+	void InitializeFadeResources();
+	void ApplyScene(std::unique_ptr<IScene> nextScene);
+	void StartTransition(std::unique_ptr<IScene> nextScene);
+	void UpdateFade();
+	void DrawFade();
     void SwitchBgm(SceneName sceneName);
     void UpdateBgmVolume();
 };

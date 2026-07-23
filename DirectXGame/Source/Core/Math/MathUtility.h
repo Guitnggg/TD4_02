@@ -88,6 +88,7 @@ public:
 
 	// 0～1の範囲で、終点付近に複数回のバウンドを付けるイージング
 	static float EaseOutBounce(float t);
+	static float EaseInOutSine(float t);
 
 	// 度数法からラジアンへ変換する
 	static float ToRadian(float degree);

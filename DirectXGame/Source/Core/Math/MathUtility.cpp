@@ -90,6 +90,12 @@ float MyMath::EaseOutBounce(float t) {
 	return kBounceScale * t * t + 0.984375f;
 }
 
+float MyMath::EaseInOutSine(float t) {
+	t = Clamp(t, 0.0f, 1.0f);
+	constexpr float kPi = 3.14159265358979323846f;
+	return -(std::cos(kPi * t) - 1.0f) * 0.5f;
+}
+
 float MyMath::ToRadian(float degree) {
 	constexpr float kPi = 3.14159265358979323846f;
 	return degree * kPi / 180.0f;
