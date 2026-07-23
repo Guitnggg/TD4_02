@@ -97,7 +97,6 @@ private:
 	std::unique_ptr<KamataEngine::Sprite> placementPaletteSprite_;
 	std::unique_ptr<KamataEngine::Sprite> placementIconSprite_;
 	std::unique_ptr<KamataEngine::Sprite> accelerationIconShaftSprite_;
-	std::unique_ptr<KamataEngine::Sprite> accelerationIconHeadSprite_;
 	std::unique_ptr<KamataEngine::Sprite> removeIconSpriteA_;
 	std::unique_ptr<KamataEngine::Sprite> removeIconSpriteB_;
 	std::array<std::unique_ptr<KamataEngine::Sprite>, 3> paletteTextSprites_;

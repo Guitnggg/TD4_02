@@ -378,14 +378,14 @@ int GameScene::GetHoveredPaletteItem() const {
 void GameScene::InitializePlacementPalette() {
 	const uint32_t paletteTexture = TextureManager::Load("Placement.png");
 	const uint32_t iconTexture = TextureManager::Load("white1x1.png");
+	const uint32_t reflectIconTexture = TextureManager::Load("UI/ReflectModelIcon.png");
+	const uint32_t accelerationIconTexture = TextureManager::Load("UI/AccelerationModelIcon.png");
 	placementPaletteSprite_.reset(Sprite::Create(paletteTexture, {kPaletteLeft, kPaletteTop}));
 	placementPaletteSprite_->SetSize({kPaletteWidth, kPaletteHeight});
-	placementIconSprite_.reset(Sprite::Create(iconTexture, {64.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.55f, 0.72f, 0.78f, 1.0f}, {0.5f, 0.5f}));
-	placementIconSprite_->SetSize({18.0f, 54.0f});
-	accelerationIconShaftSprite_.reset(Sprite::Create(iconTexture, {192.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.2f, 1.0f, 0.35f, 1.0f}, {0.5f, 0.5f}));
-	accelerationIconHeadSprite_.reset(Sprite::Create(iconTexture, {192.0f, kPaletteTop + 14.0f}, {0.2f, 1.0f, 0.35f, 1.0f}, {0.5f, 0.5f}));
-	accelerationIconShaftSprite_->SetSize({10.0f, 42.0f});
-	accelerationIconHeadSprite_->SetSize({26.0f, 10.0f});
+	placementIconSprite_.reset(Sprite::Create(reflectIconTexture, {64.0f, kPaletteTop + kPaletteHeight * 0.5f}, Vector4{1.0f, 1.0f, 1.0f, 1.0f}, {0.5f, 0.5f}));
+	placementIconSprite_->SetSize({58.0f, 58.0f});
+	accelerationIconShaftSprite_.reset(Sprite::Create(accelerationIconTexture, {192.0f, kPaletteTop + kPaletteHeight * 0.5f}, Vector4{1.0f, 1.0f, 1.0f, 1.0f}, {0.5f, 0.5f}));
+	accelerationIconShaftSprite_->SetSize({58.0f, 58.0f});
 	removeIconSpriteA_.reset(Sprite::Create(iconTexture, {320.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.85f, 0.18f, 0.18f, 1.0f}, {0.5f, 0.5f}));
 	removeIconSpriteB_.reset(Sprite::Create(iconTexture, {320.0f, kPaletteTop + kPaletteHeight * 0.5f}, {0.85f, 0.18f, 0.18f, 1.0f}, {0.5f, 0.5f}));
 	removeIconSpriteA_->SetSize({10.0f, 48.0f});
@@ -402,28 +402,19 @@ void GameScene::InitializePlacementPalette() {
 }
 
 void GameScene::DrawPlacementPalette() {
-	if (!placementPaletteSprite_ || !placementIconSprite_ || !accelerationIconShaftSprite_ || !accelerationIconHeadSprite_ || !removeIconSpriteA_ || !removeIconSpriteB_) {
+	if (!placementPaletteSprite_ || !placementIconSprite_ || !accelerationIconShaftSprite_ || !removeIconSpriteA_ || !removeIconSpriteB_) {
 		return;
 	}
 
 	Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
 	placementPaletteSprite_->Draw();
-	placementIconSprite_->SetRotation(selectedGimmickType_ == Stage::GimmickType::ReflectSlash ? -0.78539816339f :
-		selectedGimmickType_ == Stage::GimmickType::ReflectBackSlash ? 0.78539816339f : 0.0f);
 	const bool reflectActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Place && isGimmickSelected_ && selectedGimmickType_ != Stage::GimmickType::AccelerationPanel;
-	placementIconSprite_->SetColor(reflectActive ? Vector4{1.0f, 0.72f, 0.2f, 1.0f} : Vector4{0.55f, 0.72f, 0.78f, 1.0f});
+	placementIconSprite_->SetColor(reflectActive ? Vector4{1.0f, 1.0f, 1.0f, 1.0f} : Vector4{0.65f, 0.65f, 0.65f, 1.0f});
 	placementIconSprite_->Draw();
 	const bool accelerationActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Place && isGimmickSelected_ && selectedGimmickType_ == Stage::GimmickType::AccelerationPanel;
-	const Vector4 accelerationColor = accelerationActive ? Vector4{0.2f, 1.0f, 0.35f, 1.0f} : Vector4{0.3f, 0.65f, 0.4f, 1.0f};
+	const Vector4 accelerationColor = accelerationActive ? Vector4{1.0f, 1.0f, 1.0f, 1.0f} : Vector4{0.65f, 0.65f, 0.65f, 1.0f};
 	accelerationIconShaftSprite_->SetColor(accelerationColor);
-	accelerationIconHeadSprite_->SetColor(accelerationColor);
-	const float arrowRotation = static_cast<float>(static_cast<int>(selectedPanelDirection_)) * 1.57079632679f;
-	accelerationIconShaftSprite_->SetRotation(arrowRotation);
-	accelerationIconHeadSprite_->SetRotation(arrowRotation);
-	accelerationIconHeadSprite_->SetPosition({192.0f + std::sin(arrowRotation) * 18.0f,
-	                                         kPaletteTop + kPaletteHeight * 0.5f - std::cos(arrowRotation) * 18.0f});
 	accelerationIconShaftSprite_->Draw();
-	accelerationIconHeadSprite_->Draw();
 	const bool isRemoveActive = interactionPhase_ == InteractionPhase::Placement && placementTool_ == PlacementTool::Remove;
 	const Vector4 removeColor = isRemoveActive ? Vector4{1.0f, 0.45f, 0.15f, 1.0f} : Vector4{0.85f, 0.18f, 0.18f, 1.0f};
 	removeIconSpriteA_->SetColor(removeColor);
