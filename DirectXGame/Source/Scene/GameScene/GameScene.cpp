@@ -33,6 +33,11 @@ namespace {
 	constexpr float kPhaseChangeHeight = 96.0f;
 	constexpr float kPhaseChangeHoverScale = 1.06f;
 	constexpr float kFailedAnimationDuration = 1.5f;
+	constexpr float kResetCenterX = 1080.0f;
+	constexpr float kResetCenterY = 540.0f;
+	constexpr float kResetWidth = 225.0f;
+	constexpr float kResetHeight = 63.0f;
+	constexpr float kResetHoverScale = 1.06f;
 	constexpr float kFixedDeltaTime = 1.0f / 60.0f;
 	float CalculateTopDownCameraHeight(const Stage& stage, const Camera& camera) {
 		const float halfFovTangent = std::tan(camera.fovAngleY * 0.5f);
@@ -84,6 +89,8 @@ void GameScene::Initialize() {
 	failedSprite_->SetSize({static_cast<float>(WinApp::kWindowWidth), static_cast<float>(WinApp::kWindowHeight)});
 	failedBackdropSprite_.reset(Sprite::Create(TextureManager::Load("white1x1.png"), {0.0f, 0.0f}, Vector4{0.0f, 0.0f, 0.0f, 0.68f}));
 	failedBackdropSprite_->SetSize({static_cast<float>(WinApp::kWindowWidth), static_cast<float>(WinApp::kWindowHeight)});
+	resetSprite_.reset(Sprite::Create(TextureManager::Load("UI/Retry.png"), {kResetCenterX, kResetCenterY}, Vector4{1.0f, 1.0f, 1.0f, 1.0f}, {0.5f, 0.5f}));
+	resetSprite_->SetSize({kResetWidth, kResetHeight});
 	failedAnimationTimer_ = 0.0f;
 	isFailedSpriteVisible_ = false;
 	wasPlayerFailed_ = false;
@@ -96,6 +103,11 @@ void GameScene::Update() {
     Input* input = Input::GetInstance();
 
 	if (input->TriggerKey(DIK_R)) {
+		ResetGame();
+		return;
+	}
+	if (!ui_.IsPaused() && input->IsTriggerMouse(0) && IsMouseOverResetButton()) {
+		Audio::GetInstance()->PlayWave(phaseChangeSoundHandle_, false, 0.7f);
 		ResetGame();
 		return;
 	}
@@ -202,6 +214,14 @@ void GameScene::Draw() {
 			failedBackdropSprite_->Draw();
 		}
 		failedSprite_->Draw();
+		Sprite::PostDraw();
+	}
+	if (resetSprite_) {
+		const bool isResetHovered = !ui_.IsPaused() && IsMouseOverResetButton();
+		resetSprite_->SetSize(isResetHovered ? Vector2{kResetWidth * kResetHoverScale, kResetHeight * kResetHoverScale} : Vector2{kResetWidth, kResetHeight});
+		resetSprite_->SetColor(isResetHovered ? Vector4{1.0f, 0.9f, 0.45f, 1.0f} : Vector4{1.0f, 1.0f, 1.0f, 1.0f});
+		Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
+		resetSprite_->Draw();
 		Sprite::PostDraw();
 	}
     ui_.Draw();
@@ -535,6 +555,14 @@ void GameScene::ClampPlacementCursor() {
 void GameScene::ClearPlacedGimmicks() {
 	stage_.ClearGimmicks();
 	stageRenderer_.RebuildGimmicks(stage_);
+}
+
+bool GameScene::IsMouseOverResetButton() const {
+	const Vector2& mouse = Input::GetInstance()->GetMousePosition();
+	const float halfWidth = kResetWidth * kResetHoverScale * 0.5f;
+	const float halfHeight = kResetHeight * kResetHoverScale * 0.5f;
+	return mouse.x >= kResetCenterX - halfWidth && mouse.x <= kResetCenterX + halfWidth &&
+	       mouse.y >= kResetCenterY - halfHeight && mouse.y <= kResetCenterY + halfHeight;
 }
 
 void GameScene::ResetGame() {

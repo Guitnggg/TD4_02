@@ -13,7 +13,7 @@ constexpr float kFloorHeight = -0.06f;
 constexpr float kTileHalfHeight = 0.03f;
 constexpr float kObjectHeight = 0.375f;
 constexpr float kPlayerScale = 0.30f;
-constexpr float kGoalScale = 0.275f;
+constexpr float kGoalScale = 0.35f;
 constexpr float kGimmickScale = 0.21f;
 constexpr float kReflectGimmickHeight = 0.42f;
 constexpr float kAccelerationPanelScale = 0.21f;
@@ -24,7 +24,6 @@ constexpr float kWallScale = 0.41f;
 constexpr Vector4 kFloorColor = {0.10f, 0.14f, 0.22f, 1.0f};
 constexpr Vector4 kWallColor = {0.38f, 0.43f, 0.52f, 1.0f};
 constexpr Vector4 kPlayerColor = {0.15f, 0.45f, 1.0f, 1.0f};
-constexpr Vector4 kGoalColor = {1.0f, 0.85f, 0.08f, 1.0f};
 constexpr Vector4 kReflectFrameColor = {0.015f, 0.015f, 0.02f, 1.0f};
 constexpr Vector4 kReflectCenterColor = {0.95f, 0.97f, 1.0f, 1.0f};
 constexpr Vector4 kAccelerationPanelBaseColor = {0.62f, 0.68f, 0.76f, 1.0f};
@@ -50,6 +49,7 @@ void StageRenderer::Initialize(const Stage& stage, const Vector3& playerPosition
 	floorModel_.reset(Model::CreateFromOBJ("Floar"));
 	wallModel_.reset(Model::CreateFromOBJ("Wall"));
 	playerModel_.reset(Model::CreateFromOBJ("Player"));
+	goalModel_.reset(Model::CreateFromOBJ("Goal"));
 	reflectGimmickModel_.reset(Model::CreateFromOBJ("ReflectGimmick"));
 	reflectGimmickCenterModel_.reset(Model::CreateFromOBJ("ReflectGimmickCenter"));
 	accelerationPanelModel_.reset(Model::CreateFromOBJ("AccelerationPanel"));
@@ -237,8 +237,12 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 	BuildGimmickObjects(stage);
 
 	Vector3 goalPosition = stage.GridToWorld(stage.GetGoalGrid());
-	goalPosition.y = 0.225f;
-	goalObject_ = CreateCube(goalPosition, {kGoalScale, kGoalScale, kGoalScale}, kGoalColor);
+	goalPosition.y = kGoalScale;
+	goalObject_ = std::make_unique<Object3d>();
+	goalObject_->Initialize(goalModel_.get());
+	goalObject_->SetTranslation(goalPosition);
+	goalObject_->SetScale({kGoalScale, kGoalScale, kGoalScale});
+	goalObject_->Update();
 
 	std::unique_ptr<ColoredObject3d> player = std::make_unique<ColoredObject3d>();
 	player->Initialize(playerModel_.get(), kPlayerColor);

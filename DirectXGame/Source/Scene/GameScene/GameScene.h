@@ -53,6 +53,7 @@ private:
 	KamataEngine::Vector3 MouseToWorldOnStage() const;
 	bool IsMouseOverPlacementPalette() const;
 	bool IsMouseOverPhaseChangeButton() const;
+	bool IsMouseOverResetButton() const;
 	void InitializePlacementPalette();
 	void DrawPlacementPalette();
 	void InitializeInstructionUI();
@@ -85,6 +86,7 @@ private:
 	std::unique_ptr<KamataEngine::Sprite> backgroundSprite_;
 	std::unique_ptr<KamataEngine::Sprite> failedSprite_;
 	std::unique_ptr<KamataEngine::Sprite> failedBackdropSprite_;
+	std::unique_ptr<KamataEngine::Sprite> resetSprite_;
 	float failedAnimationTimer_ = 0.0f;
 	bool isFailedSpriteVisible_ = false;
 	bool wasPlayerFailed_ = false;
