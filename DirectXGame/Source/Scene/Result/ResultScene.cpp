@@ -28,6 +28,9 @@ constexpr float kResultItemHeight = 125.0f;
 ResultScene::ResultScene(int usedGimmickCount, std::string clearedStagePath)
     : usedGimmickCount_(usedGimmickCount < 0 ? 0 : usedGimmickCount), clearedStagePath_(std::move(clearedStagePath)), nextStagePath_(ResultRules::FindNextStagePath(clearedStagePath_)) {
 	starCount_ = ResultRules::CalculateStarCount(usedGimmickCount_, clearedStagePath_);
+	if (nextStagePath_.empty()) {
+		DifficultySelectScene::MarkDifficultyCleared(clearedStagePath_);
+	}
 }
 
 void ResultScene::Initialize() {

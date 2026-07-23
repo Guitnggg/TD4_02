@@ -5,6 +5,7 @@
 #include <2d/Sprite.h>
 #include <array>
 #include <memory>
+#include <string>
 
 /// 難易度を選択し、対応する最初のステージをGameSceneへ渡す。
 class DifficultySelectScene : public IScene {
@@ -20,6 +21,9 @@ public:
 	std::unique_ptr<IScene> NextScene() const override;
 
 	SceneName GetSceneName() const override;
+
+	// 最終ステージをクリアした難易度を、難易度選択画面のクリア表示へ反映する。
+	static void MarkDifficultyCleared(const std::string& clearedStagePath);
 
 private:
 	struct Difficulty {
@@ -43,5 +47,6 @@ private:
 	std::unique_ptr<KamataEngine::Sprite> backgroundSprite_;
 	std::unique_ptr<KamataEngine::Sprite> panelSprite_;
 	std::unique_ptr<KamataEngine::Sprite> cursorSprite_;
+	std::unique_ptr<KamataEngine::Sprite> clearStarSprite_;
 	uint32_t decisionSoundHandle_ = 0;
 };

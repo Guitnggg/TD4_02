@@ -18,7 +18,22 @@ constexpr float kDifficultyItemLeft = 430.0f;
 constexpr float kDifficultyItemTop = 245.0f;
 constexpr float kDifficultyItemWidth = 420.0f;
 constexpr float kDifficultyItemHeight = 65.0f;
+constexpr float kClearStarLeft = 810.0f;
+constexpr float kClearStarTop = 264.0f;
+std::array<bool, 4> clearedDifficulties{};
 } // namespace
+
+void DifficultySelectScene::MarkDifficultyCleared(const std::string& clearedStagePath) {
+	if (clearedStagePath.find("Tutorial") != std::string::npos) {
+		clearedDifficulties[0] = true;
+	} else if (clearedStagePath.find("Easy") != std::string::npos) {
+		clearedDifficulties[1] = true;
+	} else if (clearedStagePath.find("Normal") != std::string::npos) {
+		clearedDifficulties[2] = true;
+	} else if (clearedStagePath.find("Hard") != std::string::npos) {
+		clearedDifficulties[3] = true;
+	}
+}
 
 void DifficultySelectScene::Initialize() {
 	isEnd_ = false;
@@ -38,6 +53,10 @@ void DifficultySelectScene::Initialize() {
 	if (cursorSprite_) {
 		cursorSprite_->SetSize({42.0f, 42.0f});
 		cursorSprite_->SetRotation(1.57079632679f);
+	}
+	clearStarSprite_.reset(Sprite::Create(TextureManager::Load("Result/Star1.png"), {kClearStarLeft, kClearStarTop}));
+	if (clearStarSprite_) {
+		clearStarSprite_->SetSize({32.0f, 32.0f});
 	}
 
 	Audio* audio = Audio::GetInstance();
@@ -88,6 +107,14 @@ void DifficultySelectScene::Draw() {
 	}
 	if (panelSprite_) {
 		panelSprite_->Draw();
+	}
+	if (clearStarSprite_) {
+		for (int i = 0; i < static_cast<int>(clearedDifficulties.size()); ++i) {
+			if (clearedDifficulties[i]) {
+				clearStarSprite_->SetPosition({kClearStarLeft, kClearStarTop + kDifficultyItemHeight * static_cast<float>(i)});
+				clearStarSprite_->Draw();
+			}
+		}
 	}
 	if (cursorSprite_) {
 		cursorSprite_->Draw();
