@@ -10,6 +10,7 @@ using namespace KamataEngine;
 namespace {
 constexpr float kFadeDuration = 0.45f;
 constexpr float kDeltaTime = 1.0f / 60.0f;
+constexpr float kBgmVolume = 0.3f;
 }
 
 SceneManager::SceneManager(std::unique_ptr<IScene> firstScene) {
@@ -55,7 +56,7 @@ void SceneManager::SwitchBgm(SceneName sceneName) {
     }
     if (shouldPlay) {
         currentBgmHandle_ = nextBgmHandle;
-        currentBgmVoiceHandle_ = audio_->PlayWave(currentBgmHandle_, true, 0.4f);
+        currentBgmVoiceHandle_ = audio_->PlayWave(currentBgmHandle_, true, kBgmVolume);
         isBgmPlaying_ = true;
     }
 }
@@ -66,8 +67,7 @@ void SceneManager::UpdateBgmVolume() {
     const float volumeScale = scene_->GetBgmVolumeScale();
     if (volumeScale == currentBgmVolumeScale_) { return; }
 
-    constexpr float kBaseBgmVolume = 0.4f;
-    audio_->SetVolume(currentBgmVoiceHandle_, kBaseBgmVolume * volumeScale);
+    audio_->SetVolume(currentBgmVoiceHandle_, kBgmVolume * volumeScale);
     currentBgmVolumeScale_ = volumeScale;
 }
 

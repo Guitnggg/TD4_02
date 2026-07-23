@@ -68,6 +68,8 @@ void GameScene::Initialize() {
 	phaseChangeSoundHandle_ = audio->LoadWave("SE/Dicision.mp3");
 	reflectionSoundHandle_ = audio->LoadWave("SE/InGame/ReflectSE.mp3");
 	rotationSoundHandle_ = audio->LoadWave("SE/InGame/rotateSE.mp3");
+	placementSoundHandle_ = audio->LoadWave("SE/InGame/placeSE.mp3");
+	deletionSoundHandle_ = audio->LoadWave("SE/InGame/deleteSE.mp3");
     dragInput_.Reset();
 
 	camera_.Initialize();
@@ -358,6 +360,7 @@ void GameScene::UpdateGimmickPlacement() {
 	if (placementTool_ == PlacementTool::Remove && input->IsTriggerMouse(0) && isPlacementCursorValid_) {
 		if (stage_.RemoveGimmick(placementCursor_)) {
 			stageRenderer_.RebuildGimmicks(stage_);
+			Audio::GetInstance()->PlayWave(deletionSoundHandle_, false, 0.8f);
 		}
 		return;
 	}
@@ -368,6 +371,7 @@ void GameScene::UpdateGimmickPlacement() {
 		if (alreadyPlaced || stage_.GetPlacedGimmickCount() < maxGimmickCount_) {
 			if (stage_.PlaceGimmick(placementCursor_, selectedGimmickType_, selectedPanelDirection_)) {
 				stageRenderer_.RebuildGimmicks(stage_);
+				Audio::GetInstance()->PlayWave(placementSoundHandle_, false, 0.8f);
 			}
 		}
 	}
@@ -375,6 +379,7 @@ void GameScene::UpdateGimmickPlacement() {
 	if (input->TriggerKey(DIK_X)) {
 		if (stage_.RemoveGimmick(placementCursor_)) {
 			stageRenderer_.RebuildGimmicks(stage_);
+			Audio::GetInstance()->PlayWave(deletionSoundHandle_, false, 0.8f);
 		}
 	}
 
