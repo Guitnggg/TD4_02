@@ -20,6 +20,9 @@
     <Filter Include="Source\Gameplay">
       <UniqueIdentifier>{e50ad04c-232a-4c45-bc5b-8cd5f9be7df4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Gameplay\Gauge">
+      <UniqueIdentifier>{994907ab-e40c-4117-9f45-34935ee3da29}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Gameplay\Player">
       <UniqueIdentifier>{c37047d7-6b7d-469c-b521-481d8eb102de}</UniqueIdentifier>
     </Filter>
@@ -98,6 +101,9 @@
     <ClCompile Include="Source\Gameplay\Player\Player.cpp">
       <Filter>Source\Gameplay\Player</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Gameplay\Gauge\Gauge.cpp">
+      <Filter>Source\Gameplay\Gauge</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Gameplay\Gimmick\ReflectiveBlock\ReflectiveBlock.cpp">
       <Filter>Source\Gameplay\Gimmick\ReflectiveBlock</Filter>
     </ClCompile>
@@ -145,6 +151,9 @@
     </ClInclude>
     <ClInclude Include="Source\Gameplay\Player\Player.h">
       <Filter>Source\Gameplay\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Gameplay\Gauge\Gauge.h">
+      <Filter>Source\Gameplay\Gauge</Filter>
     </ClInclude>
     <ClInclude Include="Source\Gameplay\Gimmick\ReflectiveBlock\ReflectiveBlock.h">
       <Filter>Source\Gameplay\Gimmick\ReflectiveBlock</Filter>

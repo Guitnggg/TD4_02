@@ -162,6 +162,7 @@
     <ClCompile Include="Source\Core\Math\WorldTransformEx.cpp" />
     <ClCompile Include="Source\Game\Stage.cpp" />
     <ClCompile Include="Source\Game\ResultRules.cpp" />
+    <ClCompile Include="Source\Gameplay\Gauge\Gauge.cpp" />
     <ClCompile Include="Source\Gameplay\Player\Player.cpp" />
     <ClCompile Include="Source\Input\DragInput.cpp" />
     <ClCompile Include="Source\main.cpp" />
@@ -298,6 +299,7 @@
     <ClInclude Include="Source\Core\Collision\CollisionManager.h" />
     <ClInclude Include="Source\Core\Math\MathUtility.h" />
     <ClInclude Include="Source\Game\Stage.h" />
+    <ClInclude Include="Source\Gameplay\Gauge\Gauge.h" />
     <ClInclude Include="Source\Gameplay\Player\Player.h" />
     <ClInclude Include="Source\Input\DragInput.h" />
     <ClInclude Include="Source\Rendering\StageRenderer.h" />
