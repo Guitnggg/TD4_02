@@ -82,6 +82,7 @@ private:
 	StageRenderer stageRenderer_;
 	KamataEngine::Camera camera_;
 	UI ui_;
+	std::unique_ptr<KamataEngine::Sprite> backgroundSprite_;
 
 	// ギミック配置カーソルのグリッド座標
 	Stage::GridPosition placementCursor_{};

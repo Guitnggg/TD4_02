@@ -74,6 +74,8 @@ void GameScene::Initialize() {
 	maxGimmickCount_ = 3;
 	InitializePlacementPalette();
 	InitializeInstructionUI();
+	backgroundSprite_.reset(Sprite::Create(TextureManager::Load("UI/GameBackground.png"), {0.0f, 0.0f}));
+	backgroundSprite_->SetSize({static_cast<float>(WinApp::kWindowWidth), static_cast<float>(WinApp::kWindowHeight)});
 
 	stageRenderer_.Initialize(stage_, player_.GetPosition());
 	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, false);
@@ -158,6 +160,12 @@ void GameScene::Update() {
 }
 
 void GameScene::Draw() {
+	if (backgroundSprite_) {
+		Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
+		backgroundSprite_->Draw();
+		Sprite::PostDraw();
+		DirectXCommon::GetInstance()->ClearDepthBuffer();
+	}
     stageRenderer_.Draw(camera_);
     stageRenderer_.DrawGuide(stage_, camera_);
     dragInput_.Draw(camera_);
