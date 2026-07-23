@@ -1,19 +1,19 @@
 #pragma once
-#include"KamataEngine.h"
+#include "KamataEngine.h"
 class ReflectiveBlock {
 public:
 	~ReflectiveBlock();
 	ReflectiveBlock();
-	//初期化
+	// 初期化
 	void initialize();
 
-	//更新
+	// 更新
 	void Update();
 
-	//描画
+	// 描画
 	void Draw();
 
-	//位置設定
+	// 位置設定
 	void SetBlockPos(KamataEngine::Vector3 pos) { blockPosition_ = pos; }
 	KamataEngine::Vector3 GetBlockPos() { return blockPosition_; }
 
@@ -21,7 +21,7 @@ public:
 	bool IsPressingLeft(KamataEngine::Input* input) const;
 
 	/// 左クリックが押された瞬間か判定する
-    bool IsTriggerLeft(KamataEngine::Input* input) const;
+	bool IsTriggerLeft(KamataEngine::Input* input) const;
 
 	/// 左クリックが離された瞬間か判定する
 	bool IsReleaseLeft(KamataEngine::Input* input) const;
@@ -37,13 +37,11 @@ private:
 	bool isCatch_ = false;
 
 	/*前フレームで左クリックされていたか*/
-	bool wasPressingLeft_ = false; 
+	bool wasPressingLeft_ = false;
 
 	/*モデル*/
-	KamataEngine::Model*model_=nullptr;
+	KamataEngine::Model* model_ = nullptr;
 
 	/*input*/
 	KamataEngine::Input* input_;
-
-	
 };

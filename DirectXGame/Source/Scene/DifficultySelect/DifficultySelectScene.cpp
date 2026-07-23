@@ -18,7 +18,7 @@ constexpr float kDifficultyItemLeft = 430.0f;
 constexpr float kDifficultyItemTop = 245.0f;
 constexpr float kDifficultyItemWidth = 420.0f;
 constexpr float kDifficultyItemHeight = 65.0f;
-}
+} // namespace
 
 void DifficultySelectScene::Initialize() {
 	isEnd_ = false;
@@ -26,9 +26,13 @@ void DifficultySelectScene::Initialize() {
 	const uint32_t whiteTexture = TextureManager::Load("white1x1.png");
 	const uint32_t arrowTexture = TextureManager::Load("UI/Arrow.png");
 	backgroundSprite_.reset(Sprite::Create(whiteTexture, {0.0f, 0.0f}, {0.04f, 0.08f, 0.13f, 1.0f}));
-	if (backgroundSprite_) { backgroundSprite_->SetSize({1280.0f, 720.0f}); }
+	if (backgroundSprite_) {
+		backgroundSprite_->SetSize({1280.0f, 720.0f});
+	}
 	panelSprite_.reset(Sprite::Create(whiteTexture, {360.0f, 150.0f}, {0.12f, 0.22f, 0.32f, 0.95f}));
-	if (panelSprite_) { panelSprite_->SetSize({560.0f, 440.0f}); }
+	if (panelSprite_) {
+		panelSprite_->SetSize({560.0f, 440.0f});
+	}
 	cursorSprite_.reset(Sprite::Create(arrowTexture, {430.0f, 280.0f}, {1.0f, 0.65f, 0.15f, 1.0f}, {0.5f, 0.5f}));
 	if (cursorSprite_) {
 		cursorSprite_->SetSize({42.0f, 42.0f});
@@ -48,8 +52,8 @@ void DifficultySelectScene::Update() {
 	if (mouseAvailable) {
 		// ホバー時もキーボード操作と同じ選択番号を更新する。
 		const Vector2& mouse = input->GetMousePosition();
-		if (mouse.x >= kDifficultyItemLeft && mouse.x <= kDifficultyItemLeft + kDifficultyItemWidth &&
-			mouse.y >= kDifficultyItemTop && mouse.y < kDifficultyItemTop + kDifficultyItemHeight * static_cast<float>(kDifficulties.size())) {
+		if (mouse.x >= kDifficultyItemLeft && mouse.x <= kDifficultyItemLeft + kDifficultyItemWidth && mouse.y >= kDifficultyItemTop &&
+		    mouse.y < kDifficultyItemTop + kDifficultyItemHeight * static_cast<float>(kDifficulties.size())) {
 			selectedIndex_ = static_cast<int>((mouse.y - kDifficultyItemTop) / kDifficultyItemHeight);
 			if (input->IsTriggerMouse(0)) {
 				Audio::GetInstance()->PlayWave(decisionSoundHandle_, false, 0.8f);
@@ -74,11 +78,19 @@ void DifficultySelectScene::Update() {
 
 void DifficultySelectScene::Draw() {
 	// どの入力方法でも表示が一致するよう、描画時に選択番号からカーソル位置を求める。
-	if (cursorSprite_) { cursorSprite_->SetPosition({430.0f, 280.0f + 65.0f * static_cast<float>(selectedIndex_)}); }
+	if (cursorSprite_) {
+		cursorSprite_->SetPosition({430.0f, 280.0f + 65.0f * static_cast<float>(selectedIndex_)});
+	}
 	Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
-	if (backgroundSprite_) { backgroundSprite_->Draw(); }
-	if (panelSprite_) { panelSprite_->Draw(); }
-	if (cursorSprite_) { cursorSprite_->Draw(); }
+	if (backgroundSprite_) {
+		backgroundSprite_->Draw();
+	}
+	if (panelSprite_) {
+		panelSprite_->Draw();
+	}
+	if (cursorSprite_) {
+		cursorSprite_->Draw();
+	}
 
 	DebugText* debugText = DebugText::GetInstance();
 	debugText->Print("SELECT DIFFICULTY", 455.0f, 185.0f, 2.0f);
@@ -108,8 +120,6 @@ void DifficultySelectScene::Draw() {
 
 bool DifficultySelectScene::IsEnd() const { return isEnd_; }
 
-std::unique_ptr<IScene> DifficultySelectScene::NextScene() const {
-	return std::make_unique<GameScene>(kDifficulties[selectedIndex_].stageFilePath);
-}
+std::unique_ptr<IScene> DifficultySelectScene::NextScene() const { return std::make_unique<GameScene>(kDifficulties[selectedIndex_].stageFilePath); }
 
 SceneName DifficultySelectScene::GetSceneName() const { return SceneName::DifficultySelect; }

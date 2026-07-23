@@ -17,10 +17,10 @@ public:
 	/// <summary>
 	/// プレイヤーの現在状態
 	/// </summary>
-	enum class State {		
-		Aiming,  // 発射前。位置調整と発射が可能		
-		Moving,  // 発射後。物理演算で移動中		
-		Stopped,  // クリアまたは失敗で停止
+	enum class State {
+		Aiming,  // 発射前。位置調整と発射が可能
+		Moving,  // 発射後。物理演算で移動中
+		Stopped, // クリアまたは失敗で停止
 	};
 
 	/// <summary>

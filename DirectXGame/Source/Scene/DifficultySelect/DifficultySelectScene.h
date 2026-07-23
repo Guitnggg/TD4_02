@@ -2,8 +2,8 @@
 
 #include "../IScene.h"
 
-#include <array>
 #include <2d/Sprite.h>
+#include <array>
 #include <memory>
 
 /// 難易度を選択し、対応する最初のステージをGameSceneへ渡す。
@@ -29,12 +29,14 @@ private:
 	};
 
 	// 配列の並び順をキーボード・マウスでの選択順として使用する。
-	static constexpr std::array<Difficulty, 4> kDifficulties{{
-	    {"TUTORIAL", "Resources\\Stages\\Tutorial\\Tutorial_01.csv"},
-	    {"EASY", "Resources\\Stages\\Easy\\Easy_01.csv"},
-	    {"NORMAL", "Resources\\Stages\\Normal\\Normal_01.csv"},
-	    {"HARD", "Resources\\Stages\\Hard\\Hard_01.csv"},
-	}};
+	static constexpr std::array<Difficulty, 4> kDifficulties{
+	    {
+         {"TUTORIAL", "Resources\\Stages\\Tutorial\\Tutorial_01.csv"},
+         {"EASY", "Resources\\Stages\\Easy\\Easy_01.csv"},
+         {"NORMAL", "Resources\\Stages\\Normal\\Normal_01.csv"},
+         {"HARD", "Resources\\Stages\\Hard\\Hard_01.csv"},
+	     }
+    };
 
 	bool isEnd_ = false;
 	int selectedIndex_ = 0; // キーボード操作とマウスホバーで共有する選択番号。

@@ -5,23 +5,17 @@ ReflectiveBlock::~ReflectiveBlock() {}
 ReflectiveBlock::ReflectiveBlock() {}
 
 void ReflectiveBlock::initialize() {
-	//モデル取り込み
+	// モデル取り込み
 	model_ = KamataEngine::Model::CreateFromOBJ("cube");
 	model_->StaticInitialize();
 
 	input_->Initialize();
 	isCatch_ = false;
-
-	
 }
 
-void ReflectiveBlock::Update() {
-
-	
-}
+void ReflectiveBlock::Update() {}
 
 void ReflectiveBlock::Draw() {}
-
 
 bool ReflectiveBlock::IsPressingLeft(KamataEngine::Input* input) const { return input != nullptr && input->IsPressMouse(0); }
 

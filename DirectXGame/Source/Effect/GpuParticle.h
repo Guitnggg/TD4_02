@@ -42,8 +42,8 @@ public:
 
 	void Emit(const KamataEngine::Vector3& position, const KamataEngine::Vector3& velocity, float life, float startScale, float endScale);
 	void Emit(
-	    const KamataEngine::Vector3& position, const KamataEngine::Vector3& velocity, float life, float startScale, float endScale,
-	    const KamataEngine::Vector4& startColor, const KamataEngine::Vector4& endColor);
+	    const KamataEngine::Vector3& position, const KamataEngine::Vector3& velocity, float life, float startScale, float endScale, const KamataEngine::Vector4& startColor,
+	    const KamataEngine::Vector4& endColor);
 
 	void Clear();
 	[[nodiscard]] uint32_t GetCapacity() const { return maxParticles_; }

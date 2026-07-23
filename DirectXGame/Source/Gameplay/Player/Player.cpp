@@ -20,17 +20,11 @@ constexpr float kGimmickDiagonalHalfRate = 0.48f;
 constexpr float kGimmickCollisionRadius = 0.26f;
 constexpr float kCollisionEpsilon = 0.0001f;
 
-float Clamp01(float value) {
-	return std::clamp(value, 0.0f, 1.0f);
-}
+float Clamp01(float value) { return std::clamp(value, 0.0f, 1.0f); }
 
-bool IsSameGrid(const Stage::GridPosition& a, const Stage::GridPosition& b) {
-	return a.x == b.x && a.z == b.z;
-}
+bool IsSameGrid(const Stage::GridPosition& a, const Stage::GridPosition& b) { return a.x == b.x && a.z == b.z; }
 
-Vector3 MakeXZ(float x, float z) {
-	return {x, 0.0f, z};
-}
+Vector3 MakeXZ(float x, float z) { return {x, 0.0f, z}; }
 
 float CrossXZ(const Vector3& a, const Vector3& b, const Vector3& c) {
 	const float abx = b.x - a.x;
@@ -195,9 +189,7 @@ void Player::MoveAimRight(const Stage& stage) {
 	position_.y = 0.325f;
 }
 
-void Player::Fire() {
-	Fire({0.0f, 0.0f, -kMoveSpeed});
-}
+void Player::Fire() { Fire({0.0f, 0.0f, -kMoveSpeed}); }
 
 void Player::Fire(const Vector3& initialVelocity) {
 	// 発射済みの場合は再発射しない

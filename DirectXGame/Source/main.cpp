@@ -1,5 +1,5 @@
-#include <Windows.h>
 #include <KamataEngine.h>
+#include <Windows.h>
 
 #include "Scene/SceneManager.h"
 #include "Scene/Title/TitleScene.h"
@@ -11,39 +11,44 @@ using namespace KamataEngine;
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	// すべてのシーンと描画リソースをエンジンの初期化・終了処理内で管理する。
 
-    Initialize(L"一手先"); {
-        // DebugTextはKamataEngine::Initialize()では初期化されないため、個別に初期化する。
-        DebugText::GetInstance()->Initialize();
-        DirectXCommon* dxCommon = DirectXCommon::GetInstance();
+	Initialize(L"一手先");
+	{
+		// DebugTextはKamataEngine::Initialize()では初期化されないため、個別に初期化する。
+		DebugText::GetInstance()->Initialize();
+		DirectXCommon* dxCommon = DirectXCommon::GetInstance();
 
-        SceneManager sceneManager(std::make_unique<TitleScene>());
+		SceneManager sceneManager(std::make_unique<TitleScene>());
 
-        while (true) {
+		while (true) {
 			// 入力・ウィンドウ更新から終了要求が返された場合はループを抜ける。
-            if (Update()) { break; }
+			if (Update()) {
+				break;
+			}
 
-            sceneManager.Update();
-            if (sceneManager.IsEnd()) { break; }
+			sceneManager.Update();
+			if (sceneManager.IsEnd()) {
+				break;
+			}
 
 #ifdef USE_IMGUI
 			// 各シーンのデバッグUIはBeginからEndまでの間に登録する。
-            ImGuiManager::GetInstance()->Begin();
+			ImGuiManager::GetInstance()->Begin();
 #endif
 
-            dxCommon->PreDraw();
+			dxCommon->PreDraw();
 			// シーン描画では3D空間と2DのUIをまとめて描画する。
-            sceneManager.Draw();
+			sceneManager.Draw();
 
 #ifdef USE_IMGUI
-            ImGuiManager::GetInstance()->End();
-            ImGuiManager::GetInstance()->Draw();
+			ImGuiManager::GetInstance()->End();
+			ImGuiManager::GetInstance()->Draw();
 #endif
 
-            dxCommon->PostDraw();
-        }
-    }
+			dxCommon->PostDraw();
+		}
+	}
 
-    Finalize();
+	Finalize();
 
-    return 0;
+	return 0;
 }

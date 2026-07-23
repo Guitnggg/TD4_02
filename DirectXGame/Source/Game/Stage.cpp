@@ -53,7 +53,9 @@ bool ParseCsvTileMap(const std::string& csv, std::vector<std::vector<int>>& rows
 			try {
 				size_t parsedLength = 0;
 				const int tile = std::stoi(cell, &parsedLength);
-				if (parsedLength != cell.size() || tile < 0 || tile > 7) { return false; }
+				if (parsedLength != cell.size() || tile < 0 || tile > 7) {
+					return false;
+				}
 				row.push_back(tile);
 			} catch (...) {
 				return false;
@@ -188,9 +190,7 @@ Stage::GridPosition Stage::WorldToGrid(const Vector3& position) const {
 	};
 }
 
-bool Stage::IsInsideGrid(const GridPosition& grid) const {
-	return 0 <= grid.x && grid.x < width_ && 0 <= grid.z && grid.z < height_;
-}
+bool Stage::IsInsideGrid(const GridPosition& grid) const { return 0 <= grid.x && grid.x < width_ && 0 <= grid.z && grid.z < height_; }
 
 bool Stage::IsWall(const GridPosition& grid) const { return Contains(walls_, grid); }
 
@@ -211,9 +211,7 @@ bool Stage::IsGoal(const GridPosition& grid) const { return goalGrid_.x == grid.
 
 bool Stage::IsPlaceable(const GridPosition& grid) const { return Contains(placeableTiles_, grid); }
 
-bool Stage::CanPlaceGimmick(const GridPosition& grid) const {
-	return IsInsideGrid(grid) && IsPlaceable(grid) && !IsWall(grid) && !IsGoal(grid);
-}
+bool Stage::CanPlaceGimmick(const GridPosition& grid) const { return IsInsideGrid(grid) && IsPlaceable(grid) && !IsWall(grid) && !IsGoal(grid); }
 
 bool Stage::PlaceGimmick(const GridPosition& grid, GimmickType type, AccelerationPanel::Direction panelDirection) {
 	if (type == GimmickType::None) {
@@ -246,8 +244,7 @@ bool Stage::RemoveGimmick(const GridPosition& grid) {
 	const bool removedSlash = RemoveFromList(reflectSlashTiles_, grid);
 	const bool removedBackSlash = RemoveFromList(reflectBackSlashTiles_, grid);
 	const auto oldPanelEnd = accelerationPanels_.end();
-	const auto newPanelEnd = std::remove_if(accelerationPanels_.begin(), accelerationPanels_.end(),
-		[grid](const AccelerationPanel& panel) { return panel.IsAt(grid.x, grid.z); });
+	const auto newPanelEnd = std::remove_if(accelerationPanels_.begin(), accelerationPanels_.end(), [grid](const AccelerationPanel& panel) { return panel.IsAt(grid.x, grid.z); });
 	const bool removedPanel = newPanelEnd != oldPanelEnd;
 	accelerationPanels_.erase(newPanelEnd, oldPanelEnd);
 	return removedSlash || removedBackSlash || removedPanel;
@@ -259,14 +256,11 @@ void Stage::ClearGimmicks() {
 	accelerationPanels_.clear();
 }
 
-int Stage::GetPlacedGimmickCount() const {
-	return static_cast<int>(reflectSlashTiles_.size() + reflectBackSlashTiles_.size() + accelerationPanels_.size());
-}
+int Stage::GetPlacedGimmickCount() const { return static_cast<int>(reflectSlashTiles_.size() + reflectBackSlashTiles_.size() + accelerationPanels_.size()); }
 
 const AccelerationPanel* Stage::FindAccelerationPanel(const GridPosition& grid) const {
 	// コピーを避け、Playerから床の処理を直接呼べるようポインターを返す。
-	const auto it = std::find_if(accelerationPanels_.begin(), accelerationPanels_.end(),
-		[grid](const AccelerationPanel& panel) { return panel.IsAt(grid.x, grid.z); });
+	const auto it = std::find_if(accelerationPanels_.begin(), accelerationPanels_.end(), [grid](const AccelerationPanel& panel) { return panel.IsAt(grid.x, grid.z); });
 	return it == accelerationPanels_.end() ? nullptr : &(*it);
 }
 

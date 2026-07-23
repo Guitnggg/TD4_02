@@ -1,7 +1,7 @@
 #pragma once
 
-#include <math/Vector3.h>
 #include "../Gameplay/Gimmick/AccelerationPanel/AccelerationPanel.h"
+#include <math/Vector3.h>
 
 #include <string>
 #include <vector>
@@ -21,17 +21,17 @@ public:
 	/// </summary>
 	enum class GimmickType {
 		AccelerationPanel = -1,
-		None,              // ギミックなし
-		ReflectSlash,      // 「／」方向の反射ギミック
-		ReflectBackSlash,  // 「＼」方向の反射ギミック
+		None,             // ギミックなし
+		ReflectSlash,     // 「／」方向の反射ギミック
+		ReflectBackSlash, // 「＼」方向の反射ギミック
 	};
 
 	/// <summary>
 	/// ステージ上のマスを表すグリッド座標
 	/// </summary>
 	struct GridPosition {
-		int x = 0;  // 横方向のマス位置
-		int z = 0;  // 縦方向のマス位置
+		int x = 0; // 横方向のマス位置
+		int z = 0; // 縦方向のマス位置
 	};
 
 	/// <summary>
@@ -95,8 +95,7 @@ public:
 	/// 指定したグリッド座標にギミックを配置する
 	/// 既にギミックがある場合は向きを上書きする
 	/// </summary>
-	bool PlaceGimmick(const GridPosition& grid, GimmickType type,
-	                  AccelerationPanel::Direction panelDirection = AccelerationPanel::Direction::PositiveZ);
+	bool PlaceGimmick(const GridPosition& grid, GimmickType type, AccelerationPanel::Direction panelDirection = AccelerationPanel::Direction::PositiveZ);
 
 	/// <summary>
 	/// 指定したグリッド座標のギミックを削除する

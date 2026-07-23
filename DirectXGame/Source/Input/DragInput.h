@@ -91,15 +91,15 @@ private:
 	void DrawArrowSprite(const KamataEngine::Vector3& from, const KamataEngine::Vector3& to, const KamataEngine::Camera& camera);
 
 private:
-	bool isDragging_ = false;         // ドラッグ中か
-	bool wasPressingLeft_ = false;    // 前フレームで左クリックされていたか
-	bool hasLaunchVelocity_ = false;  // 発射可能な速度を保持しているか
+	bool isDragging_ = false;        // ドラッグ中か
+	bool wasPressingLeft_ = false;   // 前フレームで左クリックされていたか
+	bool hasLaunchVelocity_ = false; // 発射可能な速度を保持しているか
 
-	KamataEngine::Vector3 dragStartWorld_{};    // ドラッグ開始位置
-	KamataEngine::Vector3 dragCurrentWorld_{};  // 現在のドラッグ位置
-	KamataEngine::Vector3 launchVelocity_{};    // 発射時の初速度
+	KamataEngine::Vector3 dragStartWorld_{};   // ドラッグ開始位置
+	KamataEngine::Vector3 dragCurrentWorld_{}; // 現在のドラッグ位置
+	KamataEngine::Vector3 launchVelocity_{};   // 発射時の初速度
 
-	float powerRate_ = 0.0f;  // ドラッグ量を 0.0f から 1.0f で表した値
+	float powerRate_ = 0.0f; // ドラッグ量を 0.0f から 1.0f で表した値
 	uint32_t arrowTextureHandle_ = 0;
 	std::unique_ptr<KamataEngine::Sprite> arrowSprite_;
 };

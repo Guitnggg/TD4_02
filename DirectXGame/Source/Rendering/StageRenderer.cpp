@@ -1,7 +1,7 @@
 #include "StageRenderer.h"
 
-#include <3d/PrimitiveDrawer.h>
 #include <3d/ObjectColor.h>
+#include <3d/PrimitiveDrawer.h>
 
 #include <numbers>
 
@@ -29,6 +29,20 @@ constexpr Vector4 kReflectCenterColor = {0.95f, 0.97f, 1.0f, 1.0f};
 constexpr Vector4 kAccelerationPanelBaseColor = {0.62f, 0.68f, 0.76f, 1.0f};
 constexpr Vector4 kAccelerationPanelArrowColor = {0.10f, 0.28f, 1.0f, 1.0f};
 
+float AccelerationPanelRotation(AccelerationPanel::Direction direction) {
+	switch (direction) {
+	case AccelerationPanel::Direction::PositiveZ:
+		return 0.0f;
+	case AccelerationPanel::Direction::PositiveX:
+		return std::numbers::pi_v<float> * 0.5f;
+	case AccelerationPanel::Direction::NegativeZ:
+		return std::numbers::pi_v<float>;
+	case AccelerationPanel::Direction::NegativeX:
+		return -std::numbers::pi_v<float> * 0.5f;
+	}
+	return 0.0f;
+}
+
 class ColoredObject3d final : public Object3d {
 public:
 	void Initialize(Model* model, const Vector4& color) {
@@ -45,6 +59,7 @@ private:
 } // namespace
 
 void StageRenderer::Initialize(const Stage& stage, const Vector3& playerPosition) {
+	// モデルは描画オブジェクト間で共有し、オブジェクト側には姿勢だけを持たせる。
 	cubeModel_.reset(Model::CreateFromOBJ("cube"));
 	floorModel_.reset(Model::CreateFromOBJ("Floar"));
 	wallModel_.reset(Model::CreateFromOBJ("Wall"));
@@ -127,20 +142,8 @@ void StageRenderer::UpdatePlayer(const Vector3& playerPosition) {
 
 void StageRenderer::RebuildGimmicks(const Stage& stage) { BuildGimmickObjects(stage); }
 
-namespace {
-float AccelerationPanelRotation(AccelerationPanel::Direction direction) {
-	switch (direction) {
-	case AccelerationPanel::Direction::PositiveZ: return 0.0f;
-	case AccelerationPanel::Direction::PositiveX: return std::numbers::pi_v<float> * 0.5f;
-	case AccelerationPanel::Direction::NegativeZ: return std::numbers::pi_v<float>;
-	case AccelerationPanel::Direction::NegativeX: return -std::numbers::pi_v<float> * 0.5f;
-	}
-	return 0.0f;
-}
-} // namespace
-
-void StageRenderer::UpdatePlacementCursor(const Stage& stage, const Stage::GridPosition& grid, Stage::GimmickType selectedType, bool isVisible,
-                                          AccelerationPanel::Direction panelDirection) {
+void StageRenderer::UpdatePlacementCursor(const Stage& stage, const Stage::GridPosition& grid, Stage::GimmickType selectedType, bool isVisible, AccelerationPanel::Direction panelDirection) {
+	// 反射板と加速床は構成モデルが異なるため、種類ごとに必要な部品だけを表示する。
 	isPlacementCursorVisible_ = isVisible && selectedType != Stage::GimmickType::AccelerationPanel;
 	isPlacementCursorReflectCenterVisible_ = isVisible && selectedType != Stage::GimmickType::AccelerationPanel;
 	isPlacementCursorBaseVisible_ = isVisible && selectedType == Stage::GimmickType::AccelerationPanel;
@@ -153,9 +156,9 @@ void StageRenderer::UpdatePlacementCursor(const Stage& stage, const Stage::GridP
 	position.y = selectedType == Stage::GimmickType::AccelerationPanel ? kAccelerationPanelHeight : kReflectGimmickHeight;
 	placementCursorObject_->SetTranslation(position);
 	placementCursorObject_->SetModel(selectedType == Stage::GimmickType::AccelerationPanel ? accelerationPanelModel_.get() : reflectGimmickModel_.get());
-	placementCursorObject_->SetScale(selectedType == Stage::GimmickType::AccelerationPanel
-	                                    ? Vector3{kAccelerationPanelScale, kAccelerationPanelScale, kAccelerationPanelScale}
-	                                    : Vector3{kGimmickScale, kGimmickScale, kGimmickScale});
+	placementCursorObject_->SetScale(
+	    selectedType == Stage::GimmickType::AccelerationPanel ? Vector3{kAccelerationPanelScale, kAccelerationPanelScale, kAccelerationPanelScale}
+	                                                          : Vector3{kGimmickScale, kGimmickScale, kGimmickScale});
 
 	if (selectedType == Stage::GimmickType::ReflectBackSlash) {
 		placementCursorObject_->SetRotation({0.0f, -std::numbers::pi_v<float> * 0.25f, 0.0f});
@@ -210,6 +213,7 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 	const float cellSize = stage.GetCellSize();
 	const Vector3 floorScale = {cellSize * 0.47f, kTileHalfHeight, cellSize * 0.47f};
 
+	// CSVの全マスに床を敷く。
 	for (int z = 0; z < stage.GetHeight(); ++z) {
 		for (int x = 0; x < stage.GetWidth(); ++x) {
 			Vector3 position = stage.GridToWorld({x, z});
@@ -223,6 +227,7 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 		}
 	}
 
+	// 壁はStageが保持するマスにだけ生成する。
 	for (const Stage::GridPosition& grid : stage.GetWalls()) {
 		Vector3 position = stage.GridToWorld(grid);
 		position.y = kObjectHeight;
@@ -236,6 +241,7 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 
 	BuildGimmickObjects(stage);
 
+	// ゴールとプレイヤーは更新しやすいよう、一覧とは別に保持する。
 	Vector3 goalPosition = stage.GridToWorld(stage.GetGoalGrid());
 	goalPosition.y = kGoalScale;
 	goalObject_ = std::make_unique<Object3d>();
@@ -253,6 +259,7 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 	playerObject_->SetRotation({-std::numbers::pi_v<float> * 0.5f, 0.0f, 0.0f});
 	playerObject_->Update();
 
+	// 配置プレビューは毎フレーム生成せず、ここで各部品を一度だけ用意する。
 	std::unique_ptr<ColoredObject3d> reflectCursor = std::make_unique<ColoredObject3d>();
 	reflectCursor->Initialize(reflectGimmickModel_.get(), kReflectFrameColor);
 	placementCursorObject_ = std::move(reflectCursor);
@@ -285,6 +292,8 @@ void StageRenderer::BuildStageObjects(const Stage& stage, const Vector3& playerP
 
 void StageRenderer::BuildGimmickObjects(const Stage& stage) {
 	gimmickObjects_.clear();
+
+	// 反射板は外枠と発光面の2モデルを同じ姿勢で重ねる。
 	auto addReflectGimmick = [this, &stage](const Stage::GridPosition& grid, float rotation) {
 		Vector3 position = stage.GridToWorld(grid);
 		position.y = kReflectGimmickHeight;

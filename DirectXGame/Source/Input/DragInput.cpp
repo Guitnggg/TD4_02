@@ -3,8 +3,8 @@
 #include "../Core/Math/MathUtility.h"
 
 #include <3d/PrimitiveDrawer.h>
-#include <base/WinApp.h>
 #include <base/TextureManager.h>
+#include <base/WinApp.h>
 
 #include <cmath>
 
@@ -29,9 +29,7 @@ constexpr float kTrajectoryStepTime = 1.0f / 12.0f;
 constexpr int kTrajectorySegmentCount = 18;
 constexpr float kPreviewFrictionPerFrame = 0.992f;
 
-float LengthXZ(const Vector3& v) {
-	return std::sqrt(v.x * v.x + v.z * v.z);
-}
+float LengthXZ(const Vector3& v) { return std::sqrt(v.x * v.x + v.z * v.z); }
 
 Vector3 NormalizeXZ(const Vector3& v) {
 	const float length = LengthXZ(v);
@@ -169,17 +167,11 @@ Vector3 DragInput::MouseToWorldOnPlane(const Camera& camera, float planeY) const
 	return MyMath::Add(nearPoint, MyMath::Multiply(ray, t));
 }
 
-bool DragInput::IsPressingLeft(Input* input) const {
-	return input != nullptr && input->IsPressMouse(0);
-}
+bool DragInput::IsPressingLeft(Input* input) const { return input != nullptr && input->IsPressMouse(0); }
 
-bool DragInput::IsTriggerLeft(Input* input) const {
-	return input != nullptr && input->IsTriggerMouse(0);
-}
+bool DragInput::IsTriggerLeft(Input* input) const { return input != nullptr && input->IsTriggerMouse(0); }
 
-bool DragInput::IsReleaseLeft(Input* input) const {
-	return wasPressingLeft_ && !IsPressingLeft(input);
-}
+bool DragInput::IsReleaseLeft(Input* input) const { return wasPressingLeft_ && !IsPressingLeft(input); }
 
 void DragInput::UpdateDragVector(const Vector3& playerPosition, const Vector3& currentWorld) {
 	dragStartWorld_ = playerPosition;
@@ -211,8 +203,8 @@ Vector2 DragInput::WorldToScreen(const Vector3& worldPosition, const Camera& cam
 	const Matrix4x4 viewProjection = MyMath::Multiply(camera.matView, camera.matProjection);
 	const Vector3 ndc = MyMath::Transform(worldPosition, viewProjection);
 	return {
-		(ndc.x + 1.0f) * 0.5f * static_cast<float>(WinApp::kWindowWidth),
-		(1.0f - ndc.y) * 0.5f * static_cast<float>(WinApp::kWindowHeight),
+	    (ndc.x + 1.0f) * 0.5f * static_cast<float>(WinApp::kWindowWidth),
+	    (1.0f - ndc.y) * 0.5f * static_cast<float>(WinApp::kWindowHeight),
 	};
 }
 
@@ -232,8 +224,8 @@ void DragInput::DrawArrowSprite(const Vector3& from, const Vector3& to, const Ca
 
 	const float size = kArrowBaseSize + kArrowPowerSize * powerRate_;
 	const Vector2 center = {
-		fromScreen.x + direction.x * 0.65f,
-		fromScreen.y + direction.y * 0.65f,
+	    fromScreen.x + direction.x * 0.65f,
+	    fromScreen.y + direction.y * 0.65f,
 	};
 
 	// Arrow.png は上向き画像なので、画面上の方向へ合うように 90 度補正する。

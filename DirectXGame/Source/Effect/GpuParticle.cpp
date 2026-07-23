@@ -16,8 +16,12 @@ struct Vertex {
 };
 
 constexpr Vertex kVertices[] = {
-	{-0.5f, -0.5f}, {0.5f, -0.5f}, {0.5f, 0.5f},
-	{-0.5f, -0.5f}, {0.5f, 0.5f},  {-0.5f, 0.5f},
+    {-0.5f, -0.5f},
+    {0.5f,  -0.5f},
+    {0.5f,  0.5f },
+    {-0.5f, -0.5f},
+    {0.5f,  0.5f },
+    {-0.5f, 0.5f },
 };
 
 constexpr DXGI_FORMAT kRenderTargetFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -34,6 +38,7 @@ GpuParticle::~GpuParticle() {
 }
 
 bool GpuParticle::Initialize(uint32_t maxParticles) {
+	// 固定長のリングバッファとして確保し、描画中の動的な再確保を避ける。
 	maxParticles_ = (std::max)(maxParticles, 1u);
 	nextSpawnIndex_ = 0;
 	particles_.assign(maxParticles_, Particle{});
@@ -44,9 +49,7 @@ void GpuParticle::Emit(const Vector3& position, const Vector3& velocity, float l
 	Emit(position, velocity, life, startScale, endScale, {1.0f, 1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f, 0.0f});
 }
 
-void GpuParticle::Emit(
-	const Vector3& position, const Vector3& velocity, float life, float startScale, float endScale, const Vector4& startColor,
-	const Vector4& endColor) {
+void GpuParticle::Emit(const Vector3& position, const Vector3& velocity, float life, float startScale, float endScale, const Vector4& startColor, const Vector4& endColor) {
 	if (particles_.empty()) {
 		return;
 	}
@@ -62,6 +65,7 @@ void GpuParticle::Emit(
 	particle.active = 1.0f;
 	particle.startColor = startColor;
 	particle.endColor = endColor;
+	// 上限に達した場合は最も古いスロットから再利用する。
 	nextSpawnIndex_ = (nextSpawnIndex_ + 1) % maxParticles_;
 }
 
@@ -86,6 +90,7 @@ void GpuParticle::Update(float deltaTime) {
 		particle.scale = particle.startScale + (particle.endScale - particle.startScale) * t;
 	}
 
+	// CPU側で更新した全パーティクルを、永続マップ済みバッファへ反映する。
 	if (mappedParticles_) {
 		std::memcpy(mappedParticles_, particles_.data(), sizeof(Particle) * particles_.size());
 	}
@@ -127,16 +132,24 @@ uint32_t GpuParticle::GetActiveCount() const {
 
 bool GpuParticle::CreatePipeline() {
 	ID3D12Device* device = DirectXCommon::GetInstance()->GetDevice();
-	if (!device) { return false; }
+	if (!device) {
+		return false;
+	}
 
 	Microsoft::WRL::ComPtr<ID3DBlob> vertexShader;
 	Microsoft::WRL::ComPtr<ID3DBlob> pixelShader;
 	Microsoft::WRL::ComPtr<ID3DBlob> errors;
-	HRESULT result = D3DCompileFromFile(L"./Resources/shaders/GpuParticleVS.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &vertexShader, &errors);
-	if (FAILED(result)) { return false; }
+	HRESULT result =
+	    D3DCompileFromFile(L"./Resources/shaders/GpuParticleVS.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &vertexShader, &errors);
+	if (FAILED(result)) {
+		return false;
+	}
 	result = D3DCompileFromFile(L"./Resources/shaders/GpuParticlePS.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &pixelShader, &errors);
-	if (FAILED(result)) { return false; }
+	if (FAILED(result)) {
+		return false;
+	}
 
+	// 定数バッファとパーティクル配列を、それぞれCBVとSRVでシェーダーへ渡す。
 	CD3DX12_DESCRIPTOR_RANGE srvRange;
 	srvRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 	CD3DX12_ROOT_PARAMETER parameters[2];
@@ -146,10 +159,15 @@ bool GpuParticle::CreatePipeline() {
 	signatureDesc.Init(_countof(parameters), parameters, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 	Microsoft::WRL::ComPtr<ID3DBlob> signature;
 	result = D3D12SerializeRootSignature(&signatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &errors);
-	if (FAILED(result) || FAILED(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature_)))) { return false; }
+	if (FAILED(result) || FAILED(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature_)))) {
+		return false;
+	}
 
-	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {{"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}};
+	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
+	    {"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+    };
 	D3D12_BLEND_DESC blend{};
+	// 半透明の板ポリゴンを重ねるため、アルファブレンドを有効にする。
 	blend.RenderTarget[0].BlendEnable = TRUE;
 	blend.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	blend.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
@@ -163,6 +181,7 @@ bool GpuParticle::CreatePipeline() {
 	rasterizer.CullMode = D3D12_CULL_MODE_NONE;
 	rasterizer.DepthClipEnable = TRUE;
 	D3D12_DEPTH_STENCIL_DESC depth{};
+	// 他オブジェクトとの深度比較は行うが、パーティクル自身は深度を書き込まない。
 	depth.DepthEnable = TRUE;
 	depth.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	depth.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
@@ -189,9 +208,13 @@ bool GpuParticle::CreateVertexBuffer() {
 	const UINT size = sizeof(kVertices);
 	CD3DX12_HEAP_PROPERTIES heap(D3D12_HEAP_TYPE_UPLOAD);
 	CD3DX12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(size);
-	if (!device || FAILED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexBuffer_)))) { return false; }
+	if (!device || FAILED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexBuffer_)))) {
+		return false;
+	}
 	void* mapped = nullptr;
-	if (FAILED(vertexBuffer_->Map(0, nullptr, &mapped))) { return false; }
+	if (FAILED(vertexBuffer_->Map(0, nullptr, &mapped))) {
+		return false;
+	}
 	std::memcpy(mapped, kVertices, size);
 	vertexBuffer_->Unmap(0, nullptr);
 	vertexBufferView_ = {vertexBuffer_->GetGPUVirtualAddress(), size, sizeof(Vertex)};
@@ -203,14 +226,22 @@ bool GpuParticle::CreateParticleBuffer() {
 	const UINT size = static_cast<UINT>(sizeof(Particle) * particles_.size());
 	CD3DX12_HEAP_PROPERTIES heap(D3D12_HEAP_TYPE_UPLOAD);
 	CD3DX12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(size);
-	if (!device || FAILED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&particleBuffer_)))) { return false; }
-	if (FAILED(particleBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&mappedParticles_)))) { return false; }
+	if (!device || FAILED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&particleBuffer_)))) {
+		return false;
+	}
+	if (FAILED(particleBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&mappedParticles_)))) {
+		return false;
+	}
 	std::memset(mappedParticles_, 0, size);
+
+	// 構造化バッファを頂点シェーダーから参照するためのSRVを作成する。
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
 	heapDesc.NumDescriptors = 1;
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	if (FAILED(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&srvHeap_)))) { return false; }
+	if (FAILED(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&srvHeap_)))) {
+		return false;
+	}
 	D3D12_SHADER_RESOURCE_VIEW_DESC srv{};
 	srv.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	srv.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -226,8 +257,12 @@ bool GpuParticle::CreateConstantBuffer() {
 	const UINT size = (sizeof(Constants) + 0xffu) & ~0xffu;
 	CD3DX12_HEAP_PROPERTIES heap(D3D12_HEAP_TYPE_UPLOAD);
 	CD3DX12_RESOURCE_DESC desc = CD3DX12_RESOURCE_DESC::Buffer(size);
-	if (!device || FAILED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&constantBuffer_)))) { return false; }
-	if (FAILED(constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&mappedConstants_)))) { return false; }
+	if (!device || FAILED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&constantBuffer_)))) {
+		return false;
+	}
+	if (FAILED(constantBuffer_->Map(0, nullptr, reinterpret_cast<void**>(&mappedConstants_)))) {
+		return false;
+	}
 	std::memset(mappedConstants_, 0, size);
 	return true;
 }

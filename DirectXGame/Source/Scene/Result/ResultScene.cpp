@@ -1,8 +1,8 @@
 ﻿#include "ResultScene.h"
 
+#include "../../Game/ResultRules.h"
 #include "../DifficultySelect/DifficultySelectScene.h"
 #include "../GameScene/GameScene.h"
-#include "../../Game/ResultRules.h"
 
 #include <KamataEngine.h>
 #include <algorithm>
@@ -26,8 +26,7 @@ constexpr float kResultItemHeight = 125.0f;
 } // namespace
 
 ResultScene::ResultScene(int usedGimmickCount, std::string clearedStagePath)
-    : usedGimmickCount_(usedGimmickCount < 0 ? 0 : usedGimmickCount), clearedStagePath_(std::move(clearedStagePath)),
-      nextStagePath_(ResultRules::FindNextStagePath(clearedStagePath_)) {
+    : usedGimmickCount_(usedGimmickCount < 0 ? 0 : usedGimmickCount), clearedStagePath_(std::move(clearedStagePath)), nextStagePath_(ResultRules::FindNextStagePath(clearedStagePath_)) {
 	starCount_ = ResultRules::CalculateStarCount(usedGimmickCount_, clearedStagePath_);
 }
 
@@ -56,14 +55,17 @@ void ResultScene::Update() {
 	if (mouseAvailable) {
 		// ホバーした項目の選択枠を即座に表示するため、背景画像も更新する。
 		const Vector2& mouse = input->GetMousePosition();
-		if (mouse.x >= kResultItemLeft && mouse.x <= kResultItemLeft + kResultItemWidth &&
-			mouse.y >= kResultItemTop && mouse.y < kResultItemTop + kResultItemHeight * 2.0f) {
+		if (mouse.x >= kResultItemLeft && mouse.x <= kResultItemLeft + kResultItemWidth && mouse.y >= kResultItemTop && mouse.y < kResultItemTop + kResultItemHeight * 2.0f) {
 			int hoveredIndex = static_cast<int>((mouse.y - kResultItemTop) / kResultItemHeight);
 			// 最終ステージでは「次のステージ」を選択できないようにする。
-			if (hoveredIndex == 0 && nextStagePath_.empty()) { hoveredIndex = 1; }
+			if (hoveredIndex == 0 && nextStagePath_.empty()) {
+				hoveredIndex = 1;
+			}
 			if (selectedIndex_ != hoveredIndex) {
 				selectedIndex_ = hoveredIndex;
-				if (resultSprite_) { resultSprite_->SetTextureHandle(resultTextureHandles_[selectedIndex_]); }
+				if (resultSprite_) {
+					resultSprite_->SetTextureHandle(resultTextureHandles_[selectedIndex_]);
+				}
 			}
 			if (input->IsTriggerMouse(0)) {
 				Audio::GetInstance()->PlayWave(decisionSoundHandle_, false, 0.8f);
@@ -74,7 +76,9 @@ void ResultScene::Update() {
 	}
 	if (input->TriggerKey(DIK_W) || input->TriggerKey(DIK_UP) || input->TriggerKey(DIK_S) || input->TriggerKey(DIK_DOWN)) {
 		selectedIndex_ = 1 - selectedIndex_;
-		if (resultSprite_) { resultSprite_->SetTextureHandle(resultTextureHandles_[selectedIndex_]); }
+		if (resultSprite_) {
+			resultSprite_->SetTextureHandle(resultTextureHandles_[selectedIndex_]);
+		}
 	}
 
 	if (input->TriggerKey(DIK_SPACE) || input->TriggerKey(DIK_RETURN)) {
@@ -85,7 +89,9 @@ void ResultScene::Update() {
 
 void ResultScene::Draw() {
 	Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
-	if (resultSprite_) { resultSprite_->Draw(); }
+	if (resultSprite_) {
+		resultSprite_->Draw();
+	}
 	Sprite::PostDraw();
 #ifdef USE_IMGUI
 	ImGui::SetNextWindowPos(ImVec2(520.0f, 280.0f), ImGuiCond_FirstUseEver);
