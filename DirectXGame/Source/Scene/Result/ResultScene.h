@@ -34,6 +34,7 @@ private:
 	std::string clearedStagePath_;
 	std::string nextStagePath_; // 最終ステージをクリアした場合は空文字列になる。
 	std::array<uint32_t, kSelectionFrameCount> resultTextureHandles_{};
+	std::unique_ptr<KamataEngine::Sprite> backgroundSprite_;
 	std::unique_ptr<KamataEngine::Sprite> resultSprite_;
 	uint32_t decisionSoundHandle_ = 0;
 };

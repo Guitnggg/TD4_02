@@ -28,6 +28,9 @@ int ResultRules::GetStagePar(const std::string& stagePath) {
 	if (stagePath.find("Tutorial_01.csv") != std::string::npos) {
 		return 0;
 	}
+	if (stagePath.find("Tutorial_03.csv") != std::string::npos) {
+		return 2;
+	}
 	if (stagePath.find("Tutorial") != std::string::npos || stagePath.find("Easy") != std::string::npos) {
 		return 1;
 	}

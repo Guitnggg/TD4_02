@@ -24,10 +24,11 @@ void DifficultySelectScene::Initialize() {
 	isEnd_ = false;
 	selectedIndex_ = 0;
 	const uint32_t whiteTexture = TextureManager::Load("white1x1.png");
+	const uint32_t backgroundTexture = TextureManager::Load("UI/GameBackground.png");
 	const uint32_t arrowTexture = TextureManager::Load("UI/Arrow.png");
-	backgroundSprite_.reset(Sprite::Create(whiteTexture, {0.0f, 0.0f}, {0.04f, 0.08f, 0.13f, 1.0f}));
+	backgroundSprite_.reset(Sprite::Create(backgroundTexture, {0.0f, 0.0f}));
 	if (backgroundSprite_) {
-		backgroundSprite_->SetSize({1280.0f, 720.0f});
+		backgroundSprite_->SetSize({static_cast<float>(WinApp::kWindowWidth), static_cast<float>(WinApp::kWindowHeight)});
 	}
 	panelSprite_.reset(Sprite::Create(whiteTexture, {360.0f, 150.0f}, {0.12f, 0.22f, 0.32f, 0.95f}));
 	if (panelSprite_) {

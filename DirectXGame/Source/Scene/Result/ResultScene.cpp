@@ -33,6 +33,10 @@ ResultScene::ResultScene(int usedGimmickCount, std::string clearedStagePath)
 void ResultScene::Initialize() {
 	isEnd_ = false;
 	selectedIndex_ = nextStagePath_.empty() ? 1 : 0;
+	backgroundSprite_.reset(Sprite::Create(TextureManager::Load("UI/GameBackground.png"), {0.0f, 0.0f}));
+	if (backgroundSprite_) {
+		backgroundSprite_->SetSize({static_cast<float>(WinApp::kWindowWidth), static_cast<float>(WinApp::kWindowHeight)});
+	}
 	// 星評価ごとに、2種類のメニュー選択状態に対応する画像を読み込む。
 	const int firstImageNumber = starCount_ * 2 + 1;
 	for (size_t i = 0; i < kSelectionFrameCount; ++i) {
@@ -90,6 +94,9 @@ void ResultScene::Update() {
 
 void ResultScene::Draw() {
 	Sprite::PreDraw(DirectXCommon::GetInstance()->GetCommandList());
+	if (backgroundSprite_) {
+		backgroundSprite_->Draw();
+	}
 	if (resultSprite_) {
 		resultSprite_->Draw();
 	}
