@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="Source\Effect"><UniqueIdentifier>{d81c2f00-0410-4fca-9d3d-7418a21df060}</UniqueIdentifier></Filter>
     <Filter Include="Source">
       <UniqueIdentifier>{e0a82d6d-0280-4d46-8dd8-c96f83d9271d}</UniqueIdentifier>
     </Filter>
@@ -78,6 +79,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Effect\GpuParticle.cpp"><Filter>Source\Effect</Filter></ClCompile>
     <ClCompile Include="Source\main.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -128,6 +130,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Effect\GpuParticle.h"><Filter>Source\Effect</Filter></ClInclude>
     <ClInclude Include="Source\Core\Collision\Collider.h">
       <Filter>Source\Core\Collision</Filter>
     </ClInclude>
@@ -181,6 +184,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Resources\shaders\GpuParticlePS.hlsl"><Filter>Resources\Shaders</Filter></FxCompile>
+    <FxCompile Include="Resources\shaders\GpuParticleVS.hlsl"><Filter>Resources\Shaders</Filter></FxCompile>
     <FxCompile Include="Resources\shaders\SpritePS.hlsl">
       <Filter>Resources\Shaders</Filter>
     </FxCompile>

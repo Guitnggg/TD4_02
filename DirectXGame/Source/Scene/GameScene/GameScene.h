@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../Game/Stage.h"
+#include "../../Effect/GpuParticle.h"
 #include "../../Gameplay/Player/Player.h"
 #include "../../Input/DragInput.h"
 #include "../../Rendering/StageRenderer.h"
@@ -60,6 +61,9 @@ private:
 	void DrawInstructionUI();
 	int GetHoveredPaletteItem() const;
 	void ResetGame();
+	void EmitReflectionParticles();
+	void EmitDustTrail();
+	void EmitAccelerationParticles();
 
 	/// <summary>
 	/// ギミック配置カーソルをステージ範囲内に収める
@@ -81,6 +85,10 @@ private:
 	Player player_;
 	DragInput dragInput_;
 	StageRenderer stageRenderer_;
+	GpuParticle reflectionParticles_;
+	GpuParticle movementParticles_;
+	float dustEmissionTimer_ = 0.0f;
+	uint32_t dustEmissionPhase_ = 0;
 	KamataEngine::Camera camera_;
 	UI ui_;
 	std::unique_ptr<KamataEngine::Sprite> backgroundSprite_;

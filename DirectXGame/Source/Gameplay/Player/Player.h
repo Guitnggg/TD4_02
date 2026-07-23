@@ -64,6 +64,7 @@ public:
 	/// 現在のワールド座標を取得する
 	/// </summary>
 	const KamataEngine::Vector3& GetPosition() const { return position_; }
+	const KamataEngine::Vector3& GetVelocity() const { return velocity_; }
 
 	/// <summary>
 	/// 現在の状態を取得する

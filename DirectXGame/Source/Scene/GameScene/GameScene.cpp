@@ -39,6 +39,12 @@ namespace {
 	constexpr float kResetHeight = 63.0f;
 	constexpr float kResetHoverScale = 1.06f;
 	constexpr float kFixedDeltaTime = 1.0f / 60.0f;
+	constexpr uint32_t kReflectionParticleCapacity = 512;
+	constexpr uint32_t kReflectionSparkCount = 48;
+	constexpr uint32_t kReflectionGlowCount = 12;
+	constexpr uint32_t kMovementParticleCapacity = 768;
+	constexpr float kDustEmissionInterval = 0.045f;
+	constexpr float kTwoPi = 6.28318530718f;
 	float CalculateTopDownCameraHeight(const Stage& stage, const Camera& camera) {
 		const float halfFovTangent = std::tan(camera.fovAngleY * 0.5f);
 		const float heightForVerticalFit = static_cast<float>(stage.GetHeight()) / (2.0f * halfFovTangent);
@@ -76,7 +82,9 @@ void GameScene::Initialize() {
 	camera_.Initialize();
 	camera_.translation_ = { 0.0f, CalculateTopDownCameraHeight(stage_, camera_), 0.0f };
     camera_.rotation_ = { kTopDownCameraPitch, 0.0f, 0.0f };
-    camera_.UpdateMatrix();
+	camera_.UpdateMatrix();
+	reflectionParticles_.Initialize(kReflectionParticleCapacity);
+	movementParticles_.Initialize(kMovementParticleCapacity);
 
 	const std::vector<Stage::GridPosition>& placeableTiles = stage_.GetPlaceableTiles();
 	placementCursor_ = placeableTiles.empty() ? Stage::GridPosition{0, 0} : placeableTiles.front();
@@ -167,12 +175,25 @@ void GameScene::Update() {
 	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, player_.GetState() == Player::State::Aiming && interactionPhase_ == InteractionPhase::Placement && hasActivePlacementTool && isPlacementCursorValid_ && !ui_.IsPaused(), selectedPanelDirection_);
 
     player_.Update(stage_);
+	if (player_.GetState() == Player::State::Moving && !ui_.IsPaused()) {
+		dustEmissionTimer_ += kFixedDeltaTime;
+		while (dustEmissionTimer_ >= kDustEmissionInterval) {
+			dustEmissionTimer_ -= kDustEmissionInterval;
+			EmitDustTrail();
+		}
+	} else {
+		dustEmissionTimer_ = 0.0f;
+	}
 	if (player_.ConsumeReflectionEvent()) {
 		Audio::GetInstance()->PlayWave(reflectionSoundHandle_, false, 0.85f);
+		EmitReflectionParticles();
 	}
+	reflectionParticles_.Update(kFixedDeltaTime);
 	if (player_.ConsumeAccelerationEvent()) {
 		Audio::GetInstance()->PlayWave(accelerationSoundHandle_, false, 0.85f);
+		EmitAccelerationParticles();
 	}
+	movementParticles_.Update(kFixedDeltaTime);
     stageRenderer_.UpdatePlayer(player_.GetPosition());
 
 	const bool isPlayerFailed = player_.IsFailed();
@@ -216,6 +237,8 @@ void GameScene::Draw() {
 	}
     stageRenderer_.Draw(camera_);
     stageRenderer_.DrawGuide(stage_, camera_);
+	reflectionParticles_.Draw(camera_);
+	movementParticles_.Draw(camera_);
     dragInput_.Draw(camera_);
 	DrawPlacementPalette();
 	DrawInstructionUI();
@@ -594,8 +617,137 @@ void GameScene::ResetGame() {
 	failedAnimationTimer_ = 0.0f;
 	isFailedSpriteVisible_ = false;
 	wasPlayerFailed_ = false;
+	reflectionParticles_.Clear();
+	movementParticles_.Clear();
+	dustEmissionTimer_ = 0.0f;
+	dustEmissionPhase_ = 0;
 	if (failedSprite_) {
 		failedSprite_->SetPosition({0.0f, -static_cast<float>(WinApp::kWindowHeight)});
 	}
 	stageRenderer_.UpdatePlacementCursor(stage_, placementCursor_, selectedGimmickType_, false);
+}
+
+void GameScene::EmitReflectionParticles() {
+	Vector3 impactPosition = player_.GetPosition();
+	impactPosition.y = 0.42f;
+
+	const Vector3 reflectedVelocity = player_.GetVelocity();
+	const float horizontalSpeed = std::sqrt(reflectedVelocity.x * reflectedVelocity.x + reflectedVelocity.z * reflectedVelocity.z);
+	Vector3 reflectedDirection{};
+	if (horizontalSpeed > 0.0001f) {
+		reflectedDirection = {reflectedVelocity.x / horizontalSpeed, 0.0f, reflectedVelocity.z / horizontalSpeed};
+	}
+
+
+	// 一瞬だけ残る大きな白い閃光。複数枚を重ねて中心を強く見せる。
+	for (uint32_t index = 0; index < 4; ++index) {
+		const float size = 0.65f + static_cast<float>(index) * 0.16f;
+		reflectionParticles_.Emit(
+			impactPosition, {}, 0.10f + static_cast<float>(index) * 0.025f, size, size * 0.25f,
+			{1.0f, 1.0f, 0.9f, 0.95f}, {1.0f, 0.55f, 0.08f, 0.0f});
+	}
+
+	// ゆっくり広がる黄色い衝撃光。
+	for (uint32_t index = 0; index < kReflectionGlowCount; ++index) {
+		const float ratio = static_cast<float>(index) / static_cast<float>(kReflectionGlowCount);
+		const float angle = ratio * kTwoPi + 0.18f;
+		const float speed = 0.35f + 0.12f * static_cast<float>(index % 3);
+		const Vector3 glowVelocity{std::cos(angle) * speed, 0.0f, std::sin(angle) * speed};
+		reflectionParticles_.Emit(
+			impactPosition, glowVelocity, 0.42f, 0.38f, 0.08f,
+			{1.0f, 0.78f, 0.12f, 0.72f}, {1.0f, 0.12f, 0.01f, 0.0f});
+	}
+
+	// 長さと速度にばらつきを持たせた高速の火花。
+	for (uint32_t index = 0; index < kReflectionSparkCount; ++index) {
+		const float ratio = static_cast<float>(index) / static_cast<float>(kReflectionSparkCount);
+		const float angleJitter = static_cast<float>((index * 17u) % 11u) * 0.025f;
+		const float angle = ratio * kTwoPi + angleJitter;
+		const float radialSpeed = 1.35f + 1.65f * static_cast<float>((index * 7u) % 9u) / 8.0f;
+		Vector3 particleVelocity{
+			std::cos(angle) * radialSpeed + reflectedDirection.x * 0.9f,
+			0.0f,
+			std::sin(angle) * radialSpeed + reflectedDirection.z * 0.9f};
+		const float life = 0.30f + 0.28f * static_cast<float>(index % 5) / 4.0f;
+		const float startScale = index % 4 == 0 ? 0.24f : 0.15f;
+		const Vector4 startColor = index % 5 == 0
+			? Vector4{1.0f, 1.0f, 0.9f, 1.0f}
+			: Vector4{1.0f, 0.62f, 0.08f, 1.0f};
+		reflectionParticles_.Emit(
+			impactPosition, particleVelocity, life, startScale, 0.01f,
+			startColor, {1.0f, 0.04f, 0.0f, 0.0f});
+	}
+}
+
+void GameScene::EmitDustTrail() {
+	const Vector3 velocity = player_.GetVelocity();
+	const float speed = std::sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+	if (speed <= 0.15f) {
+		return;
+	}
+
+	const Vector3 direction{velocity.x / speed, 0.0f, velocity.z / speed};
+	const Vector3 side{-direction.z, 0.0f, direction.x};
+	Vector3 origin = player_.GetPosition();
+	origin.x -= direction.x * 0.28f;
+	origin.z -= direction.z * 0.28f;
+	origin.y = 0.30f;
+
+	for (uint32_t index = 0; index < 4; ++index) {
+		const uint32_t pattern = dustEmissionPhase_ * 4u + index;
+		const float sideAmount = (static_cast<float>(pattern % 7u) - 3.0f) * 0.055f;
+		const float backwardSpeed = 0.16f + 0.08f * static_cast<float>(pattern % 3u);
+		const float sideSpeed = (static_cast<float>((pattern * 5u) % 9u) - 4.0f) * 0.055f;
+		Vector3 position = origin;
+		position.x += side.x * sideAmount;
+		position.z += side.z * sideAmount;
+		const Vector3 particleVelocity{
+			-direction.x * backwardSpeed + side.x * sideSpeed,
+			0.0f,
+			-direction.z * backwardSpeed + side.z * sideSpeed};
+		const float life = 0.42f + 0.16f * static_cast<float>(pattern % 4u) / 3.0f;
+		const float startScale = 0.15f + 0.05f * static_cast<float>(pattern % 3u);
+		movementParticles_.Emit(
+			position, particleVelocity, life, startScale, startScale * 2.8f,
+			{0.52f, 0.40f, 0.25f, 0.55f}, {0.30f, 0.27f, 0.23f, 0.0f});
+	}
+	++dustEmissionPhase_;
+}
+
+void GameScene::EmitAccelerationParticles() {
+	Vector3 origin = player_.GetPosition();
+	origin.y = 0.40f;
+	const Vector3 velocity = player_.GetVelocity();
+	const float speed = std::sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+	if (speed <= 0.0001f) {
+		return;
+	}
+	const Vector3 direction{velocity.x / speed, 0.0f, velocity.z / speed};
+	const Vector3 side{-direction.z, 0.0f, direction.x};
+
+	// パネルを踏んだ瞬間の中心光。
+	for (uint32_t index = 0; index < 5; ++index) {
+		const float size = 0.45f + static_cast<float>(index) * 0.15f;
+		movementParticles_.Emit(
+			origin, {}, 0.14f + static_cast<float>(index) * 0.025f, size, size * 1.7f,
+			{1.0f, 1.0f, 0.55f, 0.9f}, {0.1f, 0.75f, 1.0f, 0.0f});
+	}
+
+	// 加速方向へ扇状に飛び出す粒子。
+	for (uint32_t index = 0; index < 40; ++index) {
+		const float spread = (static_cast<float>(index) / 39.0f - 0.5f) * 2.2f;
+		const float forwardSpeed = 1.4f + 2.0f * static_cast<float>((index * 7u) % 11u) / 10.0f;
+		const float sideSpeed = spread * (0.55f + 0.15f * static_cast<float>(index % 3u));
+		const Vector3 particleVelocity{
+			direction.x * forwardSpeed + side.x * sideSpeed,
+			0.0f,
+			direction.z * forwardSpeed + side.z * sideSpeed};
+		const float life = 0.32f + 0.24f * static_cast<float>(index % 5u) / 4.0f;
+		const Vector4 startColor = index % 3u == 0
+			? Vector4{1.0f, 1.0f, 0.65f, 1.0f}
+			: Vector4{0.15f, 0.85f, 1.0f, 1.0f};
+		movementParticles_.Emit(
+			origin, particleVelocity, life, index % 4u == 0 ? 0.23f : 0.14f, 0.015f,
+			startColor, {0.05f, 0.25f, 1.0f, 0.0f});
+	}
 }

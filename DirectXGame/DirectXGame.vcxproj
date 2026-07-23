@@ -154,6 +154,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Effect\GpuParticle.cpp" />
     <ClCompile Include="Source\Gameplay\Gimmick\ReflectiveBlock\ReflectiveBlock.cpp" />
     <ClCompile Include="Source\Gameplay\Gimmick\AccelerationPanel\AccelerationPanel.cpp" />
     <ClCompile Include="Source\Core\Collision\CollisionManager.cpp" />
@@ -173,6 +174,8 @@
     <ClCompile Include="Source\UI\UI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Resources\shaders\GpuParticlePS.hlsl"><ExcludedFromBuild>true</ExcludedFromBuild></FxCompile>
+    <FxCompile Include="Resources\shaders\GpuParticleVS.hlsl"><ExcludedFromBuild>true</ExcludedFromBuild></FxCompile>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
@@ -267,6 +270,7 @@
     <None Include="Resources\shaders\Terrain.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Effect\GpuParticle.h" />
     <None Include="Resources\Stages\Easy\Easy_01.csv" />
     <None Include="Resources\Stages\Easy\Easy_02.csv" />
     <None Include="Resources\Stages\Easy\Easy_03.csv" />
